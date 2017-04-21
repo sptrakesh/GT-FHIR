@@ -39,12 +39,12 @@
 		<property name="jpaVendorAdapter">
 			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
 				<property name="generateDdl" value="true" />
-				<property name="databasePlatform" value="org.hibernate.dialect.MariaDB53Dialect" />
+				<property name="databasePlatform" value="org.hibernate.dialect.MariaDBDialect" />
 			</bean>
 		</property>
 		<property name="jpaProperties">
 			<props>
-				<prop key="hibernate.dialect">org.hibernate.dialect.MariaDB53Dialect</prop>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MariaDBDialect</prop>
 				<prop key="hibernate.hbm2ddl.auto">update</prop>
 				<prop key="hibernate.format_sql">true</prop>
 				<prop key="hibernate.show_sql">false</prop>
