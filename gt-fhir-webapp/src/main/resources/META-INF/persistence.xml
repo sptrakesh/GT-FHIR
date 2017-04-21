@@ -43,13 +43,19 @@
 		
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<properties>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MariaDB53Dialect" />
 			<property name="hibernate.hbm2ddl.auto" value="update" />
-			<property name="hibernate.jdbc.batch_size" value="0" />
+			<property name="hibernate.jdbc.batch_size" value="20" />
 			<property name="hibernate.cache.use_minimal_puts" value="false" />
-			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+			<property name="hibernate.show_sql" value="false" />
 			<property name="hibernate.cache.use_query_cache" value="false" />
 			<property name="hibernate.cache.use_second_level_cache" value="false" />
 			<property name="hibernate.cache.use_structured_entries" value="false" />
+			<property name="hibernate.search.default.directory_provider" value="filesystem" />
+			<property name="hibernate.search.default.indexBase" value="target/lucenefiles" />
+			<property name="hibernate.search.lucene_version" value="LUCENE_CURRENT" />
+			<property name="hibernate.search.default.worker.execution" value="async" />
 			<!-- <property name="org.hibernate.envers.audit_strategy" value="org.hibernate.envers.strategy.ValidityAuditStrategy"/> -->
 		</properties>                                                    
 	</persistence-unit>
