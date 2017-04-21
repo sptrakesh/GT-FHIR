@@ -69,8 +69,10 @@
 		configuration for that plugin...
 		<hibernate_version>4.3.7.Final</hibernate_version>
 		-->
-		<hibernate_version>4.2.17.Final</hibernate_version>
-		<hibernate_validator_version>5.1.0.Final</hibernate_validator_version>
+		<hibernate_version>5.2.9.Final</hibernate_version>
+		<hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
+		<hibernate_search_version>5.7.0.Final</hibernate_search_version>
+		<lucene_version>5.5.4</lucene_version>
 		<jetty_version>9.2.6.v20141205</jetty_version>
 		<jscience_version>4.3.1</jscience_version>
 		<junit_version>4.12</junit_version>
