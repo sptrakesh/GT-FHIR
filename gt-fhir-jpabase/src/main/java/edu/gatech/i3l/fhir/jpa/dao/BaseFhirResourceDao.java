@@ -1,53 +1,5 @@
 package edu.gatech.i3l.fhir.jpa.dao;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceContextType;
-import javax.persistence.Tuple;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-
-import net.vidageek.mirror.dsl.Mirror;
-
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.hibernate.envers.AuditReader;
-import org.hibernate.envers.AuditReaderFactory;
-import org.hibernate.envers.query.AuditEntity;
-import org.hibernate.envers.query.AuditQuery;
-import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.instance.model.api.IIdType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
-
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
@@ -70,6 +22,7 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.valueset.BundleEntrySearchModeEnum;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.parser.IParserErrorHandler;
+import ca.uhn.fhir.parser.json.JsonLikeValue;
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.SortOrderEnum;
 import ca.uhn.fhir.rest.api.SortSpec;
@@ -77,12 +30,9 @@ import ca.uhn.fhir.rest.api.ValidationModeEnum;
 import ca.uhn.fhir.rest.server.EncodingEnum;
 import ca.uhn.fhir.rest.server.IBundleProvider;
 import ca.uhn.fhir.rest.server.SimpleBundleProvider;
-import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
-import ca.uhn.fhir.rest.server.exceptions.PreconditionFailedException;
-import ca.uhn.fhir.rest.server.exceptions.ResourceGoneException;
-import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
-import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
+import ca.uhn.fhir.rest.server.exceptions.*;
 import ca.uhn.fhir.util.FhirTerser;
+import ca.uhn.fhir.util.OperationOutcomeUtil;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
@@ -91,6 +41,35 @@ import edu.gatech.i3l.fhir.jpa.query.PredicateBuilder;
 import edu.gatech.i3l.fhir.jpa.query.QueryHelper;
 import edu.gatech.i3l.fhir.jpa.util.DaoUtils;
 import edu.gatech.i3l.fhir.jpa.util.StopWatch;
+import net.vidageek.mirror.dsl.Mirror;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
+import org.hibernate.envers.query.AuditEntity;
+import org.hibernate.envers.query.AuditQuery;
+import org.hl7.fhir.instance.model.api.IBaseOperationOutcome;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import javax.annotation.PostConstruct;
+import javax.persistence.*;
+import javax.persistence.criteria.*;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.Map.Entry;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * This class serves as Template with commmon dao functions that are meant to be extended by subclasses.
@@ -205,9 +184,6 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 	@Override
 	public DaoMethodOutcome create(T theResource, String theIfNoneExist, boolean thePerformIndexing) {
-//		if (isNotBlank(theResource.getId().getIdPart())) {
-//			throw new InvalidRequestException(baseFhirDao.getContext().getLocalizer().getMessage(BaseFhirResourceDao.class, "failedToCreateWithClientAssignedId", theResource.getId().getIdPart()));
-//		}
 		return doCreate(theResource, theIfNoneExist, thePerformIndexing);
 	}
 	
@@ -220,24 +196,11 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			if(!violations.isEmpty()){
 				OperationOutcome oo = new OperationOutcome();
 				for (ConstraintViolation<BaseResourceEntity> violation : violations) {
-//					oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.PROCESSING_FAILURE).setDetails(violation.getPropertyPath()+" "+ violation.getMessage());
 					oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.PROCESSING_FAILURE).setDetails((new CodeableConceptDt()).setText(violation.getPropertyPath()+" "+ violation.getMessage()));
 				}
 				throw new UnprocessableEntityException(myContext, oo);
 			}
 		}
-
-//		if (isNotBlank(theIfNoneExist)) {
-//			Set<Long> match = DaoUtils.processMatchUrl(theIfNoneExist, myResourceType, myContext, getBaseFhirDao().getDao(myResourceType));
-//			if (match.size() > 1) {
-//				String msg = baseFhirDao.getContext().getLocalizer().getMessage(BaseFhirDao.class, "transactionOperationWithMultipleMatchFailure", "CREATE", theIfNoneExist, match.size());
-//				throw new PreconditionFailedException(msg);
-//			} else if (match.size() == 1) {
-//				Long pid = match.iterator().next();
-//				entity = myEntityManager.find(myResourceEntity, pid);
-//				return toMethodOutcome(entity, theResource).setCreated(false);
-//			}
-//		}
 
 		baseFhirDao.updateEntity(theResource, entity, false, null, thePerformIndexing, true);
 
@@ -416,6 +379,11 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			}
 
 			@Override
+			public String getUuid() {
+				return UUID.randomUUID().toString();
+			}
+
+			@Override
 			public List<IBaseResource> getResources(final int theFromIndex, final int theToIndex) {
 				TransactionTemplate template = new TransactionTemplate(myPlatformTransactionManager);
 				return template.execute(new TransactionCallback<List<IBaseResource>>() {
@@ -495,9 +463,10 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 							} while (includePids.size() > 0 && previouslyLoadedPids.size() < baseFhirDao.getConfig().getIncludeLimit());
 
 							if (previouslyLoadedPids.size() >= baseFhirDao.getConfig().getIncludeLimit()) {
-								OperationOutcome oo = new OperationOutcome();
-								oo.addIssue().setSeverity(IssueSeverityEnum.WARNING)
-										.setDetails("Not all _include resources were actually included as the request surpassed the limit of " + baseFhirDao.getConfig().getIncludeLimit() + " resources");
+								final IBaseOperationOutcome oo = OperationOutcomeUtil.newInstance(myContext);
+								OperationOutcomeUtil.addIssue(myContext, oo, "warning",
+										"Not all _include resources were actually included as the request surpassed the limit of " + baseFhirDao.getConfig().getIncludeLimit() + " resources",
+										null, "getResources");
 								retVal.add(0, oo);
 							}
 						}
@@ -1002,6 +971,11 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			public InstantDt getPublished() {
 				return end;
 			}
+
+			@Override
+			public String getUuid() {
+				return UUID.randomUUID().toString();
+			}
 		};
 	}
 	
@@ -1120,6 +1094,39 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			}
 
 			@Override
+			public void unknownReference(IParseLocation iParseLocation, String theReferenceName) {
+				CodeableConceptDt detailTxt = new CodeableConceptDt();
+				detailTxt.setText("Unknown reference found: " + theReferenceName);
+				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails(detailTxt);
+			}
+
+			@Override
+			public void containedResourceWithNoId(IParseLocation iParseLocation) {
+
+			}
+
+			@Override
+			public void incorrectJsonType(IParseLocation iParseLocation, String theElementName, JsonLikeValue.ValueType theExpectedValueType, JsonLikeValue.ScalarType theExpectedScalarType, JsonLikeValue.ValueType theFoundValueType, JsonLikeValue.ScalarType theFoundScalarType) {
+				CodeableConceptDt detailTxt = new CodeableConceptDt();
+				detailTxt.setText("Invalid json type " + theFoundValueType + " specified.  Expected: " + theExpectedValueType);
+				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails(detailTxt);
+			}
+
+			@Override
+			public void invalidValue(IParseLocation iParseLocation, String theValue, String theError) {
+				CodeableConceptDt detailTxt = new CodeableConceptDt();
+				detailTxt.setText("Invalid value " + theValue + " specified. Error: " + theError);
+				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails(detailTxt);
+			}
+
+			@Override
+			public void missingRequiredElement(IParseLocation iParseLocation, String theRequiredElement) {
+				CodeableConceptDt detailTxt = new CodeableConceptDt();
+				detailTxt.setText("Required element not specified: " + theRequiredElement);
+				oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CONTENT).setDetails(detailTxt);
+			}
+
+			@Override
 			public void unexpectedRepeatingElement(IParseLocation theLocation, String theElementName) {
 				CodeableConceptDt detailTxt = new CodeableConceptDt(); 
 				detailTxt.setText("Multiple repetitions of non-repeatable element found: " + theElementName);
@@ -1144,7 +1151,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 		// This method returns a MethodOutcome object
 		MethodOutcome retVal = new MethodOutcome();
-		oo.addIssue().setSeverity(IssueSeverityEnum.INFORMATION).setDetails("Validation succeeded");
+        OperationOutcomeUtil.addIssue(myContext,oo,"info", "Validation succeeded", "validate", "validate" );
 		retVal.setOperationOutcome(oo);
 		
 		return retVal;

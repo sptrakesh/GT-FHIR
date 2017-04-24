@@ -43,7 +43,7 @@
 		
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<properties>
-			<property name="hibernate.dialect" value="org.hibernate.dialect.MariaDB53Dialect" />
+			<property name="databasePlatform" value="org.hibernate.dialect.DerbyTenSevenDialect" />
 			<property name="hibernate.hbm2ddl.auto" value="update" />
 			<property name="hibernate.jdbc.batch_size" value="20" />
 			<property name="hibernate.cache.use_minimal_puts" value="false" />

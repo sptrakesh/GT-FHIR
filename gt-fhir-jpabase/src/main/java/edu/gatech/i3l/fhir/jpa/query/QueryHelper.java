@@ -1,56 +1,31 @@
 package edu.gatech.i3l.fhir.jpa.query;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
-import org.hl7.fhir.instance.model.api.IBaseResource;
-import org.hl7.fhir.instance.model.api.IIdType;
-
-import ca.uhn.fhir.context.BaseRuntimeChildDefinition;
-import ca.uhn.fhir.context.ConfigurationException;
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.context.RuntimeChildResourceDefinition;
-import ca.uhn.fhir.context.RuntimeResourceDefinition;
-import ca.uhn.fhir.context.RuntimeSearchParam;
+import ca.uhn.fhir.context.*;
 import ca.uhn.fhir.model.api.IPrimitiveDatatype;
 import ca.uhn.fhir.model.api.IQueryParameterType;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.base.composite.BaseCodingDt;
 import ca.uhn.fhir.model.base.composite.BaseIdentifierDt;
 import ca.uhn.fhir.model.base.composite.BaseQuantityDt;
-import ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.rest.method.RestSearchParameterTypeEnum;
-import ca.uhn.fhir.rest.param.CompositeParam;
-import ca.uhn.fhir.rest.param.DateParam;
-import ca.uhn.fhir.rest.param.DateRangeParam;
-import ca.uhn.fhir.rest.param.NumberParam;
-import ca.uhn.fhir.rest.param.ParamPrefixEnum;
-import ca.uhn.fhir.rest.param.QuantityParam;
-import ca.uhn.fhir.rest.param.ReferenceParam;
-import ca.uhn.fhir.rest.param.StringParam;
-import ca.uhn.fhir.rest.param.TokenParam;
+import ca.uhn.fhir.rest.param.*;
 import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirDao;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirResourceDao;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.hl7.fhir.instance.model.api.IIdType;
+
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
+import java.math.BigDecimal;
+import java.util.*;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class QueryHelper {
 
@@ -354,7 +329,7 @@ public class QueryHelper {
 							}
 
 							chainValue = new ReferenceParam();
-							chainValue.setValueAsQueryToken(null, resourceId);
+							chainValue.setValueAsQueryToken(null, resourceId, null, null);
 							((ReferenceParam) chainValue).setChain(remainingChain);
 						} else {
 							chainValue = toParameterType(param, resourceId);
@@ -618,7 +593,6 @@ public class QueryHelper {
 				BaseQuantityDt param = (BaseQuantityDt) params;
 				systemValue = param.getSystemElement().getValueAsString();
 				unitsValue = param.getUnitsElement().getValueAsString();
-//				cmpValue = QuantityCompararatorEnum.VALUESET_BINDER.fromCodeString(param.getComparatorElement().getValueAsString());
 				cmpValue = ParamPrefixEnum.forValue(param.getComparatorElement().getValueAsString());
 				valueValue = param.getValueElement().getValue();
 			} else if (params instanceof QuantityParam) {
@@ -715,7 +689,7 @@ public class QueryHelper {
 	protected IQueryParameterType toParameterType(RuntimeSearchParam theParam, String theValueAsQueryToken) {
 		IQueryParameterType qp = toParameterType(theParam);
 	
-		qp.setValueAsQueryToken(null, theValueAsQueryToken);
+		qp.setValueAsQueryToken(null, theValueAsQueryToken, null, null);
 		return qp;
 	}
 

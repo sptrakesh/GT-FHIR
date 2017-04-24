@@ -1,18 +1,12 @@
 package edu.gatech.i3l.fhir.jpa.query;
 
-import java.math.BigDecimal;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
 import ca.uhn.fhir.model.api.IQueryParameterType;
-import ca.uhn.fhir.model.dstu.valueset.QuantityCompararatorEnum;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ParamPrefixEnum;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+
+import javax.persistence.criteria.*;
+import java.math.BigDecimal;
 
 public interface PredicateBuilder {
 

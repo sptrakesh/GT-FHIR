@@ -1,14 +1,5 @@
 package edu.gatech.i3l.fhir.jpa.util;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.hl7.fhir.instance.model.api.IIdType;
-
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.RuntimeResourceDefinition;
 import ca.uhn.fhir.context.RuntimeSearchParam;
@@ -20,11 +11,17 @@ import ca.uhn.fhir.rest.method.QualifiedParamList;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.server.Constants;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
-
 import com.google.common.collect.ArrayListMultimap;
-
 import edu.gatech.i3l.fhir.jpa.dao.IFhirResourceDao;
 import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.hl7.fhir.instance.model.api.IIdType;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Set;
 
 public class DaoUtils {
 	
@@ -47,14 +44,14 @@ public class DaoUtils {
 	public static <T extends IResource> Set<Long> processMatchUrl(String theMatchUrl, Class<? extends IResource> theResourceType, FhirContext theContext, IFhirResourceDao<T> dao) {
 		RuntimeResourceDefinition resourceDef = theContext.getResourceDefinition(theResourceType); 
 
-		SearchParameterMap paramMap = translateMatchUrl(theMatchUrl, resourceDef);
+		SearchParameterMap paramMap = translateMatchUrl(theMatchUrl, theContext, resourceDef);
 
 		Set<Long> ids = dao.searchForIdsWithAndOr(paramMap);
 
 		return ids;
 	}
 	
-	public static SearchParameterMap translateMatchUrl(String theMatchUrl, RuntimeResourceDefinition resourceDef) {
+	public static SearchParameterMap translateMatchUrl(String theMatchUrl, FhirContext theContext, RuntimeResourceDefinition resourceDef) {
 		SearchParameterMap paramMap = new SearchParameterMap();
 		List<NameValuePair> parameters;
 		try {
@@ -99,7 +96,7 @@ public class DaoUtils {
 						throw new InvalidRequestException("Failed to parse match URL[" + theMatchUrl + "] - Can not have more than 2 " + Constants.PARAM_LASTUPDATED + " parameter repetitions");
 					} else {
 						DateRangeParam p1 = new DateRangeParam();
-						p1.setValuesAsQueryTokens(paramList);
+						p1.setValuesAsQueryTokens(theContext, nextParamName, paramList);
 						paramMap.setLastUpdated(p1);
 					}
 				}
@@ -123,7 +120,7 @@ public class DaoUtils {
 				throw new InvalidRequestException("Failed to parse match URL[" + theMatchUrl + "] - Resource type " + resourceDef.getName() + " does not have a parameter with name: " + nextParamName);
 			}
 
-			IQueryParameterAnd<?> param = MethodUtil.parseQueryParams(paramDef, nextParamName, paramList);
+			IQueryParameterAnd<?> param = MethodUtil.parseQueryParams(theContext, paramDef, nextParamName, paramList);
 			paramMap.add(nextParamName, param);
 		}
 		return paramMap;
