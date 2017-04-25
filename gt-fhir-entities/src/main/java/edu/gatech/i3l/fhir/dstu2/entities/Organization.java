@@ -16,7 +16,7 @@ public class Organization {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name="organization_id", updatable=false)
     @Access(AccessType.PROPERTY)
-    private final Long id;
+    private Long id;
 
     @ManyToOne(cascade={CascadeType.MERGE})
     @JoinColumn(name="place_of_service_concept_id")
@@ -38,6 +38,10 @@ public class Organization {
     }
 
     public Long getId() { return id; }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Concept getPlaceOfServiceConcept() { return placeOfServiceConcept; }
 
