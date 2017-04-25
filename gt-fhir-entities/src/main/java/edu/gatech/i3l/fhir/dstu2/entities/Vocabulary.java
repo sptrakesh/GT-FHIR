@@ -21,14 +21,14 @@ import org.hibernate.envers.RelationTargetAuditMode;
 @Entity
 @Table(name="vocabulary")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
-@NamedQueries(value = { @NamedQuery( name = "findReferenceById", query = "select vocabularyReference from Vocabulary c where c.id like :value")})
+@NamedQueries(value = { @NamedQuery( name = "findReferenceById", query = "select vocabulary_reference from vocabulary where vocabulary_name like '%:value%'")})
 public class Vocabulary {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="vocabulary_id", updatable=false)
 	@Access(AccessType.PROPERTY)
-	private String id;
+	private Long id;
 	
 	@Column(name="vocabulary_name", updatable=false)
 	private String name;
@@ -41,22 +41,22 @@ public class Vocabulary {
 		super();
 	}
 
-	public Vocabulary(String id) {
+	public Vocabulary(Long id) {
 		super();
 		this.id = id;
 	}
 	
-	public Vocabulary(String id, String name) {
+	public Vocabulary(Long id, String name) {
 		super();
 		this.id = id;
 		this.name = name;
 	}
 
-	public String getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -81,40 +81,40 @@ public class Vocabulary {
 	public String getSystemUri() {
 		String uri = this.getVocabularyReference();
 		
-		if (id.equalsIgnoreCase("SNOMED")) uri = "http://snomed.info/sct";
-		else if (id.equalsIgnoreCase("ICD9CM")) uri = "http://hl7.org/fhir/sid/icd-9-cm";
-		else if (id.equalsIgnoreCase("ICD9Proc")) uri = "http://hl7.org/fhir/sid/icd-9-cm/procedure";
-		else if (id.equalsIgnoreCase("CPT4")) uri = "http://www.ama-assn.org/go/cpt";
-		else if (id.equalsIgnoreCase("HCPCS")) uri = "http://purl.bioontology.org/ontology/HCPCS";
-		else if (id.equalsIgnoreCase("LOINC")) uri = "http://loinc.org";
-		else if (id.equalsIgnoreCase("RxNorm")) uri = "http://www.nlm.nih.gov/research/umls/rxnorm";
-		else if (id.equalsIgnoreCase("UCUM")) uri = "http://unitsofmeasure.org";
-		else if (id.equalsIgnoreCase("NDC")) uri = "http://hl7.org/fhir/sid/ndc";
+		if (name.equalsIgnoreCase("SNOMED")) uri = "http://snomed.info/sct";
+		else if (name.equalsIgnoreCase("ICD9CM")) uri = "http://hl7.org/fhir/sid/icd-9-cm";
+		else if (name.equalsIgnoreCase("ICD9Proc")) uri = "http://hl7.org/fhir/sid/icd-9-cm/procedure";
+		else if (name.equalsIgnoreCase("CPT4")) uri = "http://www.ama-assn.org/go/cpt";
+		else if (name.equalsIgnoreCase("HCPCS")) uri = "http://purl.bioontology.org/ontology/HCPCS";
+		else if (name.equalsIgnoreCase("LOINC")) uri = "http://loinc.org";
+		else if (name.equalsIgnoreCase("RxNorm")) uri = "http://www.nlm.nih.gov/research/umls/rxnorm";
+		else if (name.equalsIgnoreCase("UCUM")) uri = "http://unitsofmeasure.org";
+		else if (name.equalsIgnoreCase("NDC")) uri = "http://hl7.org/fhir/sid/ndc";
 		
 		return uri;
 	}
 	
 	public void setIdNameBySystemUri(String uri) {
 		if (uri.equalsIgnoreCase("http://snomed.info/sct")) {
-			this.id = "SNOMED";
-		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sid/icd-9-cm")) {
-			this.id = "ICD9CM";
-		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sid/icd-9-cm/procedure")) {
-			this.id = "ICD9Proc";
+			this.name = "SNOMED";
+		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sname/icd-9-cm")) {
+			this.name = "ICD9CM";
+		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sname/icd-9-cm/procedure")) {
+			this.name = "ICD9Proc";
 		} else if (uri.equalsIgnoreCase("http://www.ama-assn.org/go/cpt")) {
-			this.id = "CPT4";
+			this.name = "CPT4";
 		} else if (uri.equalsIgnoreCase("http://purl.bioontology.org/ontology/HCPCS")) {
-			this.id = "HCPCS";
+			this.name = "HCPCS";
 		} else if (uri.equalsIgnoreCase("http://loinc.org")) {
-			this.id = "LOINC";
+			this.name = "LOINC";
 		} else if (uri.equalsIgnoreCase("http://www.nlm.nih.gov/research/umls/rxnorm")) {
-			this.id = "RxNorm";			
+			this.name = "RxNorm";
 		} else if (uri.equalsIgnoreCase("http://unitsofmeasure.org")) {
-			this.id = "UCUM";
-		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sid/ndc")) {
-			this.id = "NDC";
+			this.name = "UCUM";
+		} else if (uri.equalsIgnoreCase("http://hl7.org/fhir/sname/ndc")) {
+			this.name = "NDC";
 		} else {
-			this.id = "Vocabulary";
+			this.name = "Vocabulary";
 		}
 	}
 	

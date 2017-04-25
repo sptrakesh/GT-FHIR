@@ -23,7 +23,7 @@ import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 
 /**
  * This class serves as cache for Concept values in Omop schema based database.
- * It is suggested to statr a new thread and pass this singleton to run.
+ * It is suggested to start a new thread and pass this singleton to run.
  * 
  * @author Ismael Sarmento
  */
@@ -98,15 +98,15 @@ public class OmopConceptMapping implements Runnable {
 	 * @param vocabularyName
 	 * @return A map containing the names(values) of the concepts and their respective id's in the database.
 	 */
-	private Map<String, Long> findConceptMap(CriteriaBuilder builder, String conceptClass, String vocabularyId){
+	private Map<String, Long> findConceptMap(CriteriaBuilder builder, String conceptClass, String vocabularyName){
 		CriteriaQuery<Object[]> criteria = builder.createQuery(Object[].class);
 		Root<Concept> from = criteria.from(Concept.class);
 		Path<Long> idPath = from.get("id");
 		Path<String> codePath = from.get("conceptCode");
 		criteria.multiselect(codePath, idPath); //TODO unit test, order matters here
 		Predicate p1 = builder.like(from.get("conceptClassId").as(String.class), conceptClass);
-		if(vocabularyId != null){
-			Predicate p2 = builder.like(from.get("vocabulary").get("id").as(String.class), vocabularyId);  
+		if(vocabularyName != null){
+			Predicate p2 = builder.like(from.get("vocabulary").get("name").as(String.class), vocabularyName);
 			criteria.where(builder.and(p1, p2)); 
 		} else{
 			criteria.where(builder.and(p1));
@@ -166,8 +166,8 @@ public class OmopConceptMapping implements Runnable {
 			return null;
 	}
 	
-	public String getVocabularyReference(String vocabularyID) {
-		TypedQuery<String> query = entityManager.createNamedQuery("findReferenceById", String.class).setParameter("value", vocabularyID);
+	public String getVocabularyReference(String vocabularyName) {
+		TypedQuery<String> query = entityManager.createNamedQuery("findReferenceById", String.class).setParameter("value", vocabularyName);
 		List<String> results = query.getResultList();
 		if (results.size() > 0)
 			return results.get(0);
