@@ -70,11 +70,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="person_id", nullable=false)
 	private PersonComplement person;
-	
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="visit_concept_id")
-	private Concept visitConcept;
-	
+
 	@Column(name="visit_start_date", nullable=false)
 	@NotNull
 	private Date startDate;
@@ -88,7 +84,11 @@ public class VisitOccurrence extends BaseResourceEntity {
 	
 	@Column(name="visit_end_time")
 	private String endTime;
-	
+
+	@ManyToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="place_of_service_concept_id")
+	private Concept placeOfServiceConcept;
+
 	@ManyToOne
 	@JoinColumn(name="visit_type_concept_id")
 	private Concept visitTypeConcept;
@@ -110,18 +110,18 @@ public class VisitOccurrence extends BaseResourceEntity {
 
 	public VisitOccurrence() {
 		super();
-		this.visitConcept = new Concept();
-		this.visitConcept.setId(0L);
+		this.placeOfServiceConcept = new Concept();
+		this.placeOfServiceConcept.setId(0L);
 	}
 	
-	public VisitOccurrence(Long id, PersonComplement person, Concept visitConcept, Date startDate, 
-			String startTime, Date endDate, String endTime, Concept visitTypeConcept, 
-			Provider provider, CareSite careSite, String visitSourceValue, Concept visitSourceConcept) {
+	public VisitOccurrence(Long id, PersonComplement person, Concept placeOfServiceConcept, Date startDate,
+						   String startTime, Date endDate, String endTime, Concept visitTypeConcept,
+						   Provider provider, CareSite careSite, String visitSourceValue, Concept visitSourceConcept) {
 		super();
 		
 		this.id = id;
 		this.person = person;
-		this.visitConcept = visitConcept;
+		this.placeOfServiceConcept = placeOfServiceConcept;
 		this.startDate = startDate;
 		this.startTime = startTime;
 		this.endDate = endDate;
@@ -141,12 +141,12 @@ public class VisitOccurrence extends BaseResourceEntity {
 		this.person = person;
 	}
 	
-	public Concept getVisitConcept() {
-		return visitConcept;
+	public Concept getPlaceOfServiceConcept() {
+		return placeOfServiceConcept;
 	}
 	
-	public void setVisitConcept(Concept visitConcept) {
-		this.visitConcept = visitConcept;
+	public void setPlaceOfServiceConcept(Concept placeOfServiceConcept) {
+		this.placeOfServiceConcept = placeOfServiceConcept;
 	}
 	
 	public Date getStartDate() {
@@ -335,7 +335,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 			Long id = OmopConceptMapping.getInstance().get(classType2Use.toLowerCase(), OmopConceptMapping.VISIT);
 			Concept visitConcept = new Concept ();
 			visitConcept.setId(id);
-			this.setVisitConcept(visitConcept);
+			this.setPlaceOfServiceConcept(visitConcept);
 		}
 		
 		/* Set Visit Type - we hardcode this */
@@ -401,8 +401,8 @@ public class VisitOccurrence extends BaseResourceEntity {
 		
 		encounter.setId(this.getIdDt());
 		
-		if (this.visitConcept != null) {
-			String visitString = this.visitConcept.getName().toLowerCase();
+		if (this.placeOfServiceConcept != null) {
+			String visitString = this.placeOfServiceConcept.getName().toLowerCase();
 			if (visitString.contains("inpatient")) {
 				encounter.setClassElement(EncounterClassEnum.INPATIENT);			
 			} else if (visitString.toLowerCase().contains("outpatient")) {
