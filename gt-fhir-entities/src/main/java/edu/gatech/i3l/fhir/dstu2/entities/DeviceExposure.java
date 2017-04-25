@@ -198,7 +198,7 @@ public class DeviceExposure extends BaseResourceEntity {
 		}
 		
 		if (this.deviceConcept != null) {
-			String systemUriStr = this.deviceConcept.getVocabulary().getVocabularyReference();
+			String systemUriStr = this.deviceConcept.getVocabulary().getReference();
 			String codeStr = this.deviceConcept.getConceptCode();
 			String displayStr = this.deviceConcept.getName();
 			

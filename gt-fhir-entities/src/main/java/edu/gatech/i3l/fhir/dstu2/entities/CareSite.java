@@ -163,7 +163,7 @@ public class CareSite extends BaseResourceEntity{
 		
 		if (this.placeOfServiceConcept != null) {
 			String codeString = this.placeOfServiceConcept.getConceptCode();
-			String systemUriString = this.placeOfServiceConcept.getVocabulary().getVocabularyReference();
+			String systemUriString = this.placeOfServiceConcept.getVocabulary().getReference();
 			String displayString = this.placeOfServiceConcept.getName();
 			
 			CodeableConceptDt typeCodeableConcept = new CodeableConceptDt(systemUriString, codeString);

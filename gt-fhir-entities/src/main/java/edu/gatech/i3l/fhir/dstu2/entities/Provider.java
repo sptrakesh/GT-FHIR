@@ -258,7 +258,7 @@ public class Provider extends BaseResourceEntity {
 		
 		if (specialtyConcept != null &&
 				specialtyConcept.getId() > 0L) {
-			String systemUriString = specialtyConcept.getVocabulary().getVocabularyReference();
+			String systemUriString = specialtyConcept.getVocabulary().getReference();
 			String displayString = specialtyConcept.getName();
 			String codeString = specialtyConcept.getConceptCode();
 			

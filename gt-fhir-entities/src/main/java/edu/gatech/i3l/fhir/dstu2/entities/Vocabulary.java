@@ -21,7 +21,7 @@ import org.hibernate.envers.RelationTargetAuditMode;
 @Entity
 @Table(name="vocabulary")
 @Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
-@NamedQueries(value = { @NamedQuery( name = "findReferenceById", query = "select vocabulary_reference from vocabulary where vocabulary_name like '%:value%'")})
+@NamedQueries(value = { @NamedQuery( name = "findReferenceById", query = "select reference from Vocabulary v where v.name like '%:value%'")})
 public class Vocabulary {
 	
 	@Id
@@ -34,7 +34,7 @@ public class Vocabulary {
 	private String name;
 	
 	@Column(name="vocabulary_reference", updatable=false)
-	private String vocabularyReference;
+	private String reference;
 	
 	
 	public Vocabulary() {
@@ -68,18 +68,18 @@ public class Vocabulary {
 		this.name = name;
 	}
 
-	public String getVocabularyReference() {
-		return vocabularyReference;
+	public String getReference() {
+		return reference;
 	}
 	
-	public void setVocabularyReference(String vocabularyReference) {
-		this.vocabularyReference = vocabularyReference;
+	public void setReference(String reference) {
+		this.reference = reference;
 	}
 
 	// FIXME This is FHIR related. We may need to do this in the database. But, for quick
 	// initial implementation, we do this. Later, we may extend vocabulary table.
 	public String getSystemUri() {
-		String uri = this.getVocabularyReference();
+		String uri = this.getReference();
 		
 		if (name.equalsIgnoreCase("SNOMED")) uri = "http://snomed.info/sct";
 		else if (name.equalsIgnoreCase("ICD9CM")) uri = "http://hl7.org/fhir/sid/icd-9-cm";
