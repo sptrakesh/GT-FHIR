@@ -61,7 +61,7 @@
 		<derby_version>10.11.1.1</derby_version>
 		<guava_version>18.0</guava_version>
 		<hamcrest_version>2.0.0.0</hamcrest_version>
-		<hibernate_version>5.2.9.Final</hibernate_version>
+		<hibernate_version>5.2.10.Final</hibernate_version>
 		<hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
 		<hibernate_search_version>5.7.0.Final</hibernate_search_version>
 		<lucene_version>5.5.4</lucene_version>
