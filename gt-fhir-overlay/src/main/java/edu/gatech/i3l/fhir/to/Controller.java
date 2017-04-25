@@ -1,30 +1,33 @@
 package edu.gatech.i3l.fhir.to;
 
-import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
-import static org.apache.commons.lang3.StringUtils.defaultString;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
-
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.context.RuntimeResourceDefinition;
+import ca.uhn.fhir.model.api.Bundle;
+import ca.uhn.fhir.model.api.ExtensionDt;
+import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.Include;
+import ca.uhn.fhir.model.dstu.resource.Conformance.RestQuery;
+import ca.uhn.fhir.model.dstu2.valueset.ResourceTypeEnum;
+import ca.uhn.fhir.model.primitive.*;
+import ca.uhn.fhir.parser.DataFormatException;
+import ca.uhn.fhir.rest.client.GenericClient;
+import ca.uhn.fhir.rest.client.IClientInterceptor;
+import ca.uhn.fhir.rest.client.IGenericClient;
+import ca.uhn.fhir.rest.client.apache.ApacheHttpRequest;
+import ca.uhn.fhir.rest.client.apache.ApacheHttpResponse;
+import ca.uhn.fhir.rest.client.api.IHttpRequest;
+import ca.uhn.fhir.rest.client.api.IHttpResponse;
+import ca.uhn.fhir.rest.gclient.*;
+import ca.uhn.fhir.rest.gclient.NumberClientParam.IMatches;
+import ca.uhn.fhir.rest.gclient.QuantityClientParam.IAndUnits;
+import ca.uhn.fhir.rest.server.Constants;
+import ca.uhn.fhir.rest.server.EncodingEnum;
+import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
+import ca.uhn.fhir.util.ExtensionConstants;
+import edu.gatech.i3l.fhir.to.model.HomeRequest;
+import edu.gatech.i3l.fhir.to.model.ResourceRequest;
+import edu.gatech.i3l.fhir.to.model.TransactionRequest;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,51 +44,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.thymeleaf.TemplateEngine;
 
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.context.FhirVersionEnum;
-import ca.uhn.fhir.context.RuntimeResourceDefinition;
-import ca.uhn.fhir.model.api.Bundle;
-import ca.uhn.fhir.model.api.BundleEntry;
-import ca.uhn.fhir.model.api.ExtensionDt;
-import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.api.Include;
-import ca.uhn.fhir.model.dstu.resource.Conformance.RestQuery;
-import ca.uhn.fhir.model.dstu2.resource.Conformance;
-import ca.uhn.fhir.model.dstu2.resource.Conformance.Rest;
+import javax.json.Json;
+import javax.json.stream.JsonGenerator;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import java.io.*;
+import java.net.URLDecoder;
+import java.util.*;
+
+import static org.apache.commons.lang3.StringUtils.*;
+
 //import ca.uhn.fhir.model.dstu2.resource.Conformance.RestQuery;
-import ca.uhn.fhir.model.dstu2.resource.Conformance.RestResource;
-import ca.uhn.fhir.model.dstu2.resource.Conformance.RestResourceSearchParam;
-import ca.uhn.fhir.model.dstu2.valueset.SearchParamTypeEnum;
-import ca.uhn.fhir.model.dstu2.valueset.ResourceTypeEnum;
-import ca.uhn.fhir.model.primitive.BoundCodeDt;
-import ca.uhn.fhir.model.primitive.DateTimeDt;
-import ca.uhn.fhir.model.primitive.DecimalDt;
-import ca.uhn.fhir.model.primitive.IdDt;
-import ca.uhn.fhir.model.primitive.StringDt;
-import ca.uhn.fhir.narrative.INarrativeGenerator;
-import ca.uhn.fhir.parser.DataFormatException;
-import ca.uhn.fhir.rest.client.GenericClient;
-import ca.uhn.fhir.rest.client.IClientInterceptor;
-import ca.uhn.fhir.rest.client.IGenericClient;
-import ca.uhn.fhir.rest.client.apache.ApacheHttpRequest;
-import ca.uhn.fhir.rest.client.apache.ApacheHttpResponse;
-import ca.uhn.fhir.rest.client.api.IHttpRequest;
-import ca.uhn.fhir.rest.client.api.IHttpResponse;
-import ca.uhn.fhir.rest.gclient.ICreateTyped;
-import ca.uhn.fhir.rest.gclient.IQuery;
-import ca.uhn.fhir.rest.gclient.IUntypedQuery;
-import ca.uhn.fhir.rest.gclient.NumberClientParam.IMatches;
-import ca.uhn.fhir.rest.gclient.QuantityClientParam;
-import ca.uhn.fhir.rest.gclient.QuantityClientParam.IAndUnits;
-import ca.uhn.fhir.rest.gclient.StringClientParam;
-import ca.uhn.fhir.rest.gclient.TokenClientParam;
-import ca.uhn.fhir.rest.server.Constants;
-import ca.uhn.fhir.rest.server.EncodingEnum;
-import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
-import ca.uhn.fhir.util.ExtensionConstants;
-import edu.gatech.i3l.fhir.to.model.HomeRequest;
-import edu.gatech.i3l.fhir.to.model.ResourceRequest;
-import edu.gatech.i3l.fhir.to.model.TransactionRequest;
 
 @org.springframework.stereotype.Controller()
 public class Controller {
@@ -411,8 +380,8 @@ public class Controller {
 			clientCodeJsonWriter.writeNull("resource");
 		}
 
-		if (client.getPrettyPrint() != null) {
-			clientCodeJsonWriter.write("pretty", client.getPrettyPrint().toString());
+		if (client.isPrettyPrint()) {
+			clientCodeJsonWriter.write("pretty", client.isPrettyPrint());
 		} else {
 			clientCodeJsonWriter.writeNull("pretty");
 		}

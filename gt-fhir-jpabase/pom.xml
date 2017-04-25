@@ -367,6 +367,7 @@
 				</configuration>
 			</plugin>
 
+			<!--
             <plugin>
                 <groupId>de.juplo</groupId>
                 <artifactId>hibernate-maven-plugin</artifactId>
@@ -451,6 +452,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
 
 		</plugins>
 		<resources>
