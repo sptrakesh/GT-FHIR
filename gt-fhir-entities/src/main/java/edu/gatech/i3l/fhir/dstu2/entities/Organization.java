@@ -9,7 +9,7 @@ import javax.persistence.*;
  * Created by rakesh.vidyadharan on 4/25/17.
  */
 @Entity
-@Table(name = "vocabulary")
+@Table(name = "organization")
 @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 public class Organization {
     @Id
