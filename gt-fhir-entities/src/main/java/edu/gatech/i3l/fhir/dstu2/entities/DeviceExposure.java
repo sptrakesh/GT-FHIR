@@ -32,7 +32,7 @@ public class DeviceExposure extends BaseResourceEntity {
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(name="device_exposure_id")
+	@Column(name="device_exposure_id", updatable = false)
 	@Access(AccessType.PROPERTY)
 	private Long id;
 

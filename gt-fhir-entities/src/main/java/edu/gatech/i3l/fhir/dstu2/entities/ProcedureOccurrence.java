@@ -41,7 +41,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "procedure_occurrence_id")
+	@Column(name = "procedure_occurrence_id", updatable = false)
 	@Access(AccessType.PROPERTY)
 	private Long id;
 

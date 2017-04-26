@@ -47,9 +47,8 @@ public class OmopMeasurement extends BaseResourceEntity {
 	public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;		
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="measurement_occurrence_seq_gen")
-	@SequenceGenerator(name="measurement_occurrence_seq_gen", sequenceName="measurement_occurrence_id_seq", allocationSize=1)
-	@Column(name = "measurement_id")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name = "measurement_id", updatable = false)
 	@Access(AccessType.PROPERTY)
 	private Long id;
 

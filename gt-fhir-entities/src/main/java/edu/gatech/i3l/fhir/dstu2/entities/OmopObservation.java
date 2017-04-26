@@ -46,9 +46,8 @@ public class OmopObservation extends BaseResourceEntity {
 	private static final String RES_TYPE = "Observation";
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="observation_occurrence_seq_gen")
-	@SequenceGenerator(name="observation_occurrence_seq_gen", sequenceName="observation_occurrence_id_seq", allocationSize=1)
-	@Column(name = "observation_id")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name = "observation_id", updatable = false)
 	@Access(AccessType.PROPERTY)
 	private Long id;
 

@@ -1,18 +1,13 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name="domain")
 public class Domain {
 	@Id
-	@Column(name="domain_id")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="domain_id", updatable = false)
 	private String domainId;
 	
 	@Column(name="domain_name")

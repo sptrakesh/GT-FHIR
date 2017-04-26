@@ -51,9 +51,8 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	public static final String RESOURCE_TYPE = "Condition";
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="condition_occurrence_seq_gen")
-	@SequenceGenerator(name="condition_occurrence_seq_gen", sequenceName="condition_occurrence_id_seq", allocationSize=1)
-	@Column(name="condition_occurrence_id")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="condition_occurrence_id", updatable = false)
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	

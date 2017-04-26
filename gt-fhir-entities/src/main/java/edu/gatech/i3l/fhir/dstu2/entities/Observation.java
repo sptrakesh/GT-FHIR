@@ -66,7 +66,7 @@ public class Observation extends BaseResourceEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "observation_id")
+	@Column(name = "observation_id", updatable = false)
 	@Access(AccessType.PROPERTY)
 	private Long id;
 

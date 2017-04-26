@@ -58,9 +58,8 @@ public class VisitOccurrence extends BaseResourceEntity {
 	public static final String RES_TYPE = "Encounter";
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="visit_seq_gen")
-	@SequenceGenerator(name="visit_seq_gen", sequenceName="visit_occurrence_id_seq", allocationSize=1)
-	@Column(name="visit_occurrence_id")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="visit_occurrence_id", updatable = false)
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
