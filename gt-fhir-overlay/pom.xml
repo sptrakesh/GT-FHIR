@@ -32,13 +32,7 @@
 			<artifactId>thymeleaf-spring4</artifactId>
 			<version>${thymeleaf-version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.unbescape</groupId>
-			<artifactId>unbescape</artifactId>
-			<version>${unbescape-version}</version>
-		</dependency>
 
-		
 	</dependencies>
 
 	<build>

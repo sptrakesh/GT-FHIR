@@ -84,14 +84,13 @@
 		<mitreid-connect-version>1.1.8</mitreid-connect-version>
 		<mockito_version>1.10.17</mockito_version>
 		<phloc_schematron_version>2.7.1</phloc_schematron_version>
-		<phloc_commons_version>4.3.6</phloc_commons_version>
+		<phloc_commons_version>4.4.4</phloc_commons_version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<servlet_api_version>3.1.0</servlet_api_version>
 		<slf4j_version>1.7.10</slf4j_version>
 		<spring_version>4.3.7.RELEASE</spring_version>
 		<spring_security_version>4.2.2.RELEASE</spring_security_version>
 		<thymeleaf-version>3.0.5.RELEASE</thymeleaf-version>
-		<unbescape-version>1.1.4.RELEASE</unbescape-version>
 		<ebay_cors_filter_version>1.0.1</ebay_cors_filter_version>
 		<woodstox_version>4.4.1</woodstox_version>
 
