@@ -8,7 +8,7 @@ public class Domain {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="domain_id", updatable = false)
-	private String domainId;
+	private Long domainId;
 	
 	@Column(name="domain_name")
 	private String domainName;
@@ -21,18 +21,18 @@ public class Domain {
 		super();
 	}
 	
-	public Domain(String domainId, String domainName, Concept domainConcept) {
+	public Domain(Long domainId, String domainName, Concept domainConcept) {
 		super();
 		this.domainId = domainId;
 		this.domainName = domainName;
 		this.domainConcept = domainConcept;
 	}
 	
-	public String getDomainId() {
+	public Long getDomainId() {
 		return domainId;
 	}
 	
-	public void setDomainId(String domainId) {
+	public void setDomainId(Long domainId) {
 		this.domainId = domainId;
 	}
 	

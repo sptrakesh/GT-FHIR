@@ -35,12 +35,9 @@ public class Concept{
 	@Column(name="concept_name", updatable=false)
 	private String name;
 	
-//	@ManyToOne
-//	@JoinColumn(name="domain_id", referencedColumnName="domain_id", insertable=false, updatable=false)
-//	private Domain domain;
-	
-	@Column(name="domain_id", updatable=false)
-	private String domain;
+	@ManyToOne
+	@JoinColumn(name="domain_id", referencedColumnName="domain_id", insertable=false, updatable=false)
+	private Domain domain;
 
 	@Column(name="concept_class_id", updatable=false)
 	private String conceptClassId;
@@ -64,25 +61,20 @@ public class Concept{
 	@Column(name="invalid_reason", updatable=false)
 	private String invalidReason;
 
-	public Concept() {
-		super();
-	}
+	public Concept() {}
 	
 	public Concept(Long id) {
-		super();
 		this.id = id;
 	}
 	
 	public Concept(Long id, String name){
-		super();
 		this.id = id;
 		this.name = name;
 	}
 
-	public Concept(Long id, String name, String domain, String conceptClassId, Character standardConcept,
+	public Concept(Long id, String name, Domain domain, String conceptClassId, Character standardConcept,
 			Vocabulary vocabulary, String conceptCode, Date validStartDate,
 			Date validEndDate, String invalidReason) {
-		super();
 		this.id = id;
 		this.name = name;
 		this.domain = domain;
@@ -111,11 +103,11 @@ public class Concept{
 		this.name = name;
 	}
 
-	public String getDomainId() {
+	public Domain getDomainId() {
 		return domain;
 	}
 
-	public void setDomainId(String domain) {
+	public void setDomainId(Domain domain) {
 		this.domain = domain;
 	}
 
