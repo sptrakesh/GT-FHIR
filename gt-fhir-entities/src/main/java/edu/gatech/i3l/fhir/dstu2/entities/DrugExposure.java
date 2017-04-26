@@ -16,12 +16,10 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.DiscriminatorFormula;
-import org.hibernate.envers.Audited;
 
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 
 
-@Audited
 @Entity
 @Table(name="drug_exposure")
 @Inheritance(strategy=InheritanceType.SINGLE_TABLE)

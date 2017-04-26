@@ -10,8 +10,6 @@ import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
-import org.hibernate.envers.Audited;
-
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt;
@@ -35,7 +33,6 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Entity
 @Table(name="f_person")
 @PrimaryKeyJoinColumn(name="person_id")
-@Audited
 public class PersonComplement extends Person{
 
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PersonComplement.class);

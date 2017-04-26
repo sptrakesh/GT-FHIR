@@ -11,16 +11,12 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
-
 /**
  * 
  * @author Myung Choi
  */
 @Entity
 @Table(name="vocabulary")
-@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
 @NamedQueries(value = { @NamedQuery( name = "findReferenceById", query = "select reference from Vocabulary v where v.name like '%:value%'")})
 public class Vocabulary {
 	

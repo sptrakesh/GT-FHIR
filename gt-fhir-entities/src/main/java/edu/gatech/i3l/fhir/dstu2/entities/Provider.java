@@ -26,7 +26,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-import org.hibernate.envers.Audited;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -51,7 +50,6 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Entity
 @Table(name="provider")
 @Inheritance(strategy=InheritanceType.JOINED)
-@Audited
 public class Provider extends BaseResourceEntity {
 
 	public static final String RESOURCE_TYPE = "Practitioner";

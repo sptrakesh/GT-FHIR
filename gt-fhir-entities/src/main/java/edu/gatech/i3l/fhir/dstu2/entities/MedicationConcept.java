@@ -16,9 +16,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
-
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
@@ -31,7 +28,6 @@ import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
 @Entity
 @Table(name="concept")
-@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
 public final class MedicationConcept extends BaseResourceEntity{
 	
 	private static final String RES_TYPE = "Medication";

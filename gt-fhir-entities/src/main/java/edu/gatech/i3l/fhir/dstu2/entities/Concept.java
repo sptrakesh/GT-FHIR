@@ -16,13 +16,9 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
-
 @Entity
 @Table(name="concept")
-@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
-@NamedQueries(value = { 
+@NamedQueries(value = {
 		@NamedQuery(name = "findConceptByCode", 
 				query = "select id from Concept c where c.conceptCode like :code"),
 		@NamedQuery(name = "findDomainByCode",

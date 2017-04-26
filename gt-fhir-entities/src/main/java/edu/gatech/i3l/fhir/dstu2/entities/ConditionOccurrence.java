@@ -21,9 +21,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
-
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
@@ -49,7 +46,6 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Entity
 @Table(name="condition_occurrence")
 @Inheritance(strategy=InheritanceType.JOINED)
-@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 public class ConditionOccurrence extends BaseResourceEntity {
 
 	public static final String RESOURCE_TYPE = "Condition";

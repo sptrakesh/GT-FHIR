@@ -15,8 +15,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.envers.Audited;
-
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
@@ -28,7 +26,6 @@ import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 
 @Entity
 @Table(name="device_exposure")
-@Audited
 public class DeviceExposure extends BaseResourceEntity {
 
 	public static final String RES_TYPE = "Device";

@@ -15,9 +15,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
-
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
@@ -34,7 +31,6 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
 @Table(name="care_site")
-@Audited
 //@NamedQueries(value={
 //		@NamedQuery(name="loadCareSiteReference", query="select c.id from CareSite c WHERE c.organization.id = :serviceProvider AND c.location.id = :location")
 //})
@@ -55,7 +51,6 @@ public class CareSite extends BaseResourceEntity{
 	
 	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="place_of_service_concept_id")
-	@Audited(targetAuditMode=RelationTargetAuditMode.NOT_AUDITED)
 	private Concept placeOfServiceConcept;
 	
 	@Column(name="care_site_name")

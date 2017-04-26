@@ -1,9 +1,5 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
-import org.hibernate.envers.RelationTargetAuditMode;
-
 import javax.persistence.*;
 
 /**
@@ -11,7 +7,6 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "organization")
-@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
 public class Organization {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -21,12 +16,10 @@ public class Organization {
 
     @ManyToOne(cascade={CascadeType.MERGE})
     @JoinColumn(name="place_of_service_concept_id")
-    @NotAudited
     private Concept placeOfServiceConcept;
 
     @ManyToOne(cascade={CascadeType.MERGE})
     @JoinColumn(name="location_id")
-    @NotAudited
     private Location location;
 
     @Column(name="organization_source_value", nullable = false)

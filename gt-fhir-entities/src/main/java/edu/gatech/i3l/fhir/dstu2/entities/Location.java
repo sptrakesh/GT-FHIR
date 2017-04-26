@@ -14,9 +14,6 @@ import javax.persistence.InheritanceType;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
-
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
@@ -29,8 +26,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Entity
 @Table(name="location")
 @Inheritance(strategy=InheritanceType.JOINED)
-@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-public class Location extends BaseResourceEntity { 
+public class Location extends BaseResourceEntity {
 	
 	public static final String DATA_TYPE = "AddressDt";
 

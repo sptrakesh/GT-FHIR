@@ -31,8 +31,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.envers.Audited;
-
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
@@ -54,7 +52,6 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 @Entity
 @Table(name="visit_occurrence")
 @Inheritance(strategy=InheritanceType.JOINED)
-@Audited
 @NamedQueries(value = { @NamedQuery( name = "findVisitBySourceValue", query = "select id from VisitOccurrence v where v.visitSourceValue like :source")})
 public class VisitOccurrence extends BaseResourceEntity {
 	

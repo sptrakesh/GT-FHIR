@@ -20,7 +20,6 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.envers.Audited;
 import org.hl7.fhir.instance.model.Reference;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
@@ -43,7 +42,6 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 import edu.gatech.i3l.omop.mapping.StaticVariables;
 
 @Entity
-@Audited
 @DiscriminatorValue("PrescriptionWritten")
 public final class MedicationOrderView extends DrugExposure {
 
