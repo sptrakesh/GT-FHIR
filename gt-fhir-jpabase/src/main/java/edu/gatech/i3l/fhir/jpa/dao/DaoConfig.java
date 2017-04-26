@@ -26,7 +26,7 @@ public class DaoConfig {
 
 	private int myHardSearchLimit = 1000;
 	private int myHardTagListLimit = 1000;
-	private ResourceEncodingEnum myResourceEncoding=ResourceEncodingEnum.JSONC;
+	private ResourceEncodingEnum myResourceEncoding=ResourceEncodingEnum.JSON;
 	private int myIncludeLimit = 2000;
 
 	/**

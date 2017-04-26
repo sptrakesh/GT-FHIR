@@ -91,6 +91,7 @@
 		<spring_version>4.3.7.RELEASE</spring_version>
 		<spring_security_version>4.2.2.RELEASE</spring_security_version>
 		<thymeleaf-version>3.0.5.RELEASE</thymeleaf-version>
+		<unbescape-version>1.1.4.RELEASE</unbescape-version>
 		<ebay_cors_filter_version>1.0.1</ebay_cors_filter_version>
 		<woodstox_version>4.4.1</woodstox_version>
 

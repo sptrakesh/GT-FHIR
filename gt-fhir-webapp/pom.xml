@@ -89,12 +89,12 @@
 
 		<!-- You may not need this if you are deploying to an application server 
 			which provides database connection pools itself. -->
-		<dependency>
+		<!--<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
 			<version>2.0.1</version>
 		</dependency>
-		<!--<dependency>
+		<dependency>
     		<groupId>org.postgresql</groupId>
     		<artifactId>postgresql</artifactId>
     		<version>9.4.1211.jre7</version>
