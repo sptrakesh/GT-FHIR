@@ -27,6 +27,7 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
+import org.hibernate.annotations.Cascade;
 
 
 @Entity
@@ -44,11 +45,11 @@ public class CareSite extends BaseResourceEntity{
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="location_id")
 	private Location location;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="place_of_service_concept_id")
 	private Concept placeOfServiceConcept;
 	
