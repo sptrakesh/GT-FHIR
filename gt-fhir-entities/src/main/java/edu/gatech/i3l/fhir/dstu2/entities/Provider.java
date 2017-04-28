@@ -69,18 +69,18 @@ public class Provider extends BaseResourceEntity {
 	@Column(name="dea")
 	private String dea;
 	
-	@ManyToOne(cascade={CascadeType.PERSIST})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="specialty_concept_id")
 	private Concept specialtyConcept;
 	
-	@ManyToOne(cascade={CascadeType.PERSIST})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="care_site_id")
 	private CareSite careSite;
 	
 	@Column(name="year_of_birth")
 	private Integer yearOfBirth;
 	
-	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.PERSIST})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.ALL})
 	@JoinColumn(name="gender_concept_id")
 	private Concept genderConcept;
 
@@ -90,14 +90,14 @@ public class Provider extends BaseResourceEntity {
 	@Column(name="specialty_source_value")
 	private String specialtySourceValue;
 	
-	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.PERSIST})
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.ALL})
 	@JoinColumn(name="specialty_source_concept_id")
 	private Concept specialtySourceConcept;
 
 	@Column(name="gender_source_value")
 	private String genderSourceValue;
 	
-	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.PERSIST})
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.ALL})
 	@JoinColumn(name="gender_source_concept_id")
 	private Concept genderSourceConcept;
 

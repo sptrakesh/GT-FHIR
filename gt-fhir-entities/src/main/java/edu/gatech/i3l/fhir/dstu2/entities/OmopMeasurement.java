@@ -52,7 +52,7 @@ public class OmopMeasurement extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 
-	@ManyToOne(cascade={CascadeType.PERSIST})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private PersonComplement person;
@@ -60,7 +60,7 @@ public class OmopMeasurement extends BaseResourceEntity {
 	@Column(name="measurement_source_value")
 	private String sourceValue; 
 
-	@ManyToOne(cascade={CascadeType.PERSIST})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="measurement_concept_id", nullable=false)
 	@NotNull
 	private Concept measurementConcept;
@@ -68,11 +68,11 @@ public class OmopMeasurement extends BaseResourceEntity {
 	@Column(name = "value_as_number")
 	private Double valueAsNumber;
 
-	@ManyToOne(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "value_as_concept_id")
 	private Concept valueAsConcept;
 
-	@ManyToOne(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_concept_id")
 	private Concept unit;
 
@@ -91,11 +91,11 @@ public class OmopMeasurement extends BaseResourceEntity {
 	// @Temporal(TemporalType.TIME)
 	private String time;
 
-	@ManyToOne(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
-	@ManyToOne(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "measurement_type_concept_id")
 	private Concept type;
 

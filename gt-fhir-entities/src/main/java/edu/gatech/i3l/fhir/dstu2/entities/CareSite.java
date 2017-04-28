@@ -45,11 +45,11 @@ public class CareSite extends BaseResourceEntity{
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.PERSIST})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="location_id")
 	private Location location;
 	
-	@ManyToOne(cascade={CascadeType.PERSIST})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="place_of_service_concept_id")
 	private Concept placeOfServiceConcept;
 	

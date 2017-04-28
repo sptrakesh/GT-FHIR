@@ -13,7 +13,7 @@ public class Domain {
 	@Column(name="domain_name")
 	private String domainName;
 	
-	@ManyToOne(cascade={CascadeType.PERSIST})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="domain_concept_id")
 	private Concept domainConcept;
 	

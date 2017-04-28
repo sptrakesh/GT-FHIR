@@ -35,12 +35,12 @@ public final class DrugExposureAdministration extends DrugExposure {
 
 	public static final String RES_TYPE = "MedicationAdministration";
 	
-	@ManyToOne(cascade={CascadeType.PERSIST})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="drug_type_concept_id", nullable=false)
 	@NotNull
 	private Concept drugExposureType;
 	
-	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.PERSIST})
+	@ManyToOne(fetch=FetchType.LAZY,cascade={CascadeType.ALL})
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private Person person;
@@ -61,7 +61,7 @@ public final class DrugExposureAdministration extends DrugExposure {
 	@Column(name="days_supply")
 	private Integer daysSupply;
 	
-	@ManyToOne(cascade={CascadeType.PERSIST})
+	@ManyToOne(cascade={CascadeType.ALL})
 	@JoinColumn(name="drug_concept_id")
 	@NotNull
 	private Concept medication;

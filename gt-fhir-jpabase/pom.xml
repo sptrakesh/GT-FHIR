@@ -38,15 +38,6 @@
 			</exclusions>
 		</dependency>
 		
-<!-- 		
-		<dependency>
-			<groupId>ca.uhn.hapi.fhir</groupId>
-			<artifactId>hapi-fhir-structures-dstu</artifactId>
-			<version>${hapi_stable_version}</version>
-			<optional>true</optional>
-		</dependency>
- -->		
-		
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-structures-dstu2</artifactId>

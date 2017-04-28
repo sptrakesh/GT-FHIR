@@ -45,12 +45,12 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 
-	@ManyToOne(cascade = CascadeType.PERSIST)
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "person_id", nullable = false)
 	@NotNull
 	private PersonComplement person;
 
-	@ManyToOne(cascade = CascadeType.PERSIST)
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "procedure_concept_id")
 	private Concept procedureConcept;
 
@@ -59,7 +59,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@NotNull
 	private Date date;
 
-	@ManyToOne(cascade = { CascadeType.PERSIST })
+	@ManyToOne(cascade = { CascadeType.ALL })
 	@JoinColumn(name = "procedure_type_concept_id")
 	private Concept procedureTypeConcept;
 
@@ -70,7 +70,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@Column(name="quantity")
 	private Long quantity;
 	
-	@ManyToOne   // (cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
+	@ManyToOne   // (cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "provider_id")
 	private Provider provider;
 

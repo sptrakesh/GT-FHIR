@@ -46,7 +46,7 @@ public class Person extends BaseResourceEntity{
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.PERSIST})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.ALL})
 	@JoinColumn(name="gender_concept_id", nullable= false)
 	private Concept genderConcept;
 	
@@ -74,11 +74,11 @@ public class Person extends BaseResourceEntity{
 	@JoinColumn(name="location_id")
 	private Location location;
 	
-	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.PERSIST})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.ALL})
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 
-	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.PERSIST})
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.ALL})
 	@JoinColumn(name="care_site_id")
 	private CareSite careSite;
 	

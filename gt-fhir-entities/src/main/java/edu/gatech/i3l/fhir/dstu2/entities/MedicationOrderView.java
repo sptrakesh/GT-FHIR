@@ -59,7 +59,7 @@ public final class MedicationOrderView extends DrugExposure {
 	 * since we use {@link OmopConceptMapping} to gather the information in the
 	 * database.
 	 */
-	@ManyToOne(cascade = { CascadeType.PERSIST })
+	@ManyToOne(cascade = { CascadeType.ALL })
 	@JoinColumn(name = "drug_type_concept_id", nullable = false)
 	@NotNull
 	private Concept drugExposureType;
@@ -96,7 +96,7 @@ public final class MedicationOrderView extends DrugExposure {
 	 *         rather a condition concept in the vocabulary.
 	 * @fhir reason
 	 */
-//	@ManyToOne(cascade = { CascadeType.PERSIST })
+//	@ManyToOne(cascade = { CascadeType.ALL })
 //	@JoinColumn(name = "relevant_condition_concept_id")
 //	private Concept relevantCondition; // TODO check other cases where a Concept
 										// can be taken as COndition
@@ -108,7 +108,7 @@ public final class MedicationOrderView extends DrugExposure {
 	/**
 	 * RxNorm. Generally in concept class 'Clinical Drug'.
 	 */
-	@ManyToOne(cascade = { CascadeType.PERSIST })
+	@ManyToOne(cascade = { CascadeType.ALL })
 	@JoinColumn(name = "drug_concept_id", nullable = false)
 	@NotNull
 	private Concept medication;
