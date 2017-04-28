@@ -56,12 +56,12 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private PersonComplement person;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="condition_concept_id", nullable=false)
 	@NotNull
 	private Concept conditionConcept;
@@ -73,7 +73,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 	@Column(name="condition_end_date", nullable=false)
 	private Date endDate;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="condition_type_concept_id", nullable=false)
 	@NotNull
 	private Concept conditionTypeConcept;

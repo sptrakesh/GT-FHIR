@@ -75,7 +75,7 @@ public class Observation extends BaseResourceEntity {
 	@NotNull
 	private PersonComplement person;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "observation_concept_id", nullable = false)
 	@NotNull
 	private Concept observationConcept;
@@ -101,15 +101,15 @@ public class Observation extends BaseResourceEntity {
 	@Column(name = "range_high")
 	private BigDecimal rangeHigh;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "value_as_concept_id")
 	private Concept valueAsConcept;
 
-//	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+//	@ManyToOne(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
 //	@JoinColumn(name = "relevant_condition_concept_id")
 //	private Concept relevantCondition;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "observation_type_concept_id", nullable = false)
 	@NotNull
 	private Concept type;
@@ -128,7 +128,7 @@ public class Observation extends BaseResourceEntity {
 	@Column(name = "value_source_value")
 	private String valueSourceValue;
 
-	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.PERSIST }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_concept_id")
 	private Concept unit;
 

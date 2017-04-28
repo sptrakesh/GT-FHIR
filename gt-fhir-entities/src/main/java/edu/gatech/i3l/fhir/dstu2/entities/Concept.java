@@ -35,7 +35,7 @@ public class Concept{
 	@Column(name="concept_name", updatable=false)
 	private String name;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="domain_id", referencedColumnName="domain_id", insertable=false, updatable=false)
 	private Domain domain;
 
@@ -45,7 +45,7 @@ public class Concept{
 	@Column(name="standard_concept", updatable=false)
 	private Character standardConcept;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="vocabulary_id", referencedColumnName="vocabulary_id", insertable=false, updatable=false)
 	private Vocabulary vocabulary;
 	

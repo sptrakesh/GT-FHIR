@@ -63,7 +63,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="person_id", nullable=false)
 	private PersonComplement person;
 
@@ -81,7 +81,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Column(name="visit_end_time")
 	private String endTime;
 
-	@ManyToOne(cascade={CascadeType.MERGE})
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="place_of_service_concept_id")
 	private Concept placeOfServiceConcept;
 
@@ -89,11 +89,11 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@JoinColumn(name="visit_type_concept_id")
 	private Concept visitTypeConcept;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.PERSIST})
 	@JoinColumn(name="care_site_id")
 	private CareSite careSite; //FIXME field names should reflect fhir names, for validation purposes.
 	

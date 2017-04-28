@@ -36,12 +36,12 @@ public class DeviceExposure extends BaseResourceEntity {
 	@Access(AccessType.PROPERTY)
 	private Long id;
 
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade=CascadeType.PERSIST)
 	@JoinColumn(name="person_id", nullable=false)
 	@NotNull
 	private Person person;
 
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade=CascadeType.PERSIST)
 	@JoinColumn(name="device_concept_id", nullable=false)
 	@NotNull
 	private Concept deviceConcept;
@@ -57,16 +57,16 @@ public class DeviceExposure extends BaseResourceEntity {
 	@NotNull
 	private String uniqueDeviceId;
 	
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade=CascadeType.PERSIST)
 	@JoinColumn(name="device_type_concept_id", nullable=false)
 	@NotNull
 	private Concept deviceTypeConcept;
 
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade=CascadeType.PERSIST)
 	@JoinColumn(name="provider_id")
 	private Provider provider;
 	
-	@ManyToOne(cascade=CascadeType.MERGE)
+	@ManyToOne(cascade=CascadeType.PERSIST)
 	@JoinColumn(name="visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 	
