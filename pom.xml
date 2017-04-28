@@ -269,11 +269,6 @@
             <artifactId>javax.json-api</artifactId>
             <version>1.0</version>
         </dependency>
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>json</artifactId>
-			<version>1.0.4</version>
-		</dependency>
 
 	</dependencies>
 
