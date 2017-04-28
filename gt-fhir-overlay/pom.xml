@@ -32,11 +32,6 @@
 			<artifactId>thymeleaf-spring4</artifactId>
 			<version>${thymeleaf-version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>json</artifactId>
-			<version>1.0.4</version>
-		</dependency>
 
 	</dependencies>
 
