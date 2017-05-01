@@ -223,16 +223,20 @@ public class QueryHelper {
 		Predicate masterCodePredicate = builder.or(codePredicates.toArray(new Predicate[0]));
 		Predicate addPredicate = predicateBuilder.addCommonPredicate(builder, from);
 		if (thePids.size() > 0) {
+			ourLog.info("Using thePids " + thePids.size());
 			Predicate inPids = (from.get("id").in(thePids));
 			if(addPredicate != null){
+				ourLog.info("Adding predicate " + addPredicate);
 				cq.where(builder.and(masterCodePredicate, inPids, addPredicate));
 			} else {
 				cq.where(builder.and(masterCodePredicate, inPids));
 			}
 		} else {
 			if(addPredicate != null){
+				ourLog.info("Adding predicate " + addPredicate);
 				cq.where(builder.and(masterCodePredicate, addPredicate));
 			} else {
+				ourLog.info("Using master predicate " + masterCodePredicate);
 				cq.where(builder.and(masterCodePredicate));
 			}
 		}

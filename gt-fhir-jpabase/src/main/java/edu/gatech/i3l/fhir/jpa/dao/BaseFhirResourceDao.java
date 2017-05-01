@@ -313,7 +313,6 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		final InstantDt now = InstantDt.withCurrentTime();
 
 		ourLog.info("theParams:"+theParams.toString());
-		System.out.println("theParams:"+theParams.toString());
 		Set<Long> loadPids;
 		if (theParams.isEmpty()) {
 			ourLog.info("theParams is empty");
@@ -751,6 +750,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 		for (Entry<String, List<List<? extends IQueryParameterType>>> nextParamEntry : params.entrySet()) {
 			String nextParamName = nextParamEntry.getKey();
+            ourLog.info("Using param: " + nextParamName);
 			if (nextParamName.equals("_id")) {
 
 				if (nextParamEntry.getValue().isEmpty()) {
@@ -798,7 +798,9 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 //				pids = addPredicateLanguage(pids, nextParamEntry.getValue());
 
 			} else {
+                ourLog.info("Using non id param: " + nextParamName);
 				RuntimeSearchParam nextParamDef = resourceDef.getSearchParam(nextParamName);
+                ourLog.info("Using nextParamDef: " + nextParamDef);
 				if (nextParamDef != null) {
 					switch (nextParamDef.getParamType()) {
 					case DATE:
@@ -817,7 +819,9 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 						}
 						break;
 					case STRING:
+                        ourLog.info("Using nextParamDef: " + nextParamDef + " of type string");
 						for (List<? extends IQueryParameterType> nextAnd : nextParamEntry.getValue()) {
+                            ourLog.info("Using nextParamName: " + nextParamName + " value: " + nextAnd);
 							pids = myQueryHelper.searchByString(nextParamName, pids, nextAnd);
 						}
 						break;
