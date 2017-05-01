@@ -286,13 +286,10 @@ public class PersonComplement extends Person{
 				// name and address.
 				System.out.println("No Patient ID provided");
 				List<AddressDt> addresses = patient.getAddress();
-				AddressDt newAddress = null;
-				if (addresses.size() > 0) {
-					newAddress = addresses.get(0);
-				}
-				Long existingID = OmopConceptMapping.getInstance().getPersonByNameAndLocation(this, Location.searchByAddressDt(newAddress));
-				System.out.println("Patient Exists with PID="+existingID);
+				AddressDt newAddress = (addresses.size() > 0) ? addresses.get(0) : null;
+				Long existingID = ( newAddress != null ) ? OmopConceptMapping.getInstance().getPersonByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
 				if (existingID != null) {
+					ourLog.info("Patient Exists with PID="+existingID);
 					this.setId(existingID);
 				} else {
 					//TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
