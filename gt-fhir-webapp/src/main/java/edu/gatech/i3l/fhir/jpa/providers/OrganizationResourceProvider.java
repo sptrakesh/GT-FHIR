@@ -55,7 +55,7 @@ public class OrganizationResourceProvider extends JpaResourceProviderDstu2<Organ
 			SearchParameterMap paramMap = new SearchParameterMap();
 			paramMap.add("_id", theId);
 			paramMap.add("type", theType);
-			paramMap.add("careSiteName", theUdi);
+			paramMap.add("udi", theUdi);
 //			paramMap.setRevIncludes(theRevIncludes);
 //			paramMap.setLastUpdated(theLastUpdated);
 			paramMap.setIncludes(theIncludes);
