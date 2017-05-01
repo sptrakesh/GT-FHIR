@@ -304,9 +304,9 @@ public class PersonComplement extends Person{
 					this.setEthnicityConcept(ethnicity);
 				}
 			}	
-			
-ourLog.info("Active: " + patient.getActive());
-			if (patient.getActive()) this.setActive((short)1);
+
+			Boolean active = patient.getActive();
+			if (active != null && active.booleanValue()) this.setActive((short)1);
 			else this.setActive((short)0);
 			
 			BoundCodeableConceptDt<MaritalStatusCodesEnum> maritalStat = patient.getMaritalStatus();
