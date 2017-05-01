@@ -750,7 +750,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 
 		for (Entry<String, List<List<? extends IQueryParameterType>>> nextParamEntry : params.entrySet()) {
 			String nextParamName = nextParamEntry.getKey();
-			ourLog.debug("Stack", new RuntimeException());
+			ourLog.info("Stack", new RuntimeException());
             ourLog.info("Using param: " + nextParamName);
 			if (nextParamName.equals("_id")) {
 
