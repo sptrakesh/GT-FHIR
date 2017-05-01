@@ -306,11 +306,8 @@ public class PersonComplement extends Person{
 			}	
 			
 
-			ourLog.info("Patient: " + patient.getResourceName());
-			if (patient.getActive())
-				this.setActive((short)1);
-			else
-				this.setActive((short)0);
+			if (patient.getActive()) this.setActive((short)1);
+			else this.setActive((short)0);
 			
 			BoundCodeableConceptDt<MaritalStatusCodesEnum> maritalStat = patient.getMaritalStatus();
 			if (maritalStat != null) {
