@@ -745,7 +745,6 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		}
 
 		RuntimeResourceDefinition resourceDef = baseFhirDao.getContext().getResourceDefinition(myResourceType);
-		ourLog.info("ResourceDefinition: " + resourceDef);
 
 		Set<Long> pids = new HashSet<Long>();
 
