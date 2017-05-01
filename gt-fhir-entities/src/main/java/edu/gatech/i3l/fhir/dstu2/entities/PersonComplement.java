@@ -243,7 +243,6 @@ public class PersonComplement extends Person{
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		super.constructEntityFromResource(resource);
 
-		ourLog.info("Processing resource: " + resource);
 		if(resource instanceof Patient){
 			Patient patient = (Patient)resource;
 			
@@ -306,7 +305,8 @@ public class PersonComplement extends Person{
 				}
 			}	
 			
-			
+
+			ourLog.info("Patient: " + patient);
 			if (patient.getActive())
 				this.setActive((short)1);
 			else
