@@ -37,7 +37,7 @@ public class OrganizationResourceProvider extends JpaResourceProviderDstu2<Organ
 
 			@Description(shortDefinition="A portion of the organization's name")
 			@OptionalParam(name="name")
-			StringAndListParam theUdi, 
+			StringAndListParam theUdi,
 
 			@IncludeParam(allow= {
 //					"Patient:careprovider" , 					"Patient:link" , 					"Patient:organization" , 						"Patient:careprovider" , 					"Patient:link" , 					"Patient:organization" , 						"Patient:careprovider" , 					"Patient:link" , 					"Patient:organization" 					, "*"
@@ -55,7 +55,7 @@ public class OrganizationResourceProvider extends JpaResourceProviderDstu2<Organ
 			SearchParameterMap paramMap = new SearchParameterMap();
 			paramMap.add("_id", theId);
 			paramMap.add("type", theType);
-			paramMap.add("udi", theUdi);
+			paramMap.add("careSiteName", theUdi);
 //			paramMap.setRevIncludes(theRevIncludes);
 //			paramMap.setLastUpdated(theLastUpdated);
 			paramMap.setIncludes(theIncludes);
