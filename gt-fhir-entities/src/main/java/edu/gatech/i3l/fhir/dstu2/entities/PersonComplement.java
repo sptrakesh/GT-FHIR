@@ -242,7 +242,8 @@ public class PersonComplement extends Person{
 	@Override
 	public IResourceEntity constructEntityFromResource(IResource resource) {
 		super.constructEntityFromResource(resource);
-		
+
+		ourLog.info("Processing resource: " + resource);
 		if(resource instanceof Patient){
 			Patient patient = (Patient)resource;
 			
@@ -284,7 +285,7 @@ public class PersonComplement extends Person{
 			} else {
 				// We have no Patient ID. However, we could have a matching patient. Compare 
 				// name and address.
-				System.out.println("No Patient ID provided");
+				ourLog.info("No Patient ID provided");
 				List<AddressDt> addresses = patient.getAddress();
 				AddressDt newAddress = (addresses.size() > 0) ? addresses.get(0) : null;
 				Long existingID = ( newAddress != null ) ? OmopConceptMapping.getInstance().getPersonByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
@@ -316,7 +317,7 @@ public class PersonComplement extends Person{
 				Set<MaritalStatusCodesEnum> maritalEnum = maritalStat.getValueAsEnum();
 				if (maritalEnum != null) {
 					for (MaritalStatusCodesEnum myCode : maritalEnum) {
-						System.out.println("MARITAL STATUS:"+myCode.name());
+						ourLog.info("MARITAL STATUS:"+myCode.name());
 						this.setMaritalStatus(myCode.name());
 						break;
 					}
