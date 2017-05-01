@@ -306,7 +306,7 @@ public class PersonComplement extends Person{
 			}	
 			
 
-			ourLog.info("Patient: " + patient);
+			ourLog.info("Patient: " + patient.getResourceName());
 			if (patient.getActive())
 				this.setActive((short)1);
 			else
