@@ -312,11 +312,11 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		StopWatch w = new StopWatch();
 		final InstantDt now = InstantDt.withCurrentTime();
 
-		ourLog.debug("theParams:"+theParams.toString());
+		ourLog.info("theParams:"+theParams.toString());
 		System.out.println("theParams:"+theParams.toString());
 		Set<Long> loadPids;
 		if (theParams.isEmpty()) {
-			ourLog.debug("theParams is empty");
+			ourLog.info("theParams is empty");
 			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
 			CriteriaQuery<Long> criteria = builder.createQuery(Long.class);
 			Root<? extends IResourceEntity> from = criteria.from(getResourceEntity());
@@ -328,17 +328,17 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			List<Long> resultList = myEntityManager.createQuery(criteria).getResultList();
 			loadPids = new HashSet<Long>(resultList);
 		} else {
-			ourLog.debug("Calling searchForIdsWithAndOr");
+			ourLog.info("Calling searchForIdsWithAndOr");
 			loadPids = searchForIdsWithAndOr(theParams);
 			if (loadPids.isEmpty()) {
-				ourLog.debug("searchForIdsWithAndOr returned empty");
+				ourLog.info("searchForIdsWithAndOr returned empty");
 				return new SimpleBundleProvider();
 			}
 		}
 
 		final List<Long> pids;
 		if (theParams.getSort() != null && isNotBlank(theParams.getSort().getParamName())) {
-			ourLog.debug("Sort specified in theParams");
+			ourLog.info("Sort specified in theParams");
 			List<Order> orders = new ArrayList<Order>();
 			List<Predicate> predicates = new ArrayList<Predicate>();
 			CriteriaBuilder builder = myEntityManager.getCriteriaBuilder();
@@ -347,7 +347,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			predicates.add(from.get("id").in(loadPids));
 			createSort(builder, from, theParams.getSort(), orders);
 			if (orders.size() > 0) {
-                ourLog.debug("Processing orders with size: " + orders.size());
+                ourLog.info("Processing orders with size: " + orders.size());
 				Set<Long> originalPids = loadPids;
 				loadPids = new LinkedHashSet<Long>();
 				cq.multiselect(from.get("id").as(Long.class));
@@ -372,7 +372,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 				}
 
 			} else {
-                ourLog.debug("No orders with size: " + orders.size());
+                ourLog.info("No orders with size: " + orders.size());
 				pids = new ArrayList<Long>(loadPids);
 			}
 		} else {
@@ -396,7 +396,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 				return template.execute(new TransactionCallback<List<IBaseResource>>() {
 					@Override
 					public List<IBaseResource> doInTransaction(TransactionStatus theStatus) {
-                        ourLog.debug("Executing doInTransaction");
+                        ourLog.info("Executing doInTransaction");
 						List<Long> pidsSubList = pids.subList(theFromIndex, theToIndex);
 
 						// Execute the query and make sure we return distinct results
