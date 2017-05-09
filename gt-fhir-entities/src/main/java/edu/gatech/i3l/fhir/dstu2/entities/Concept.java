@@ -32,10 +32,10 @@ public class Concept{
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@Column(name="concept_name", updatable=false)
+	@Column(name="concept_name", updatable=false, nullable = false)
 	private String name;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="domain_id", referencedColumnName="domain_id", insertable=false, updatable=false)
 	private Domain domain;
 
@@ -45,7 +45,7 @@ public class Concept{
 	@Column(name="standard_concept", updatable=false)
 	private Character standardConcept;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="vocabulary_id", referencedColumnName="vocabulary_id", insertable=false, updatable=false)
 	private Vocabulary vocabulary;
 	

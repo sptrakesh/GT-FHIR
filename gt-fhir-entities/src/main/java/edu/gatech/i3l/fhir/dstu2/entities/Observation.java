@@ -56,7 +56,7 @@ import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 @Entity
-@Table(name = "f_observation_view")
+@Table(name = "fhir_observation_view")
 public class Observation extends BaseResourceEntity {
 
 	private static final String RES_TYPE = "Observation";

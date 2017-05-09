@@ -12,6 +12,7 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -178,86 +179,56 @@ public class OmopConceptMapping implements Runnable {
 	
 	public Long getPersonByNameAndLocation(PersonComplement person, Location location) {
 		if (person == null) return null;
-		
-//		String queryString = "SELECT p.person_id FROM PERSON p join f_person f on p.person_id = f.person_id join location l on p.location_id = l.location_id where";
-		String queryString = "SELECT p FROM PersonComplement p WHERE";
+
+		final StringBuilder builder = new StringBuilder( 128 );
+		builder.append("SELECT p FROM PersonComplement p where ");
+
 		String family_name = person.getFamilyName();
 		String given1_name = person.getGivenName1();
 		String given2_name = person.getGivenName2();
-		
-//		String line1 = null, line2 = null, city = null, state = null, zip = null;
-//		if (address != null) {
-//			List<StringDt> lines = address.getLine();
-//			if (lines.size() > 0) line1 = lines.get(0).toString(); 
-//			if (lines.size() > 1) line2 = lines.get(1).toString();
-//			city = address.getCity();
-//			state = address.getState();
-//			zip = address.getPostalCode();
-//		}
-		
-		// Construct where clause here.
-		String where_clause = "";
-		if (family_name != null)  {
-			where_clause = "familyName like :fname";
-		}
-		if (given1_name != null) {
-			if (where_clause == "") where_clause = "givenName1 like :gname1";
-			else where_clause += " AND givenName1 like :gname1";
-		}
-		if (given2_name != null) {
-			if (where_clause == "") where_clause = "givenName2 like :gname2";
-			else where_clause += " AND givenName2 like :gname2";
-		}
-		
-		if (location != null) {
-			if (where_clause == "") where_clause = "location = :location";
-			else where_clause += " AND location = :location";
-		}
-//		if (line1 != null) {
-//			if (where_clause == "") where_clause = "l.address1 like :line1";
-//			else where_clause += " AND l.address1 like :line1";
-//		}
-//		if (line2 != null) {
-//			if (where_clause == "") where_clause = "l.address2 like :line2";
-//			else where_clause += " AND l.address2 like :line2";
-//		}
-//		if (city != null) {
-//			if (where_clause == "") where_clause = "l.city like :city";
-//			else where_clause += " AND l.city like :city";
-//		}
-//		if (state != null) {
-//			if (where_clause == "") where_clause = "l.state like :state";
-//			else where_clause += " AND l.state like :state";
-//		}
-//		if (zip != null) {
-//			if (where_clause == "") where_clause = "l.zipCode like :zip";
-//			else where_clause += " AND l.zipCode like :zip";
-//		}
-		
-		queryString += " "+where_clause;
 
-		System.out.println("Query for Person"+queryString);
+		// Construct where clause here.
+        boolean addAnd = false;
+		if (StringUtils.isNotBlank(family_name))  {
+			builder.append( "p.familyName = :fname" );
+			addAnd = true;
+		}
+
+		if (StringUtils.isNotBlank(given1_name)) {
+			if (!addAnd) builder.append( "p.givenName1 LIKE :gname1");
+			else builder.append(" AND p.givenName1 LIKE :gname1");
+		}
+		if (StringUtils.isNotBlank(given2_name)) {
+			if (!addAnd) builder.append("p.givenName2 LIKE :gname2");
+			else builder.append(" AND p.givenName2 LIKE :gname2");
+		}
+
+		if (location != null) {
+			if (!addAnd) builder.append("p.location.id = :location");
+			else builder.append(" AND p.location.id = :location");
+		}
+
+		System.out.println("Query for Person: "+builder);
 		
-		TypedQuery<? extends BaseResourceEntity> query = entityManager.createQuery(queryString, PersonComplement.class);
-		if (family_name != null) query = query.setParameter("fname", family_name);
-		if (given1_name != null) query = query.setParameter("gname1", given1_name);
-		if (given2_name != null) query = query.setParameter("gname2", given2_name);
-		if (location != null) query = query.setParameter("location", location);
-//		if (line1 != null) query.setParameter("line1", line1);
-//		if (line2 != null) query.setParameter("line2", line2);
-//		if (city != null) query.setParameter("city", city);
-//		if (state != null) query.setParameter("state", state);
-//		if (zip != null) query.setParameter("zip", zip);
-		
-		System.out.println("family:"+family_name+" gname1:"+given1_name+" gname2"+given2_name);
+		TypedQuery<? extends BaseResourceEntity> query = entityManager.createQuery(builder.toString(), PersonComplement.class);
+		if (StringUtils.isNotBlank(family_name)) query = query.setParameter("fname", family_name);
+		if (StringUtils.isNotBlank(given1_name)) query = query.setParameter("gname1", given1_name);
+		if (StringUtils.isNotBlank(given2_name)) query = query.setParameter("gname2", given2_name);
+		if (location != null) query = query.setParameter("location", location.getId());
+
+		if (location!=null)
+		{
+			System.out.println("family:"+family_name+" gname1:"+given1_name+" gname2:"+given2_name+" location:"+location.getId());
+		}
+		else
+		{
+            System.out.println("family:"+family_name+" gname1:"+given1_name+" gname2:"+given2_name);
+		}
 		List<? extends BaseResourceEntity> results = query.getResultList();
 		if (results.size() > 0) {
 			PersonComplement person_c = (PersonComplement) results.get(0);
 			return person_c.getId();
-		} else
-			return null;
-		
-//		= f.family_name like 'Test1' and f.given1_name like 'Byron' and l.address_1 like '886 Fox Valley Dr.' and city like 'Stone Mountain' and state like 'GA' and zip like '30088';
+		} else return null;
 	}
 	
 	public Object loadEntityById(Class<? extends BaseResourceEntity> class1, Long primaryKey){
@@ -268,7 +239,6 @@ public class OmopConceptMapping implements Runnable {
 	// the name this class to cover more generic needs of db query.
 	public Object loadEntityBySource(Class<? extends BaseResourceEntity> class_, String tableName, String columnName, String value) {
 		String query = "SELECT t"+" FROM "+tableName+" t WHERE "+columnName+" like :value";
-//		System.out.println("hello:"+query);
 		List<? extends BaseResourceEntity> results = entityManager.createQuery(query, class_)
 				.setParameter("value",  value).getResultList();
 		if (results.size() > 0)
@@ -279,10 +249,11 @@ public class OmopConceptMapping implements Runnable {
 	
 	public Object loadEntityByLocation(Class<? extends BaseResourceEntity> class_, String line1, String line2, String city, String state, String zipCode) {
 		String query;
+		Object result;
 		List<? extends BaseResourceEntity> results;
-		
+
 		if (line2 != null) {
-			query = "SELECT t FROM Location t WHERE address1 LIKE :line1 AND address2 LIKE :line2 AND city LIKE :city AND state LIKE :state AND zipCode LIKE :zip";
+			query = "SELECT t FROM Location t WHERE address1 = :line1 AND address2 = :line2 AND city = :city AND state = :state AND zipCode = :zip";
 			results = entityManager.createQuery(query, class_)
 					.setParameter("line1", line1)
 					.setParameter("line2", line2)
@@ -291,7 +262,7 @@ public class OmopConceptMapping implements Runnable {
 					.setParameter("zip", zipCode)
 					.getResultList();
 		} else { 
-			query = "SELECT t FROM Location t WHERE address1 LIKE :line1 AND city LIKE :city AND state LIKE :state AND zipCode LIKE :zip";
+			query = "SELECT t FROM Location t WHERE address1 = :line1 AND city = :city AND state = :state AND zipCode = :zip";
 			results = entityManager.createQuery(query, class_)
 					.setParameter("line1", line1)
 					.setParameter("city", city)
@@ -300,26 +271,8 @@ public class OmopConceptMapping implements Runnable {
 					.getResultList();
 		}
 
-		System.out.println("loadEntityByLocaiton:"+query+" result size:"+results.size());
-		if (results.size() > 0)
-			return results.get(0);
-		else
-			return null;
+		System.out.println("loadEntityByLocation:"+query+" result size:"+results.size());
+		if (results.size() > 0) return results.get(0);
+		else return null;
 	}
-//		
-//		
-//		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-//		CriteriaQuery<Object[]> criteria = builder.createQuery(Object[].class);
-//		Root<? extends BaseResourceEntity> from = criteria.from(class_);
-//		Path<Long> idPath = from.get("id");
-//		Path<String> codePath = from.get("conceptCode");
-//		criteria.multiselect(codePath, idPath); //TODO unit test, order matters here
-//		Predicate p1 = builder.like(from.get("conceptClassId").as(String.class), conceptClass);
-//		if(vocabularyId != null){
-//			Predicate p2 = builder.like(from.get("vocabulary").get("id").as(String.class), vocabularyId);  
-//			criteria.where(builder.and(p1, p2)); 
-//		} else{
-//			criteria.where(builder.and(p1));
-//		}
-
 }

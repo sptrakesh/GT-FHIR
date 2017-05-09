@@ -83,11 +83,11 @@ public final class MedicationConcept extends BaseResourceEntity{
 		this.name = name;
 	}
 
-	public Domain getDomainId() {
+	public Domain getDomain() {
 		return domain;
 	}
 
-	public void setDomainId(Domain domain) {
+	public void setDomain(Domain domain) {
 		this.domain = domain;
 	}
 
@@ -152,7 +152,7 @@ public final class MedicationConcept extends BaseResourceEntity{
 		//Since this is an omop v.5 based model, all the information below is expected to be not null.
 		return this.getId() + ", "
 				+ this.getName() + ", "
-				+ this.getDomainId() + ", "
+				+ this.getDomain() + ", "
 				+ this.getConceptClassId() + ", "
 				+ this.getStandardConcept() + ", "
 				+ this.getVocabulary().getId() + ", "

@@ -312,7 +312,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 		StopWatch w = new StopWatch();
 		final InstantDt now = InstantDt.withCurrentTime();
 
-		ourLog.info("theParams:"+theParams.toString());
+		ourLog.info("theParams: {}", theParams);
 		Set<Long> loadPids;
 		if (theParams.isEmpty()) {
 			ourLog.info("theParams is empty");
@@ -346,7 +346,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 			predicates.add(from.get("id").in(loadPids));
 			createSort(builder, from, theParams.getSort(), orders);
 			if (orders.size() > 0) {
-                ourLog.info("Processing orders with size: " + orders.size());
+                ourLog.info("Processing orders with size: {}", orders.size());
 				Set<Long> originalPids = loadPids;
 				loadPids = new LinkedHashSet<Long>();
 				cq.multiselect(from.get("id").as(Long.class));
@@ -371,7 +371,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 				}
 
 			} else {
-                ourLog.info("No orders with size: " + orders.size());
+                ourLog.info("No orders with size: {}", orders.size());
 				pids = new ArrayList<Long>(loadPids);
 			}
 		} else {

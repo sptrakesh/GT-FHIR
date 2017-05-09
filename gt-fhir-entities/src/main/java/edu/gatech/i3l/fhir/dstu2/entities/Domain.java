@@ -6,14 +6,13 @@ import javax.persistence.*;
 @Table(name="domain")
 public class Domain {
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="domain_id", updatable = false)
-	private Long domainId;
+	private String domainId;
 	
 	@Column(name="domain_name")
 	private String domainName;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="domain_concept_id")
 	private Concept domainConcept;
 	
@@ -21,18 +20,18 @@ public class Domain {
 		super();
 	}
 	
-	public Domain(Long domainId, String domainName, Concept domainConcept) {
+	public Domain(String domainId, String domainName, Concept domainConcept) {
 		super();
 		this.domainId = domainId;
 		this.domainName = domainName;
 		this.domainConcept = domainConcept;
 	}
 	
-	public Long getDomainId() {
+	public String getDomainId() {
 		return domainId;
 	}
 	
-	public void setDomainId(Long domainId) {
+	public void setDomainId(String domainId) {
 		this.domainId = domainId;
 	}
 	

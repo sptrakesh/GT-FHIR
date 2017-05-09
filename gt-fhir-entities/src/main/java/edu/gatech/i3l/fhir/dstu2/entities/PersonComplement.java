@@ -31,7 +31,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
  * @author Ismael Sarmento
  */
 @Entity
-@Table(name="f_person")
+@Table(name="fhir_person")
 @PrimaryKeyJoinColumn(name="person_id")
 public class PersonComplement extends Person{
 
@@ -287,11 +287,11 @@ public class PersonComplement extends Person{
 				ourLog.info("No Patient ID provided");
 				List<AddressDt> addresses = patient.getAddress();
 				AddressDt newAddress = (addresses.size() > 0) ? addresses.get(0) : null;
-				Long existingID = ( newAddress != null ) ? OmopConceptMapping.getInstance().getPersonByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
+				Long existingID = (newAddress != null) ? OmopConceptMapping.getInstance().getPersonByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
 				if (existingID != null) {
-					ourLog.info("Patient Exists with PID="+existingID);
+					ourLog.info("Patient Exists with PID={}",existingID);
 					this.setId(existingID);
-				} else {
+				} /* else {
 					//TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
 					//      But, FHIR Patient does not have race data element
 					Concept race = new Concept();
@@ -302,7 +302,7 @@ public class PersonComplement extends Person{
 					Concept ethnicity = new Concept();
 					ethnicity.setId(0L);
 					this.setEthnicityConcept(ethnicity);
-				}
+				} */
 			}	
 
 			Boolean active = patient.getActive();
@@ -314,7 +314,7 @@ public class PersonComplement extends Person{
 				Set<MaritalStatusCodesEnum> maritalEnum = maritalStat.getValueAsEnum();
 				if (maritalEnum != null) {
 					for (MaritalStatusCodesEnum myCode : maritalEnum) {
-						ourLog.info("MARITAL STATUS:"+myCode.name());
+						ourLog.info("MARITAL STATUS:{}",myCode.name());
 						this.setMaritalStatus(myCode.name());
 						break;
 					}

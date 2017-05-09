@@ -61,7 +61,7 @@ public class BaseFhirDao extends AbstractBaseFhirDao{
 			if(message.contains("denied") || message.contains("forbidden")){
 				throw new ForbiddenOperationException("This operation is not allowed for the current user on the selected server.");
 			} else{
-				throw new InternalErrorException(message);
+				throw new InternalErrorException(e);
 			}
 		}
 		return entity;

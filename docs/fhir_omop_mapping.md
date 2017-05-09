@@ -59,7 +59,7 @@ The following table shows basic mappings between FHIR DSTU2 resources and OMOP C
 | effective_drug_dose, dose_unit_concept_id, quantity | Use concept table for unit. if effective_drug_dose is not available, use quantity column for the dosage.quantity.value in FHIR. In this case, we don’ t know the unit. Thus, this will contain only the quantity. | dosage.quantity | SimpleQuantity |
 | drug_exposure_start_date, drug_exposure_end_date | effectiveTime[x], [x] =DateTime if end_date = null, [x] = Period otherwise | |
 | | | | |
-| ***Table*: measurement and observation merged to view** | **Note: We named the view as "f_observation_view"** | ***Resource*: Observation** | **Note** |
+| ***Table*: measurement and observation merged to view** | **Note: We named the view as "fhir_observation_view"** | ***Resource*: Observation** | **Note** |
 | observation_id | We are joining two tables. And, IDs can be same. All IDs from observation table will be negated (‘-‘ prepended) in the view. Original tables do not need any modifications. | id | |
 | person_id | person Table. | subject •	Person (REQUIRED in OMOP) | Resource Reference |
 | observation_concept_id (measurement table – measurement_concept_id) | concept table | code | Complex Data Type: CodeableConcept.  Code will be overwritten for blood pressure as combined value. |
@@ -75,7 +75,7 @@ The following table shows basic mappings between FHIR DSTU2 resources and OMOP C
 | year_of_birth, month_of_birth, day_of_birth | | birthDate | |
 | location_id | location table | address | Complex Data Type: Address
 | gender_concept_id | concept table | gender | OMOP gender concept needs to map to AdministrativeGender Enum |
-| family_name, given1_name, given2_name, prefix_name, suffix_name, preferred_language, ssn, maritalstatus_concept_id, active | f_person table – This is one of custom tables to provide data elements that are not available in OMOP v5 | family, given (list), maritalStatus, active | |
+| family_name, given1_name, given2_name, prefix_name, suffix_name, preferred_language, ssn, maritalstatus_concept_id, active | fhir_person table – This is one of custom tables to provide data elements that are not available in OMOP v5 | family, given (list), maritalStatus, active | |
 | | | race_concept_id = Unknown (8552) | FHIR person does not have race data element.|
 | | | | |
 | ***Table*: procedure_occurrence** | **Note** | ***Resource*: Procedure** | **Note** |

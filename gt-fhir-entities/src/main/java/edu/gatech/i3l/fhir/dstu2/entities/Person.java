@@ -46,7 +46,7 @@ public class Person extends BaseResourceEntity{
 	@Access(AccessType.PROPERTY)
 	private Long id;
 	
-	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.ALL})
+	@ManyToOne(fetch=FetchType.EAGER, cascade={CascadeType.MERGE})
 	@JoinColumn(name="gender_concept_id", nullable= false)
 	private Concept genderConcept;
 	
@@ -66,7 +66,7 @@ public class Person extends BaseResourceEntity{
 	@JoinColumn(name="race_concept_id")
 	private Concept raceConcept;
 	
-	@ManyToOne
+	@ManyToOne()
 	@JoinColumn(name="ethnicity_concept_id")
 	private Concept ethnicityConcept;
 	
@@ -113,13 +113,7 @@ public class Person extends BaseResourceEntity{
 
 	public Person() {
 		super();
-		this.genderConcept = new Concept();
-		this.genderConcept.setId(0L);
-		this.raceConcept = new Concept();
-		this.raceConcept.setId(0L);
 		this.setYearOfBirth(0);
-		this.ethnicityConcept = new Concept();
-		this.ethnicityConcept.setId(0L);
 	}
 
 	public Person(Long id, Concept genderConcept, Integer yearOfBirth, Integer monthOfBirth,
@@ -337,7 +331,7 @@ public class Person extends BaseResourceEntity{
 		
 		if (this.genderConcept != null) {
 			AdministrativeGenderEnum admGender = null;//TODO check if DSTU2 uses values coherent with this enum
-			String gName = this.genderConcept.getName(); 
+			String gName = this.genderConcept.getName();
 			AdministrativeGenderEnum[] values = AdministrativeGenderEnum.values();
 			for (int i = 0; i < values.length; i++) {
 				if(gName.equalsIgnoreCase(values[i].getCode())){

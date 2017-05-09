@@ -1,15 +1,6 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * 
@@ -21,38 +12,37 @@ import javax.persistence.Table;
 public class Vocabulary {
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="vocabulary_id", updatable=false)
 	@Access(AccessType.PROPERTY)
-	private Long id;
+	private String id;
 	
-	@Column(name="vocabulary_name", updatable=false)
+	@Column(name="vocabulary_name", updatable=false, nullable = false)
 	private String name;
 	
 	@Column(name="vocabulary_reference", updatable=false)
 	private String reference;
-	
-	
-	public Vocabulary() {
-		super();
-	}
 
-	public Vocabulary(Long id) {
-		super();
+	@OneToOne(cascade={CascadeType.ALL})
+	@JoinColumn(name="vocabulary_concept_id", referencedColumnName="concept_id", insertable=false, updatable=false)
+	private Concept concept;
+
+
+	public Vocabulary() {}
+
+	public Vocabulary(String id) {
 		this.id = id;
 	}
 	
-	public Vocabulary(Long id, String name) {
-		super();
+	public Vocabulary(String id, String name) {
 		this.id = id;
 		this.name = name;
 	}
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -71,6 +61,10 @@ public class Vocabulary {
 	public void setReference(String reference) {
 		this.reference = reference;
 	}
+
+	public Concept getConcept() { return concept; }
+
+	public void setConcept(Concept concept) { this.concept = concept; }
 
 	// FIXME This is FHIR related. We may need to do this in the database. But, for quick
 	// initial implementation, we do this. Later, we may extend vocabulary table.
@@ -113,5 +107,4 @@ public class Vocabulary {
 			this.name = "Vocabulary";
 		}
 	}
-	
 }

@@ -5,6 +5,6 @@
              version="2.0">
 
 	<persistence-unit name="GT_FHIR_UT" transaction-type="RESOURCE_LOCAL">
-		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 	</persistence-unit>
 </persistence>

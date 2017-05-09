@@ -1,10 +1,25 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name="concept_ancestor")
 public class ConceptAncestor {
 
+	@Column(name="ancestor_concept_id", updatable=false, nullable = false)
+    @OneToOne(cascade={CascadeType.ALL})
+    @JoinColumn(name="ancestor_concept_id", referencedColumnName="concept_id", insertable=false, updatable=false)
 	private Concept ancestor;
+
+    @Column(name="descendant_concept_id", updatable=false, nullable = false)
+    @OneToOne(cascade={CascadeType.ALL})
+    @JoinColumn(name="descendant_concept_id", referencedColumnName="concept_id", insertable=false, updatable=false)
 	private Concept descendant;
+
+    @Column(name="min_levels_of_separation", updatable=false, nullable = false)
 	private Integer minLevelsOfSeparation;
+
+    @Column(name="max_levels_of_separation", updatable=false, nullable = false)
 	private Integer maxLevelsOfSeparation;
 
 	public ConceptAncestor() {

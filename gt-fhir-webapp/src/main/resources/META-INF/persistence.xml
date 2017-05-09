@@ -44,7 +44,7 @@
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 		<properties>
 			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQL57Dialect" />
-			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<property name="hibernate.hbm2ddl.auto" value="none" />
 			<property name="hibernate.jdbc.batch_size" value="20" />
 			<property name="hibernate.cache.use_minimal_puts" value="false" />
 			<property name="hibernate.format_sql" value="true" />
