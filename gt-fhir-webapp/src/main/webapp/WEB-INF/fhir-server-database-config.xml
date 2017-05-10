@@ -20,8 +20,8 @@
 	and other properties supported by BasicDataSource.
 	-->
 	<bean id="myPersistenceDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-		<property name="url" value="jdbc:mariadb://localhost:3306/fhir" />
-		<property name="driverClassName" value="org.mariadb.jdbc.Driver" />
+		<property name="url" value="jdbc:postgresql://sciencepg.devtempus.com:5432/fhir_omop" />
+		<property name="driverClassName" value="org.postgresql.Driver" />
 		<property name="username" value="fhir"/>
 		<property name="password" value="fhir"/>
 	</bean>
@@ -38,14 +38,13 @@
 		<property name="jpaVendorAdapter">
 			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
 				<property name="generateDdl" value="true" />
-				<property name="databasePlatform" value="org.hibernate.dialect.MySQL57Dialect" />
+				<property name="databasePlatform" value="org.hibernate.dialect.PostgreSQL9Dialect" />
 			</bean>
 		</property>
 		<property name="jpaProperties">
 			<props>
 				<prop key="hibernate.dialect">org.hibernate.dialect.MySQL57Dialect</prop>
 				<prop key="hibernate.hbm2ddl.auto">update</prop>
-				<prop key="hibernate.dialect.storage_engine">innodb</prop>
 				<prop key="hibernate.format_sql">true</prop>
 				<prop key="hibernate.show_sql">false</prop>
 				<prop key="hibernate.jdbc.batch_size">20</prop>
