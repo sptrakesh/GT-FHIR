@@ -1,62 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence xmlns="http://java.sun.com/xml/ns/persistence"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
-	version="2.0">
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
 
-	<persistence-unit name="GT_FHIR_UT" transaction-type="RESOURCE_LOCAL">
-		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+    <persistence-unit name="GT_FHIR_UT" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-		<!-- The below classes are in alphabetic order with their simple names -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.CareSite</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Concept</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrence</class>
-<!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement</class>-->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DeviceExposure</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureAdministration</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposure</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureDispensed</class>
-<!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureOrder</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Domain</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.MedicationOrderView</class>
-<!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureComplement</class> -->
-<!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Location</class>
-<!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.LocationComplement</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Observation</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.OmopMeasurement</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.OmopObservation</class>
- 		<!-- <class>edu.gatech.i3l.fhir.dstu2.entities.Organization</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Person</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.PersonComplement</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.ProcedureOccurrence</class>
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Provider</class>
-<!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProviderComplement</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrence</class>
-<!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrenceComplement</class> -->
-		<class>edu.gatech.i3l.fhir.dstu2.entities.Vocabulary</class>
+        <!-- The below classes are in alphabetic order with their simple names -->
+        <class>edu.gatech.i3l.fhir.dstu2.entities.CareSite</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.Concept</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrence</class>
+        <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.ConditionOccurrenceComplement</class>-->
+        <class>edu.gatech.i3l.fhir.dstu2.entities.DeviceExposure</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureAdministration</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposure</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureDispensed</class>
+        <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureOrder</class> -->
+        <class>edu.gatech.i3l.fhir.dstu2.entities.Domain</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.MedicationOrderView</class>
+        <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureComplement</class> -->
+        <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class> -->
+        <class>edu.gatech.i3l.fhir.dstu2.entities.Location</class>
+        <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.LocationComplement</class> -->
+        <class>edu.gatech.i3l.fhir.dstu2.entities.MedicationConcept</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.Observation</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.OmopMeasurement</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.OmopObservation</class>
+        <!-- <class>edu.gatech.i3l.fhir.dstu2.entities.Organization</class> -->
+        <class>edu.gatech.i3l.fhir.dstu2.entities.Person</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.PersonComplement</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.ProcedureOccurrence</class>
+        <class>edu.gatech.i3l.fhir.dstu2.entities.Provider</class>
+        <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProviderComplement</class> -->
+        <class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrence</class>
+        <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrenceComplement</class> -->
+        <class>edu.gatech.i3l.fhir.dstu2.entities.Vocabulary</class>
 
-		<!-- The following classes are for SMART on FHIR Launch Context -->
-		<class>edu.gatech.i3l.fhir.smart.servlet.SmartLaunchContext</class>
-		<class>edu.gatech.i3l.fhir.smart.servlet.SmartLaunchContextParam</class>
-		
-		<exclude-unlisted-classes>true</exclude-unlisted-classes>
-		<properties>
-			<property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL9Dialect" />
-			<property name="hibernate.hbm2ddl.auto" value="none" />
-			<property name="hibernate.jdbc.batch_size" value="20" />
-			<property name="hibernate.cache.use_minimal_puts" value="false" />
-			<property name="hibernate.format_sql" value="true" />
-			<property name="hibernate.show_sql" value="false" />
-			<property name="hibernate.cache.use_query_cache" value="false" />
-			<property name="hibernate.cache.use_second_level_cache" value="false" />
-			<property name="hibernate.cache.use_structured_entries" value="false" />
-			<property name="hibernate.search.default.directory_provider" value="filesystem" />
-			<property name="hibernate.search.default.indexBase" value="target/lucenefiles" />
-			<property name="hibernate.search.lucene_version" value="LUCENE_CURRENT" />
-			<property name="hibernate.search.default.worker.execution" value="async" />
-			<!-- <property name="org.hibernate.envers.audit_strategy" value="org.hibernate.envers.strategy.ValidityAuditStrategy"/> -->
-		</properties>                                                    
-	</persistence-unit>
+        <!-- The following classes are for SMART on FHIR Launch Context -->
+        <class>edu.gatech.i3l.fhir.smart.servlet.SmartLaunchContext</class>
+        <class>edu.gatech.i3l.fhir.smart.servlet.SmartLaunchContextParam</class>
+
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL57Dialect" />
+            <property name="hibernate.hbm2ddl.auto" value="none" />
+            <property name="hibernate.jdbc.batch_size" value="20" />
+            <property name="hibernate.cache.use_minimal_puts" value="false" />
+            <property name="hibernate.format_sql" value="true" />
+            <property name="hibernate.show_sql" value="false" />
+            <property name="hibernate.cache.use_query_cache" value="false" />
+            <property name="hibernate.cache.use_second_level_cache" value="false" />
+            <property name="hibernate.cache.use_structured_entries" value="false" />
+            <property name="hibernate.search.default.directory_provider" value="filesystem" />
+            <property name="hibernate.search.default.indexBase" value="target/lucenefiles" />
+            <property name="hibernate.search.lucene_version" value="LUCENE_CURRENT" />
+            <property name="hibernate.search.default.worker.execution" value="async" />
+            <!-- <property name="org.hibernate.envers.audit_strategy" value="org.hibernate.envers.strategy.ValidityAuditStrategy"/> -->
+        </properties>
+    </persistence-unit>
 </persistence>
