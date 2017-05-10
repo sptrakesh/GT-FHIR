@@ -60,7 +60,7 @@ public class OmopMeasurement extends BaseResourceEntity {
 	@Column(name="measurement_source_value")
 	private String sourceValue; 
 
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="measurement_concept_id", nullable=false)
 	@NotNull
 	private Concept measurementConcept;
@@ -68,11 +68,11 @@ public class OmopMeasurement extends BaseResourceEntity {
 	@Column(name = "value_as_number")
 	private Double valueAsNumber;
 
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "value_as_concept_id")
 	private Concept valueAsConcept;
 
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_concept_id")
 	private Concept unit;
 
@@ -95,7 +95,7 @@ public class OmopMeasurement extends BaseResourceEntity {
 	@JoinColumn(name = "visit_occurrence_id")
 	private VisitOccurrence visitOccurrence;
 
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "measurement_type_concept_id")
 	private Concept type;
 

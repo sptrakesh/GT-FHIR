@@ -12,17 +12,20 @@ import javax.persistence.*;
 public class Vocabulary {
 	
 	@Id
-	@Column(name="vocabulary_id", updatable=false)
+	@Column(name="vocabulary_id", insertable = false, updatable=false)
 	@Access(AccessType.PROPERTY)
 	private String id;
 	
-	@Column(name="vocabulary_name", updatable=false, nullable = false)
+	@Column(name="vocabulary_name", insertable = false, updatable=false, nullable = false)
 	private String name;
 	
-	@Column(name="vocabulary_reference", updatable=false)
+	@Column(name="vocabulary_reference", insertable = false, updatable=false)
 	private String reference;
 
-	@OneToOne(cascade={CascadeType.ALL})
+	@Column(name="vocabulary_version", insertable = false, updatable=false)
+	private String version;
+
+	@OneToOne(cascade=CascadeType.MERGE)
 	@JoinColumn(name="vocabulary_concept_id", referencedColumnName="concept_id", insertable=false, updatable=false)
 	private Concept concept;
 
@@ -61,6 +64,10 @@ public class Vocabulary {
 	public void setReference(String reference) {
 		this.reference = reference;
 	}
+
+	public String getVersion() { return version; }
+
+	public void setVersion(String version) { this.version = version; }
 
 	public Concept getConcept() { return concept; }
 

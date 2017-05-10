@@ -24,7 +24,7 @@ import javax.persistence.Table;
 		@NamedQuery(name = "findDomainByCode",
 				query = "select domain from Concept c where c.conceptCode like :code")
 		})
-public class Concept{
+public class Concept {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

@@ -56,7 +56,7 @@ public class OmopObservation extends BaseResourceEntity {
 	@NotNull
 	private PersonComplement person;
 
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "observation_concept_id", nullable = false)
 	@NotNull
 	private Concept observationConcept;
@@ -76,11 +76,11 @@ public class OmopObservation extends BaseResourceEntity {
 	@Column(name = "value_as_number")
 	private Double valueAsNumber;
 
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "value_as_concept_id")
 	private Concept valueAsConcept;
 
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "observation_type_concept_id", nullable = false)
 	@NotNull
 	private Concept type;
@@ -96,7 +96,7 @@ public class OmopObservation extends BaseResourceEntity {
 	@Column(name = "observation_source_value")
 	private String sourceValue;
 
-	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.MERGE }, fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_concept_id")
 	private Concept unit;
 

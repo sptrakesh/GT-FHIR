@@ -7,12 +7,12 @@ import javax.persistence.*;
 public class ConceptAncestor {
 
 	@Column(name="ancestor_concept_id", updatable=false, nullable = false)
-    @OneToOne(cascade={CascadeType.ALL})
+    @OneToOne(cascade={CascadeType.MERGE})
     @JoinColumn(name="ancestor_concept_id", referencedColumnName="concept_id", insertable=false, updatable=false)
 	private Concept ancestor;
 
     @Column(name="descendant_concept_id", updatable=false, nullable = false)
-    @OneToOne(cascade={CascadeType.ALL})
+    @OneToOne(cascade={CascadeType.MERGE})
     @JoinColumn(name="descendant_concept_id", referencedColumnName="concept_id", insertable=false, updatable=false)
 	private Concept descendant;
 

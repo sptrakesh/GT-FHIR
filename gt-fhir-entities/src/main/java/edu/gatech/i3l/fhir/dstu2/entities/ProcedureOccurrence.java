@@ -50,7 +50,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@NotNull
 	private PersonComplement person;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "procedure_concept_id")
 	private Concept procedureConcept;
 
@@ -59,11 +59,11 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@NotNull
 	private Date date;
 
-	@ManyToOne(cascade = { CascadeType.ALL })
+	@ManyToOne(cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "procedure_type_concept_id")
 	private Concept procedureTypeConcept;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "modifier_concept_id")
 	private Concept modifierConcept;
 	
@@ -81,7 +81,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 	@Column(name = "procedure_source_value")
 	private String procedureSourceValue;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name = "procedure_source_concept_id")
 	private Concept procedureSourceConcept;
 

@@ -59,7 +59,7 @@ public final class MedicationOrderView extends DrugExposure {
 	 * since we use {@link OmopConceptMapping} to gather the information in the
 	 * database.
 	 */
-	@ManyToOne(cascade = { CascadeType.ALL })
+	@ManyToOne(cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "drug_type_concept_id", nullable = false)
 	@NotNull
 	private Concept drugExposureType;
@@ -108,7 +108,7 @@ public final class MedicationOrderView extends DrugExposure {
 	/**
 	 * RxNorm. Generally in concept class 'Clinical Drug'.
 	 */
-	@ManyToOne(cascade = { CascadeType.ALL })
+	@ManyToOne(cascade = { CascadeType.MERGE })
 	@JoinColumn(name = "drug_concept_id", nullable = false)
 	@NotNull
 	private Concept medication;

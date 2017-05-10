@@ -62,11 +62,11 @@ public class Person extends BaseResourceEntity{
 	@Column(name="time_of_birth")
 	private String timeOfBirth;
 	
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name="race_concept_id")
 	private Concept raceConcept;
 	
-	@ManyToOne()
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name="ethnicity_concept_id")
 	private Concept ethnicityConcept;
 	
@@ -88,21 +88,21 @@ public class Person extends BaseResourceEntity{
 	@Column(name="gender_source_value")
 	private String genderSourceValue;
 	
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name="gender_source_concept_id")
 	private Concept genderSourceConcept;
 	
 	@Column(name="race_source_value")
 	private String raceSourceValue;
 	
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name="race_source_concept_id")
 	private Concept raceSourceConcept;
 
 	@Column(name="ethnicity_source_value")
 	private String ethnicitySourceValue;
 	
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name="ethnicity_source_concept_id")
 	private Concept ethnicitySourceConcept;
 

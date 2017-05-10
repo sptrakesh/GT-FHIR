@@ -49,7 +49,7 @@ public class CareSite extends BaseResourceEntity{
 	@JoinColumn(name="location_id")
 	private Location location;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name="place_of_service_concept_id")
 	private Concept placeOfServiceConcept;
 	

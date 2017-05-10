@@ -12,8 +12,8 @@ public class Domain {
 	@Column(name="domain_name")
 	private String domainName;
 	
-	@ManyToOne(cascade={CascadeType.MERGE})
-	@JoinColumn(name="domain_concept_id")
+	@ManyToOne(cascade={CascadeType.MERGE}, fetch = FetchType.LAZY)
+	@JoinColumn(name="domain_concept_id", referencedColumnName = "concept_id")
 	private Concept domainConcept;
 	
 	public Domain() {

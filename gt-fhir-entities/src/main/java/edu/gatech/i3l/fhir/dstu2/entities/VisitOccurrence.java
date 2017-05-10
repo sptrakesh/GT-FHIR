@@ -81,11 +81,11 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Column(name="visit_end_time")
 	private String endTime;
 
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade=CascadeType.MERGE)
 	@JoinColumn(name="place_of_service_concept_id")
 	private Concept placeOfServiceConcept;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name="visit_type_concept_id")
 	private Concept visitTypeConcept;
 	
@@ -100,7 +100,7 @@ public class VisitOccurrence extends BaseResourceEntity {
 	@Column(name="visit_source_value")
 	private String visitSourceValue;
 	
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.MERGE)
 	@JoinColumn(name="visit_source_concept_id")
 	private Concept visitSourceConcept;
 

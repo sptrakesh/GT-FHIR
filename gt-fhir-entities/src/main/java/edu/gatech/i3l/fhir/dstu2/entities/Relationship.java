@@ -1,8 +1,16 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name="relationship")
 public class Relationship {
 
+    @Id
+    @Column(name="relationship_id", updatable = false, insertable = false)
 	private String id;
+
+    @Column(name="relationship_name", nullable = false, insertable = false, updatable = false)
 	private String name;
 
 	/* 
@@ -11,17 +19,24 @@ public class Relationship {
 	 */
 	/**
 	 * Defines whether a relationship defines concepts into classes or
-	 * hierarchies. Values are Y for hierarchical relationship or NULL if not.
+	 * hierarchies. Values are 1 for hierarchical relationship or 0 if not.
 	 */
+	@Column(name = "is_hierarchical", nullable = false, insertable = false, updatable = false)
 	private Character isHierarchical;
+
 	/**
 	 * Defines whether a hierarchical relationship contributes to the
 	 * concept_ancestor table. These are subsets of the hierarchical
-	 * relationships. Valid values are Y or NULL.
+	 * relationships. Valid values are 1 or 0.
 	 */
+	@Column(name = "defines_ancestry", nullable = false, insertable = false, updatable = false)
 	private Character definesAncestry;
-	
+
+	@Column(name = "reverse_relationship_id", nullable = false, insertable = false, updatable = false)
 	private String reverseRelationshipId;
+
+    @OneToOne(cascade={CascadeType.MERGE})
+    @JoinColumn(name="relationship_concept_id", referencedColumnName="concept_id", insertable=false, updatable=false)
 	private Concept relationshipConcept;
 
 	public Relationship() {

@@ -1,14 +1,34 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import javax.persistence.*;
 import java.util.Date;
 
+@Entity
+@Table(name="concept_relationship")
 public class ConceptRelationship {
 
+	@Column(name="concept_id_1", updatable=false, nullable = false)
+	@OneToOne(cascade={CascadeType.MERGE})
+	@JoinColumn(name="concept_id_1", referencedColumnName="concept_id", insertable=false, updatable=false)
 	private Concept concept1;
+
+    @Column(name="concept_id_2", updatable=false, nullable = false)
+    @OneToOne(cascade={CascadeType.MERGE})
+    @JoinColumn(name="concept_id_2", referencedColumnName="concept_id", insertable=false, updatable=false)
 	private Concept concept2;
+
+    @Column(name="relationship_id", updatable=false, nullable = false)
+    @OneToOne(cascade={CascadeType.MERGE})
+    @JoinColumn(name="relationship_id", referencedColumnName="relationship_id", insertable=false, updatable=false)
 	private Relationship relationship;
+
+    @Column(name="valid_start_date", updatable=false, nullable = false)
 	private Date validStartDate;
+
+    @Column(name="valid_end_date", updatable=false, nullable = false)
 	private Date validEndDate;
+
+    @Column(name="invalid_reason", updatable=false, nullable = false)
 	private Character invalidReason;
 
 	public ConceptRelationship() {

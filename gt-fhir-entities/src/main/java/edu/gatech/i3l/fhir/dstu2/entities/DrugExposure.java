@@ -40,7 +40,7 @@ public abstract class DrugExposure extends BaseResourceEntity {
 	@Column(name = "effective_drug_dose")
 	private Double effectiveDrugDose;
 	
-	@ManyToOne(cascade={CascadeType.ALL})
+	@ManyToOne(cascade={CascadeType.MERGE})
 	@JoinColumn(name = "dose_unit_concept_id")
 	private Concept doseUnitConcept;
 	
