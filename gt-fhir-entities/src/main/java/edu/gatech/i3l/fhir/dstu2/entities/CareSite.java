@@ -23,6 +23,7 @@ import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Organization;
 import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -37,8 +38,9 @@ import org.hibernate.annotations.Cascade;
 //})
 public class CareSite extends BaseResourceEntity{
 	
-	public static final String RES_TYPE = "Organization";
-	
+    private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(CareSite.class);
+    public static final String RES_TYPE = "Organization";
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="care_site_id", updatable = false)
@@ -186,7 +188,8 @@ public class CareSite extends BaseResourceEntity{
 			Organization orgResource = (Organization) resource;
 			
 			// We are writing to the database. Keep the source so we know where it is coming from
-			if (orgResource.getId() != null) {
+			IdDt myID = orgResource.getId();
+			if (myID != null && myID.getIdPartAsLong() != null && myID.getIdPart() != null) {
 				// See if we already have this in the source field. If so,
 				// then we want update not create
 				ConditionOccurrence origCareSite = (ConditionOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(CareSite.class, "CareSite", "careSiteSourceValue", orgResource.getId().getIdPart());
@@ -194,6 +197,17 @@ public class CareSite extends BaseResourceEntity{
 					this.careSiteSourceValue = orgResource.getId().getIdPart();
 				else
 					this.setId(origCareSite.getId());
+			} else {
+                // We have no CareSite ID. However, we could have a matching organization. Compare
+                // name and address.
+                ourLog.info("No Organization ID provided");
+                List<AddressDt> addresses = orgResource.getAddress();
+                AddressDt newAddress = (addresses.size() > 0) ? addresses.get(0) : null;
+                Long existingID = (newAddress != null) ? OmopConceptMapping.getInstance().getOrganizationByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
+                if (existingID != null) {
+                    ourLog.info("CareSite Exists with CID={}",existingID);
+                    this.setId(existingID);
+                }
 			}
 			
 			// Organization.name to CareSiteName

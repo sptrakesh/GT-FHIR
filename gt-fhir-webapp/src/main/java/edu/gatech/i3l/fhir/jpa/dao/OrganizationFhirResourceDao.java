@@ -31,28 +31,20 @@ public class OrganizationFhirResourceDao extends BaseFhirResourceDao<Organizatio
                     CriteriaBuilder theBuilder) {
 			    switch ( theParamName ) {
                     case Organization.SP_NAME:
+                        return theBuilder.like(from.get("careSiteName").as(String.class), likeExpression);
+                    case Organization.SP_ADDRESS:
                         final Path location = from.get("location");
-                        if (location != null)
-                        {
-                            final Predicate lc1 = theBuilder.like(from.get("location").get("address1").as(String.class), likeExpression);
-                            final Predicate lc2 = theBuilder.like(from.get("location").get("address2").as(String.class), likeExpression);
-                            final Predicate lc3 = theBuilder.like(from.get("location").get("city").as(String.class), likeExpression);
-                            final Predicate lc4 = theBuilder.like(from.get("location").get("state").as(String.class), likeExpression);
-                            final Predicate lc5 = theBuilder.like(from.get("location").get("zipCode").as(String.class), likeExpression);
-                            final Predicate lc6 = theBuilder.like(from.get("location").get("country").as(String.class), likeExpression);
-                            final Predicate lc = theBuilder.or(lc1, lc2, lc3, lc4, lc5, lc6);
-                            final Predicate name = theBuilder.like(from.get("careSiteName").as(String.class), likeExpression);
-                            return theBuilder.and(name,lc);
-                        }
-                        else
-                        {
-                            return theBuilder.like(from.get("careSiteName").as(String.class), likeExpression);
-                        }
+                        final Predicate lc1 = theBuilder.like(location.get("address1").as(String.class), likeExpression);
+                        final Predicate lc2 = theBuilder.like(location.get("address2").as(String.class), likeExpression);
+                        final Predicate lc3 = theBuilder.like(location.get("city").as(String.class), likeExpression);
+                        final Predicate lc4 = theBuilder.like(location.get("state").as(String.class), likeExpression);
+                        final Predicate lc5 = theBuilder.like(location.get("zipCode").as(String.class), likeExpression);
+                        final Predicate lc6 = theBuilder.like(location.get("country").as(String.class), likeExpression);
+                        return theBuilder.or(lc1, lc2, lc3, lc4, lc5, lc6);
 			    	default:
 						return super.translatePredicateString(entity, theParamName, likeExpression, from, theBuilder);
 				}
 			}
 		};
 	}
-
 }

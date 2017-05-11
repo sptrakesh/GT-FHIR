@@ -12,6 +12,7 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import edu.gatech.i3l.fhir.dstu2.entities.CareSite;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
@@ -230,7 +231,41 @@ public class OmopConceptMapping implements Runnable {
 			return person_c.getId();
 		} else return null;
 	}
-	
+
+	public Long getOrganizationByNameAndLocation(CareSite organization, Location location) {
+		if (organization == null) return null;
+
+		final StringBuilder builder = new StringBuilder( 128 );
+		builder.append("SELECT o FROM CareSite o where ");
+
+		String name = organization.getCareSiteName();
+		builder.append( "o.careSiteName = :name" );
+
+		if (location != null) {
+			builder.append(" AND o.location.id = :location");
+		}
+
+		System.out.println("Query for CareSite: "+builder);
+
+		TypedQuery<? extends BaseResourceEntity> query = entityManager.createQuery(builder.toString(), CareSite.class);
+		query.setParameter("name", name);
+		if (location != null) query = query.setParameter("location", location.getId());
+
+		if (location!=null)
+		{
+			System.out.println("name:"+name+", location:"+location.getId());
+		}
+		else
+		{
+			System.out.println("name:"+name);
+		}
+		List<? extends BaseResourceEntity> results = query.getResultList();
+		if (results.size() > 0) {
+			CareSite cs = (CareSite) results.get(0);
+			return cs.getId();
+		} else return null;
+	}
+
 	public Object loadEntityById(Class<? extends BaseResourceEntity> class1, Long primaryKey){
 		return entityManager.find(class1, primaryKey); 
 	}
