@@ -27,6 +27,7 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.CareSiteDAO;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 import org.hibernate.annotations.Cascade;
 
@@ -203,7 +204,7 @@ public class CareSite extends BaseResourceEntity{
                 ourLog.info("No Organization ID provided");
                 List<AddressDt> addresses = orgResource.getAddress();
                 AddressDt newAddress = (addresses.size() > 0) ? addresses.get(0) : null;
-                Long existingID = (newAddress != null) ? OmopConceptMapping.getInstance().getOrganizationByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
+                Long existingID = (newAddress != null) ? CareSiteDAO.getInstance().getOrganizationByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
                 if (existingID != null) {
                     ourLog.info("CareSite Exists with CID={}",existingID);
                     this.setId(existingID);
