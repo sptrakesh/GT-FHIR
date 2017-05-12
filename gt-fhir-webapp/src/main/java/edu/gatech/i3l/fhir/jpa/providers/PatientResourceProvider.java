@@ -71,9 +71,9 @@ public class PatientResourceProvider extends
 //			@OptionalParam(name="telecom")
 //			TokenAndListParam theTelecom, 
 //  
-//			@Description(shortDefinition="An address in any kind of address/part of the patient")
-//			@OptionalParam(name="address")
-//			StringAndListParam theAddress, 
+			@Description(shortDefinition="An address in any kind of address/part of the patient")
+			@OptionalParam(name="address")
+			StringAndListParam theAddress,
   
 			@Description(shortDefinition="Gender of the patient")
 			@OptionalParam(name="gender")
@@ -148,7 +148,7 @@ public class PatientResourceProvider extends
 			paramMap.add("given", theGiven);
 //			paramMap.add("phonetic", thePhonetic);
 //			paramMap.add("telecom", theTelecom);
-//			paramMap.add("address", theAddress);
+			paramMap.add("address", theAddress);
 			paramMap.add("gender", theGender);
 //			paramMap.add("language", theLanguage);
 			paramMap.add("birthdate", theBirthdate);

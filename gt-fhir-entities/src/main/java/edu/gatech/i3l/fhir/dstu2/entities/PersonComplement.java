@@ -23,6 +23,7 @@ import ca.uhn.fhir.model.dstu2.valueset.MaritalStatusCodesEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.PersonComplementDAO;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 /** 
@@ -247,19 +248,23 @@ public class PersonComplement extends Person{
 			Patient patient = (Patient)resource;
 			
 			Iterator<HumanNameDt> iterator = patient.getName().iterator();
-			//while(iterator.hasNext()){
-			if(iterator.hasNext()){
+			if (iterator.hasNext()) {
 				HumanNameDt next = iterator.next();
-				this.givenName1 = next.getGiven().get(0).getValue();//the next method was not advancing to the next element, then the need to use the get(index) method
+				if (!next.getGiven().isEmpty())
+                {
+                    this.givenName1 = next.getGiven().get(0).getValue();//the next method was not advancing to the next element, then the need to use the get(index) method
+                }
 				if(next.getGiven().size() > 1) //TODO add unit tests, to assure this won't be changed to hasNext
-					this.givenName2 = next.getGiven().get(1).getValue();
+                {
+                    this.givenName2 = next.getGiven().get(1).getValue();
+                }
 				Iterator<StringDt> family = next.getFamily().iterator();
 				this.familyName = "";
 				while(family.hasNext()){
 					if (this.familyName == "") {
 						this.familyName = this.familyName.concat(family.next().getValue());
 					} else {
-						this.familyName = this.familyName.concat(" "+family.next().getValue());						
+						this.familyName = this.familyName.concat(" "+family.next().getValue());
 					}
 				}
 				if(next.getSuffix().iterator().hasNext())
@@ -267,8 +272,7 @@ public class PersonComplement extends Person{
 				if(next.getPrefix().iterator().hasNext())
 					this.prefixName = next.getPrefix().iterator().next().getValue();
 			}
-			//}
-			
+
 			IdDt myID = patient.getId();
 			if (myID != null && myID.getIdPartAsLong() != null && myID.getIdPart() != null) {
 				PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, myID.getIdPartAsLong());
@@ -287,7 +291,7 @@ public class PersonComplement extends Person{
 				ourLog.info("No Patient ID provided");
 				List<AddressDt> addresses = patient.getAddress();
 				AddressDt newAddress = (addresses.size() > 0) ? addresses.get(0) : null;
-				Long existingID = (newAddress != null) ? OmopConceptMapping.getInstance().getPersonByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
+				Long existingID = (newAddress != null) ? PersonComplementDAO.getInstance().getPersonIdByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
 				if (existingID != null) {
 					ourLog.info("Patient Exists with PID={}",existingID);
 					this.setId(existingID);

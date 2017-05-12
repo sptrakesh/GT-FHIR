@@ -39,7 +39,7 @@ public class OrganizationFhirResourceDao extends BaseFhirResourceDao<Organizatio
                         final Predicate lc3 = theBuilder.like(location.get("city").as(String.class), likeExpression);
                         final Predicate lc4 = theBuilder.like(location.get("state").as(String.class), likeExpression);
                         final Predicate lc5 = theBuilder.like(location.get("zipCode").as(String.class), likeExpression);
-                        final Predicate lc6 = theBuilder.like(location.get("country").as(String.class), likeExpression);
+						final Predicate lc6 = theBuilder.like(location.get("country").as(String.class), likeExpression);
                         return theBuilder.or(lc1, lc2, lc3, lc4, lc5, lc6);
 			    	default:
 						return super.translatePredicateString(entity, theParamName, likeExpression, from, theBuilder);

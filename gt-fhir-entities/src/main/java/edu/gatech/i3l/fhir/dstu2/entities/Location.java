@@ -11,7 +11,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
@@ -47,7 +46,10 @@ public class Location extends BaseResourceEntity {
 	
 	@Column(name="state")
 	private String state;
-	
+
+	@Column(name="county")
+	private String country;
+
 	@Column(name="zip")
 	private String zipCode;
 	
@@ -107,6 +109,10 @@ public class Location extends BaseResourceEntity {
 	public void setZipCode(String zipCode) {
 		this.zipCode = zipCode;
 	}
+
+	public String getCountry() { return country; }
+
+	public void setCountry(String county) { this.country = county; }
 
 	public String getLocationSourceValue() {
 		return locationSourceValue;
@@ -221,6 +227,4 @@ public class Location extends BaseResourceEntity {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-
 }
