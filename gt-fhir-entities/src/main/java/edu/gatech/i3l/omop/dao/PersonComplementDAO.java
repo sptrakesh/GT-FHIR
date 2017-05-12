@@ -19,8 +19,6 @@ public class PersonComplementDAO {
     private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PersonComplementDAO.class);
 
     private static final PersonComplementDAO singleton = new PersonComplementDAO();
-    public static PersonComplementDAO getInstance() { return singleton; }
-
     private final EntityManager entityManager;
 
     private PersonComplementDAO() {
@@ -29,10 +27,14 @@ public class PersonComplementDAO {
         entityManager = myAppCtx.getBean(baseFhirDao, BaseFhirDao.class).getEntityManager();
     }
 
+    public static PersonComplementDAO getInstance() {
+        return singleton;
+    }
+
     public Long getPersonIdByNameAndLocation(PersonComplement person, Location location) {
         if (person == null) return null;
 
-        final StringBuilder builder = new StringBuilder( 128 );
+        final StringBuilder builder = new StringBuilder(128);
         builder.append("SELECT p FROM PersonComplement p where ");
 
         String family_name = person.getFamilyName();
@@ -41,13 +43,13 @@ public class PersonComplementDAO {
 
         // Construct where clause here.
         boolean addAnd = false;
-        if (StringUtils.isNotBlank(family_name))  {
-            builder.append( "p.familyName = :fname" );
+        if (StringUtils.isNotBlank(family_name)) {
+            builder.append("p.familyName = :fname");
             addAnd = true;
         }
 
         if (StringUtils.isNotBlank(given1_name)) {
-            if (!addAnd) builder.append( "p.givenName1 LIKE :gname1");
+            if (!addAnd) builder.append("p.givenName1 LIKE :gname1");
             else builder.append(" AND p.givenName1 LIKE :gname1");
         }
         if (StringUtils.isNotBlank(given2_name)) {
@@ -60,7 +62,7 @@ public class PersonComplementDAO {
             else builder.append(" AND p.location.id = :location");
         }
 
-        System.out.println("Query for Person: "+builder);
+        System.out.println("Query for Person: " + builder);
 
         TypedQuery<? extends BaseResourceEntity> query = entityManager.createQuery(builder.toString(), PersonComplement.class);
         if (StringUtils.isNotBlank(family_name)) query = query.setParameter("fname", family_name);
@@ -68,13 +70,10 @@ public class PersonComplementDAO {
         if (StringUtils.isNotBlank(given2_name)) query = query.setParameter("gname2", given2_name);
         if (location != null) query = query.setParameter("location", location.getId());
 
-        if (location!=null)
-        {
-            System.out.println("family:"+family_name+" gname1:"+given1_name+" gname2:"+given2_name+" location:"+location.getId());
-        }
-        else
-        {
-            System.out.println("family:"+family_name+" gname1:"+given1_name+" gname2:"+given2_name);
+        if (location != null) {
+            System.out.println("family:" + family_name + " gname1:" + given1_name + " gname2:" + given2_name + " location:" + location.getId());
+        } else {
+            System.out.println("family:" + family_name + " gname1:" + given1_name + " gname2:" + given2_name);
         }
         List<? extends BaseResourceEntity> results = query.getResultList();
         if (results.size() > 0) {

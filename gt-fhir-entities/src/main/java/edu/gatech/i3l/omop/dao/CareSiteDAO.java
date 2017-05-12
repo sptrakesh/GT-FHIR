@@ -18,8 +18,6 @@ public class CareSiteDAO {
     private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(CareSiteDAO.class);
 
     private static final CareSiteDAO singleton = new CareSiteDAO();
-    public static CareSiteDAO getInstance() { return singleton; }
-
     private final EntityManager entityManager;
 
     private CareSiteDAO() {
@@ -28,14 +26,18 @@ public class CareSiteDAO {
         entityManager = myAppCtx.getBean(baseFhirDao, BaseFhirDao.class).getEntityManager();
     }
 
+    public static CareSiteDAO getInstance() {
+        return singleton;
+    }
+
     public Long getOrganizationByNameAndLocation(CareSite organization, Location location) {
         if (organization == null) return null;
 
-        final StringBuilder builder = new StringBuilder( 128 );
+        final StringBuilder builder = new StringBuilder(128);
         builder.append("SELECT o FROM CareSite o where ");
 
         String name = organization.getCareSiteName();
-        builder.append( "o.careSiteName = :name" );
+        builder.append("o.careSiteName = :name");
 
         if (location != null) {
             builder.append(" AND o.location.id = :location");
