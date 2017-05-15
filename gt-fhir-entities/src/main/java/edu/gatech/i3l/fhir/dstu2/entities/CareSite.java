@@ -214,7 +214,7 @@ public class CareSite extends BaseResourceEntity {
                 ourLog.info("No Organization ID provided");
                 List<AddressDt> addresses = orgResource.getAddress();
                 AddressDt newAddress = (addresses.size() > 0) ? addresses.get(0) : null;
-                Long existingID = (newAddress != null) ? CareSiteDAO.getInstance().getOrganizationByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
+                Long existingID = (newAddress != null) ? CareSiteDAO.getInstance().getByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
                 if (existingID != null) {
                     ourLog.info("CareSite Exists with CID={}", existingID);
                     this.setId(existingID);

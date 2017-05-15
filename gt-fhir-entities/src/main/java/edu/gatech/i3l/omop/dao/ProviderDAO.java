@@ -2,6 +2,7 @@ package edu.gatech.i3l.omop.dao;
 
 import edu.gatech.i3l.fhir.dstu2.entities.CareSite;
 import edu.gatech.i3l.fhir.dstu2.entities.Location;
+import edu.gatech.i3l.fhir.dstu2.entities.Provider;
 import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import org.springframework.web.context.ContextLoaderListener;
@@ -12,45 +13,45 @@ import javax.persistence.TypedQuery;
 import java.util.List;
 
 /**
- * Created by rakesh.vidyadharan on 5/11/17.
+ * Created by rakesh.vidyadharan on 5/12/17.
  */
-public class CareSiteDAO {
-    private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(CareSiteDAO.class);
+public class ProviderDAO {
+    private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(ProviderDAO.class);
 
-    private static final CareSiteDAO singleton = new CareSiteDAO();
+    private static final ProviderDAO singleton = new ProviderDAO();
     private final EntityManager entityManager;
 
-    private CareSiteDAO() {
+    private ProviderDAO() {
         String baseFhirDao = "myBaseDao";
         WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
         entityManager = myAppCtx.getBean(baseFhirDao, BaseFhirDao.class).getEntityManager();
     }
 
-    public static CareSiteDAO getInstance() {
+    public static ProviderDAO getInstance() {
         return singleton;
     }
 
-    public Long getByNameAndLocation(CareSite organization, Location location) {
-        if (organization == null) return null;
+    public Long getByNameAndLocation(final Provider provider, final Location location) {
+        if (provider == null) return null;
 
         final StringBuilder builder = new StringBuilder(128);
-        builder.append("SELECT o FROM CareSite o where ");
+        builder.append("SELECT p FROM Provider p where ");
 
-        String name = organization.getCareSiteName();
-        builder.append("o.careSiteName = :name");
+        String name = provider.getProviderName();
+        builder.append("p.providerName = :name");
 
-        if (location != null) {
-            builder.append(" AND o.location.id = :location");
+        if (location != null && provider.getCareSite() != null) {
+            builder.append(" AND p.careSite.location.id = :location");
         }
 
-        TypedQuery<? extends BaseResourceEntity> query = entityManager.createQuery(builder.toString(), CareSite.class);
+        TypedQuery<? extends BaseResourceEntity> query = entityManager.createQuery(builder.toString(), Provider.class);
         query.setParameter("name", name);
         if (location != null) query = query.setParameter("location", location.getId());
 
         List<? extends BaseResourceEntity> results = query.getResultList();
         if (results.size() > 0) {
-            CareSite cs = (CareSite) results.get(0);
-            return cs.getId();
+            Provider pr = (Provider) results.get(0);
+            return pr.getId();
         } else return null;
     }
 }
