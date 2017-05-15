@@ -2,20 +2,19 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.HumanNameDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.composite.*;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import ca.uhn.fhir.model.dstu2.resource.Practitioner.PractitionerRole;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.DateDt;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ProviderDAO;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
@@ -28,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import static java.lang.String.format;
 
 @Entity
 @Table(name = "provider")
@@ -323,9 +324,19 @@ public class Provider extends BaseResourceEntity {
         String familyName = humanName.getFamilyAsSingleString().replace(" ", "_");
         String givenName = humanName.getGivenAsSingleString();
         String suffixName = humanName.getSuffixAsSingleString();
+        this.setProviderName(format( "%s %s %s", givenName, familyName, suffixName));
 
-        String omopName = givenName + " " + familyName + ", " + suffixName;
-        this.setProviderName(omopName);
+        IdDt myID = practitioner.getId();
+        if (myID != null && myID.getIdPartAsLong() != null && myID.getIdPart() != null) {
+            this.setId(myID.getIdPartAsLong());
+        } else {
+            List<AddressDt> addresses = practitioner.getAddress();
+            AddressDt newAddress = (addresses.size() > 0) ? addresses.get(0) : null;
+            Long existingID = (newAddress != null) ? ProviderDAO.getInstance().getByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
+            if (existingID != null) {
+                this.setId(existingID);
+            }
+        }
 
         this.genderConcept = new Concept();
         this.genderConcept.setId(OmopConceptMapping.getInstance().get(practitioner.getGender().substring(0, 1), OmopConceptMapping.GENDER));

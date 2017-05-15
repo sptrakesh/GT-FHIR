@@ -31,7 +31,7 @@ public class PersonComplementDAO {
         return singleton;
     }
 
-    public Long getPersonIdByNameAndLocation(PersonComplement person, Location location) {
+    public Long getByNameAndLocation(PersonComplement person, Location location) {
         if (person == null) return null;
 
         final StringBuilder builder = new StringBuilder(128);

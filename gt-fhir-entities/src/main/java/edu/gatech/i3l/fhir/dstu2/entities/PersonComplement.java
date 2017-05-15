@@ -298,7 +298,7 @@ public class PersonComplement extends Person {
                 ourLog.info("No Patient ID provided");
                 List<AddressDt> addresses = patient.getAddress();
                 AddressDt newAddress = (addresses.size() > 0) ? addresses.get(0) : null;
-                Long existingID = (newAddress != null) ? PersonComplementDAO.getInstance().getPersonIdByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
+                Long existingID = (newAddress != null) ? PersonComplementDAO.getInstance().getByNameAndLocation(this, Location.searchByAddressDt(newAddress)) : null;
                 if (existingID != null) {
                     ourLog.info("Patient Exists with PID={}", existingID);
                     this.setId(existingID);
