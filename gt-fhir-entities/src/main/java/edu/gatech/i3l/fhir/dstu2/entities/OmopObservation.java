@@ -21,13 +21,11 @@ import java.util.List;
 @Table(name = "observation")
 public class OmopObservation extends BaseResourceEntity {
 
-    /**
-     *
-     */
     private static final String RES_TYPE = "Observation";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "observation_measurement_sequence")
+    @SequenceGenerator(name="observation_measurement_sequence", sequenceName="observation_measurement_sequence", allocationSize=1)
     @Column(name = "observation_id", updatable = false)
     @Access(AccessType.PROPERTY)
     private Long id;
@@ -42,9 +40,8 @@ public class OmopObservation extends BaseResourceEntity {
     @NotNull
     private Concept observationConcept;
 
-    @Column(name = "observation_date", nullable = false)
+    @Column(name = "observation_date")
     @Temporal(TemporalType.DATE)
-    @NotNull
     private Date date;
 
     @Column(name = "observation_time")
@@ -292,13 +289,15 @@ public class OmopObservation extends BaseResourceEntity {
             }
         }
 
-        if (obs.getEffective() instanceof DateTimeDt) {
-            this.date = ((DateTimeDt) obs.getEffective()).getValue();
-            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-            this.time = timeFormat.format(((DateTimeDt) obs.getEffective()).getValue());
-        } else if (obs.getEffective() instanceof PeriodDt) {
-            // TODO: we need to handle period. We can probably use
-            // we can use range_low and range_high. These are only available in Measurement
+        if (obs.getEffective() != null) {
+            if (obs.getEffective() instanceof DateTimeDt) {
+                this.date = ((DateTimeDt) obs.getEffective()).getValue();
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                this.time = timeFormat.format(((DateTimeDt) obs.getEffective()).getValue());
+            } else if (obs.getEffective() instanceof PeriodDt) {
+                // TODO: we need to handle period. We can probably use
+                // we can use range_low and range_high. These are only available in Measurement
+            }
         }
 
 		/* Set visit occurrence */

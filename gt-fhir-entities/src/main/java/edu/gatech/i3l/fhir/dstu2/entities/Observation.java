@@ -10,18 +10,13 @@ import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
-import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ObservationDAO;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
-import org.springframework.web.context.ContextLoaderListener;
-import org.springframework.web.context.WebApplicationContext;
 
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -58,9 +53,8 @@ public class Observation extends BaseResourceEntity {
     @NotNull
     private Concept observationConcept;
 
-    @Column(name = "observation_date", nullable = false)
+    @Column(name = "observation_date")
     @Temporal(TemporalType.DATE)
-    @NotNull
     private Date date;
 
     @Column(name = "observation_time")
@@ -292,13 +286,16 @@ public class Observation extends BaseResourceEntity {
         ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
         OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 
-        if (observation.getEffective() instanceof DateTimeDt) {
-            this.date = ((DateTimeDt) observation.getEffective()).getValue();
-            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-            this.time = timeFormat.format(((DateTimeDt) observation.getEffective()).getValue());
-        } else if (observation.getEffective() instanceof PeriodDt) {
-            // TODO: we need to handle period. We can probably use
-            // we can use range_low and range_high. These are only available in Measurement
+        if (observation.getEffective() != null)
+        {
+            if (observation.getEffective() instanceof DateTimeDt) {
+                this.date = ((DateTimeDt) observation.getEffective()).getValue();
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                this.time = timeFormat.format(((DateTimeDt) observation.getEffective()).getValue());
+            } else if (observation.getEffective() instanceof PeriodDt) {
+                // TODO: we need to handle period. We can probably use
+                // we can use range_low and range_high. These are only available in Measurement
+            }
         }
 
 		/*
@@ -388,13 +385,14 @@ public class Observation extends BaseResourceEntity {
         ca.uhn.fhir.model.dstu2.resource.Observation observation = new ca.uhn.fhir.model.dstu2.resource.Observation();
         observation.setId(this.getIdDt());
 
-        String systemUriString = this.observationConcept.getVocabulary().getSystemUri();
-        String codeString = this.observationConcept.getConceptCode();
-        String displayString;
-        if (this.observationConcept.getId() == 0L) {
-            displayString = this.getSourceValue();
-        } else {
-            displayString = this.observationConcept.getName();
+        String systemUriString = null;
+        String codeString = null;
+        String displayString = null;
+
+        if (observationConcept != null) {
+            systemUriString = this.observationConcept.getVocabulary().getSystemUri();
+            codeString = this.observationConcept.getConceptCode();
+            displayString = (observationConcept.getId() == 0L) ? getSourceValue() : observationConcept.getName();
         }
 
         // OMOP database maintains Systolic and Diastolic Blood Pressures separately.
@@ -403,7 +401,7 @@ public class Observation extends BaseResourceEntity {
         // together. The Observation ID will be systolic's OMOP ID.
         // public static final Long SYSTOLIC_CONCEPT_ID = new Long(3004249);
         // public static final Long DIASTOLIC_CONCEPT_ID = new Long(3012888);
-        if (SYSTOLIC_CONCEPT_ID.equals(this.observationConcept.getId())) {
+        if (observationConcept != null && SYSTOLIC_CONCEPT_ID.equals(observationConcept.getId())) {
             // Set coding for systolic and diastolic observation
             systemUriString = "http://loinc.org";
             codeString = "55284-4";
@@ -431,21 +429,7 @@ public class Observation extends BaseResourceEntity {
                 components.add(comp);
             }
 
-            // Now search for diastolic component.
-            WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
-            EntityManager entityManager = myAppCtx.getBean("myBaseDao", BaseFhirDao.class).getEntityManager();
-
-            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<Observation> criteria = builder.createQuery(Observation.class);
-            Root<Observation> from = criteria.from(Observation.class);
-            criteria.select(from).where(
-                    builder.equal(from.get("observationConcept").get("id"), DIASTOLIC_CONCEPT_ID),
-                    builder.equal(from.get("person").get("id"), this.person.getId()),
-                    builder.equal(from.get("date"), this.date),
-                    builder.equal(from.get("time"), this.time)
-            );
-            TypedQuery<Observation> query = entityManager.createQuery(criteria);
-            List<Observation> results = query.getResultList();
+            List<Observation> results = ObservationDAO.getInstance().getDiastolicObservation(this);
             if (results.size() > 0) {
                 Observation diastolicOb = results.get(0);
                 comp = new Component();

@@ -227,7 +227,7 @@ public abstract class BaseFhirResourceDao<T extends IResource> implements IFhirR
 	public T read(IIdType theId) {
 
 		StopWatch w = new StopWatch();
-		BaseResourceEntity entity = (BaseResourceEntity) readEntity(theId);
+		BaseResourceEntity entity = readEntity(theId);
 		T retVal = null;
 		if( entity != null){
 			retVal = (T) entity.getRelatedResource();

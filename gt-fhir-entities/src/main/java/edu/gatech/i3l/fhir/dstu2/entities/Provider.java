@@ -56,7 +56,7 @@ public class Provider extends BaseResourceEntity {
     @JoinColumn(name = "specialty_concept_id")
     private Concept specialtyConcept;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "care_site_id")
     private CareSite careSite;
 

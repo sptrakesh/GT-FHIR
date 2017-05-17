@@ -9,7 +9,7 @@ import java.sql.Date;
 public class Death {
 
     @Column(name = "person_id", updatable = false, nullable = false)
-    @OneToOne(cascade = {CascadeType.ALL})
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "person_id", referencedColumnName = "person_id")
     private Person person;
 

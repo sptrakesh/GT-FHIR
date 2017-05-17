@@ -41,7 +41,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "person_id", nullable = false)
     @NotNull
     private PersonComplement person;
@@ -73,11 +73,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
      * @fhirVersion 0.4.0
      * @omopVersion 4.0
      */
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "provider_id")
     private Provider provider;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "visit_occurrence_id")
     private VisitOccurrence encounter;
 

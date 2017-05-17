@@ -4,11 +4,11 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
-import groovyx.net.http.RESTClient
+import groovy.transform.Field
 
 String.metaClass.encodeURL =
 {
-   java.net.URLEncoder.encode( delegate, 'UTF-8' )
+   java.net.URLEncoder.encode delegate, 'UTF-8'
 }
 
 class Name
@@ -18,8 +18,8 @@ class Name
   String toString() { "$given $family" }
 }
 
-server = 'http://localhost:8080'
-baseUrl = '/gt-fhir-webapp/base'
+@Field def server = 'http://localhost:8080'
+@Field def baseUrl = '/gt-fhir-webapp/base'
 
 def parseName( json )
 {
@@ -149,74 +149,10 @@ def delete( url )
   catch ( Throwable t ) { println "$url\n$t" }
 }
 
-def patient = 
-'''{
-  "resourceType": "Patient",
-  "meta": {
-    "versionId": "5",
-    "lastUpdated": "2017-04-28T14:59:13.048-04:00"
-  },
-  "text": {
-    "status": "generated",
-    "div": "<div xmlns='http://www.w3.org/1999/xhtml'>SANTIAGO KUROWSKI</div>"
-  },
-  "name": [
-    {
-      "use": "official",
-      "text": "SANTIAGO KUROWSKI",
-      "family": [
-        "KUROWSKI"
-      ],
-      "given": [
-        "SANTIAGO"
-      ]
-    },
-    {
-      "family": [
-        "Parker"
-      ],
-      "given": [
-        "Austin"
-      ]
-    }
-  ],
-  "gender": "female",
-  "birthDate": "1937-05-14",
-  "address": [
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/geolocation",
-          "extension": [
-            {
-              "url": "latitude",
-              "valueDecimal": 41.94717542029152
-            },
-            {
-              "url": "longitude",
-              "valueDecimal": -71.35055546377211
-            }
-          ]
-        }
-      ],
-      "line": [
-        "1318 Rebecca Freeway"
-      ],
-      "city": "North Attleborough",
-      "state": "MA",
-      "postalCode": "02761"
-    }
-  ],
-  "maritalStatus": {
-    "coding": [
-      {
-        "system": "http://hl7.org/fhir/v3/MaritalStatus",
-        "code": "M"
-      }
-    ]
-  }
-}
-'''
+def sourceFile = new File( 'Data.groovy' )
+def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
+def object = (GroovyObject) cls.newInstance()
+def patient = object.patient
 
 def patientUrl = create patient
 println "Created patient at url: $patientUrl"

@@ -32,7 +32,7 @@ public final class MedicationOrderView extends DrugExposure {
 
     public static final String RES_TYPE = "MedicationOrder";
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "person_id", nullable = false)
     @NotNull
     private PersonComplement person;
@@ -64,14 +64,14 @@ public final class MedicationOrderView extends DrugExposure {
     /**
      * @fhir prescriber
      */
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "provider_id")
     private Provider prescribingProvider;
 
     /**
      * @fhir encounter
      */
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "visit_occurrence_id")
     private VisitOccurrence visitOccurrence;
 

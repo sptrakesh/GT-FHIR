@@ -32,7 +32,7 @@ public final class DrugExposureDispensed extends DrugExposure {
     @NotNull
     private Concept drugExposureType;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "person_id", nullable = false)
     @NotNull
     private Person person;

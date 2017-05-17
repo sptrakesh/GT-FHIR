@@ -4,11 +4,11 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
-import groovyx.net.http.RESTClient
+import groovy.transform.Field
 
 String.metaClass.encodeURL =
 {
-   java.net.URLEncoder.encode( delegate, 'UTF-8' )
+   java.net.URLEncoder.encode delegate, 'UTF-8'
 }
 
 class Name
@@ -18,8 +18,8 @@ class Name
   String toString() { "$given $family" }
 }
 
-server = 'http://localhost:8080'
-baseUrl = '/gt-fhir-webapp/base'
+@Field def server = 'http://localhost:8080'
+@Field def baseUrl = '/gt-fhir-webapp/base'
 
 def parseName( json )
 {
@@ -140,77 +140,10 @@ def delete( url )
   catch ( Throwable t ) { println "$url\n$t" }
 }
 
-def practitioner =
-'''{
-  "resourceType": "Practitioner",
-  "meta": {
-    "versionId": "1",
-    "lastUpdated": "2017-01-07T01:04:56.511-05:00"
-  },
-  "text": {
-    "status": "generated",
-    "div": "<div xmlns='http://www.w3.org/1999/xhtml'><p><b>Generated Narrative with Details</b></p><p><b>id</b>: f201</p><p><b>identifier</b>: UZI-nummer = 12345678901 (OFFICIAL)</p><p><b>active</b>: true</p><p><b>name</b>: Dokter Bronsig(OFFICIAL)</p><p><b>telecom</b>: ph: +31715269111(WORK)</p> <p><b>address</b>: Walvisbaai 3 C4 - Automatisering Den helder 2333ZA NLD (WORK)</p>\\n  <p><b>gender</b>: male</p>\\n  <p><b>birthDate</b>: Dec 24, 1956</p>\\n  <h3>Roles</h3>\\n  <table>\\n    <tr>\\n      <td>-</td>\\n      <td>\\n        <b>Organization</b>\\n      </td>\\n      <td>\\n        <b>Code</b>\\n      </td>\\n      <td>\\n        <b>Specialty</b>\\n      </td>\\n    </tr>\\n    <tr>\\n      <td>*</td>\\n      <td>\\n        <a>AUMC</a>\\n      </td>\\n      <td>Implementation of planned interventions <span>(Details : {SNOMED CT code '225304007' = 'Implementation of planned interventions (procedure)', given as 'Implementation of planned interventions'})</span></td>\\n      <td>Medical oncologist <span>(Details : {SNOMED CT code '310512001' = 'Medical oncologist (occupation)', given as 'Medical oncologist'})</span></td>\\n    </tr>\\n  </table>\\n  <h3>Qualifications</h3>\\n  <table>\\n    <tr>\\n      <td>-</td>\\n      <td>\\n        <b>Code</b>\\n      </td>\\n    </tr>\\n    <tr>\\n      <td>*</td>\\n      <td>Pulmonologist <span>(Details : {SNOMED CT code '41672002' = 'Respiratory disease specialist (occupation)', given as 'Pulmonologist'})</span></td></tr></table></div>"
-  },
-  "identifier": [
-    {
-      "use": "official",
-      "type": {
-        "text": "UZI-nummer"
-      },
-      "system": "urn:oid:2.16.528.1.1007.3.1",
-      "value": "12345678901"
-    }
-  ],
-  "active": true,
-  "name": {
-    "use": "official",
-    "text": "Dokter Bronsig",
-    "family": [
-      "Bronsig"
-    ],
-    "given": [
-      "Arend"
-    ],
-    "prefix": [
-      "Dr."
-    ]
-  },
-  "telecom": [
-    {
-      "system": "phone",
-      "value": "+31715269111",
-      "use": "work"
-    }
-  ],
-  "address": [
-    {
-      "use": "work",
-      "line": [
-        "Walvisbaai 3",
-        "C4 - Automatisering"
-      ],
-      "city": "Den helder",
-      "postalCode": "2333ZA",
-      "country": "NLD"
-    }
-  ],
-  "gender": "male",
-  "birthDate": "1956-12-24",
-  "qualification": [
-    {
-      "code": {
-        "coding": [
-          {
-            "system": "http://snomed.info/sct",
-            "code": "41672002",
-            "display": "Pulmonologist"
-          }
-        ]
-      }
-    }
-  ]
-}
-'''
+def sourceFile = new File( 'Data.groovy' )
+def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
+def object = (GroovyObject) cls.newInstance()
+def practitioner = object.practitioner
 
 def practitionerUrl = create practitioner
 println "Created practitioner at url: $practitionerUrl"

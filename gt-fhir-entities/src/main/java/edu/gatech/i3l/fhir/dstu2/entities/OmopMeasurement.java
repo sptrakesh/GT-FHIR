@@ -5,6 +5,7 @@ import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.*;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
+import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -12,7 +13,10 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -20,19 +24,16 @@ import java.util.List;
 @Table(name = "measurement")
 public class OmopMeasurement extends BaseResourceEntity {
 
-    public static final Long SYSTOLIC_CONCEPT_ID = 3004249L;
-    public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;
-    /**
-     *
-     */
     private static final String RES_TYPE = "Observation";
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "observation_measurement_sequence")
+    @SequenceGenerator(name="observation_measurement_sequence", sequenceName="observation_measurement_sequence", allocationSize=1)
     @Column(name = "measurement_id", updatable = false)
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "person_id", nullable = false)
     @NotNull
     private PersonComplement person;
@@ -71,7 +72,7 @@ public class OmopMeasurement extends BaseResourceEntity {
     // @Temporal(TemporalType.TIME)
     private String time;
 
-    @ManyToOne(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "visit_occurrence_id")
     private VisitOccurrence visitOccurrence;
 
@@ -208,8 +209,29 @@ public class OmopMeasurement extends BaseResourceEntity {
 
     @Override
     public IResource getRelatedResource() {
-        // TODO Auto-generated method stub
-        return null;
+        final Observation observation = new Observation();
+        observation.setId(id);
+        observation.setPerson(person);
+        if (valueAsNumber != null) observation.setValueAsNumber(new BigDecimal(valueAsNumber));
+        if (valueAsConcept != null) observation.setValueAsConcept(valueAsConcept);
+        if (rangeLow != null) observation.setRangeLow(new BigDecimal(rangeLow));
+        if (rangeHigh != null) observation.setRangeHigh(new BigDecimal(rangeHigh));
+        if (date != null) observation.setDate(date);
+        if (type != null) observation.setType(type);
+
+        final ca.uhn.fhir.model.dstu2.resource.Observation obs = (ca.uhn.fhir.model.dstu2.resource.Observation) observation.getRelatedResource();
+
+        if (measurementConcept != null) {
+            final String codeString = measurementConcept.getConceptCode();
+            final String systemUriString = measurementConcept.getVocabulary().getReference();
+            final String displayString = measurementConcept.getName();
+
+            final CodeableConceptDt ccd = new CodeableConceptDt(systemUriString, codeString);
+            ccd.getCodingFirstRep().setDisplay(displayString);
+            obs.setCode(ccd);
+        }
+
+        return obs;
     }
 
     @Override
@@ -299,18 +321,14 @@ public class OmopMeasurement extends BaseResourceEntity {
             this.visitOccurrence.setId(visitOccurrenceId);
         }
 
-		/* measture type concept id - this is required field in OMOP v5. */
-        setType(new Concept());
         CodeableConceptDt obsCategory = obs.getCategory();
-        if (obsCategory.isEmpty()) {
-            getType().setId(0L);
-        } else {
+        if (!obsCategory.isEmpty()) {
             List<CodingDt> catCodes = obsCategory.getCoding();
             for (CodingDt catCode : catCodes) {
                 if (catCode.getCode().equalsIgnoreCase("exam")) {
-                    getType().setId(44818701L);
+                    setType(new Concept(44818701L));
                 } else if (catCode.getCode().equalsIgnoreCase("laboratory")) {
-                    getType().setId(44818702L);
+                    setType(new Concept(4818702L));
                 }
             }
         }

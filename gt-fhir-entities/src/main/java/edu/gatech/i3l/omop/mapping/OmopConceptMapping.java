@@ -1,6 +1,7 @@
 package edu.gatech.i3l.omop.mapping;
 
 import edu.gatech.i3l.fhir.dstu2.entities.Concept;
+import edu.gatech.i3l.fhir.dstu2.entities.Domain;
 import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import org.springframework.web.context.ContextLoaderListener;
@@ -148,12 +149,9 @@ public class OmopConceptMapping implements Runnable {
     }
 
     public String getDomain(String conceptCode) {
-        TypedQuery<String> query = entityManager.createNamedQuery("findDomainByCode", String.class).setParameter("code", conceptCode);
-        List<String> results = query.getResultList();
-        if (results.size() > 0)
-            return results.get(0);
-        else
-            return null;
+        final TypedQuery<Domain> query = entityManager.createNamedQuery("findDomainByCode", Domain.class).setParameter("code", conceptCode);
+        final List<Domain> results = query.getResultList();
+        return (!results.isEmpty()) ? results.get(0).getDomainId() : null;
     }
 
     public String getVocabularyReference(String vocabularyName) {
