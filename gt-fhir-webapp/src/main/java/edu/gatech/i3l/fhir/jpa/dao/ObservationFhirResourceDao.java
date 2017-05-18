@@ -31,6 +31,8 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.Set;
 
+import static java.lang.String.format;
+
 @Transactional(propagation = Propagation.REQUIRED)
 public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation> {
     // Observation FHIR mapping to OMOP v5 requires accessing two different tables in OMOP v5.
@@ -57,11 +59,14 @@ public class ObservationFhirResourceDao extends BaseFhirResourceDao<Observation>
         StopWatch w = new StopWatch();
         String code = theResource.getCode().getCodingFirstRep().getCode();
         String domain = ocm.getDomain(code);
+        if (domain == null) domain = "";
         if (domain.equalsIgnoreCase("measurement")) myEntityClass = OmopMeasurement.class;
         else if (domain.equalsIgnoreCase("observation")) myEntityClass = OmopObservation.class;
         else {
+            final String message = format("Coding System (%s) Not Supported. We support Measurement or Observation domain code in OMOP v5", code);
+            ourLog.info(message);
             OperationOutcome oo = new OperationOutcome();
-            oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CODE).setDetails((new CodeableConceptDt()).setText("Coding System Not Supported. We support Measurement or Observation domain code in OMOP v5"));
+            oo.addIssue().setSeverity(IssueSeverityEnum.ERROR).setCode(IssueTypeEnum.INVALID_CODE).setDetails((new CodeableConceptDt()).setText(message));
             throw new UnprocessableEntityException(myContext, oo);
         }
 

@@ -176,7 +176,7 @@ class Data
 }'''
   }
 
-  String getObservation( patientId )
+  String getMeasurement( patientId )
   {
 """{
   "resourceType": "Observation",
@@ -213,6 +213,47 @@ class Data
   "unit": "mmHg",
   "system": "http://unitsofmeasure.org",
   "code": "mm[Hg]"
+  }
+}"""
+  }
+
+  String getObservation( patientId )
+  {
+"""{
+  "resourceType": "Observation",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2017-03-07T18:50:16.717-05:00"
+  },
+  "status": "final",
+  "category": {
+    "coding": [
+      {
+        "code": "social-history"
+      }
+    ]
+  },
+  "code": {
+    "coding": [
+      {
+        "system": "urn:oid:2.16.840.1.113883.6.96",
+        "code": "8392000",
+        "display": "SNOMEDCT"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/$patientId"
+  },
+  "valueCodeableConcept": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "8392000",
+        "display": "Smoking"
+      }
+    ],
+    "text": "Smoking"
   }
 }"""
   }

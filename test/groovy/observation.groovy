@@ -89,6 +89,32 @@ def delete( url )
   catch ( Throwable t ) { println "$url\n$t" }
 }
 
+def measurement( object, patientId )
+{
+  def measurement = object.getMeasurement patientId
+  def measurementUrl = create measurement
+  println "Created measurement at url: $measurementUrl"
+  if ( ! measurementUrl ) System.exit 1
+
+  def json = read measurementUrl
+
+  println "Deleting observation with type: ${json.resourceType} and id: ${json.id}"
+  delete measurementUrl
+}
+
+def observation( object, patientId )
+{
+  def observation = object.getObservation patientId
+  def observationUrl = create observation
+  println "Created observation at url: $observationUrl"
+  if ( ! observationUrl ) System.exit 1
+
+  def json = read observationUrl
+
+  println "Deleting observation with type: ${json.resourceType} and id: ${json.id}"
+  delete observationUrl
+}
+
 def sourceFile = new File( 'Data.groovy' )
 def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
 def object = (GroovyObject) cls.newInstance()
@@ -104,16 +130,8 @@ try
 {
   def parts = patientUrl.split '/'
   def patientId = parts[parts.length - 1]
-  def observation = object.getObservation patientId
-  def observationUrl = create observation
-  println "Created observation at url: $observationUrl"
-  if ( ! observationUrl ) System.exit 1
-
-  def json = read observationUrl
-  println new JsonBuilder( json ).toPrettyString()
-
-  println "Deleting observation with type: ${json.resourceType} and id: ${json.id}"
-  delete observationUrl
+  measurement object, patientId
+  observation object, patientId
 }
 finally
 {
