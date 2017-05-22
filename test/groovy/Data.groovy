@@ -98,7 +98,8 @@ class Data
         "code": "M"
       }
     ]
-  }
+  },
+  "deceasedBoolean": true
 }
 '''
   }

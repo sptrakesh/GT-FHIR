@@ -99,6 +99,8 @@ def update( patient )
       if ( 'given' == it.key ) it.value[0] = "${it.value[0]} modified"
     }
 
+    patient.deceasedBoolean = false
+
     def http = new HTTPBuilder( server )
     http.request( Method.PUT, 'application/json' )
     {
@@ -175,6 +177,7 @@ if ( update( json ) == 500 ) System.exit 2
 
 def modified = read patientUrl
 assert json.name == modified.name
+assert modified.deceasedBoolean == false
 
 println "Deleting patient with type: ${json.resourceType} and id: ${json.id}"
 delete patientUrl

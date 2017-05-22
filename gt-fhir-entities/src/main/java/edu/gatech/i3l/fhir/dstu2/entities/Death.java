@@ -1,27 +1,27 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Date;
 
 
 @Entity
 @Table(name = "death")
-public class Death {
+public class Death implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    @Column(name = "person_id", updatable = false, nullable = false)
-    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @Id
+    @OneToOne
     @JoinColumn(name = "person_id", referencedColumnName = "person_id")
     private Person person;
 
-    @Column(name = "death_date", nullable = false)
+    @Column(name = "death_date")
     private Date deathDate;
 
-    @Column(name = "death_type_concept_id", nullable = false)
     @OneToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "death_type_concept_id", referencedColumnName = "concept_id")
     private Concept deathType;
 
-    @Column(name = "cause_concept_id")
     @OneToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "cause_concept_id", referencedColumnName = "concept_id")
     private Concept causeOfDeath;
@@ -29,10 +29,15 @@ public class Death {
     @Column(name = "cause_source_value")
     private String causeSourceValue;
 
-    @Column(name = "cause_source_concept_id")
     @OneToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "cause_source_concept_id", referencedColumnName = "concept_id")
     private Concept causeSourceConcept;
+
+    public Death() {}
+
+    public Death(final Person person) {
+        this.person = person;
+    }
 
     public Person getPerson() {
         return person;
@@ -81,5 +86,4 @@ public class Death {
     public void setCauseSourceConcept(Concept causeSourceConcept) {
         this.causeSourceConcept = causeSourceConcept;
     }
-
 }
