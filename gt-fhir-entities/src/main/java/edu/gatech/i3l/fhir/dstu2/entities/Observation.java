@@ -12,12 +12,9 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
-import edu.gatech.i3l.omop.dao.ObservationDAO;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,112 +22,33 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-//import javax.persistence.criteria.ParameterExpression;
-//import ca.uhn.fhir.model.dstu2.resource.Observation.Related;
-//import ca.uhn.fhir.model.dstu2.valueset.ObservationRelationshipTypeEnum;
-
-@Entity
-@Table(name = "fhir_observation_view")
 public class Observation extends BaseResourceEntity {
 
     public static final Long SYSTOLIC_CONCEPT_ID = 3004249L;
     public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;
     private static final String RES_TYPE = "Observation";
     private static final ObservationStatusEnum STATUS = ObservationStatusEnum.FINAL;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "observation_id", updatable = false)
-    @Access(AccessType.PROPERTY)
+
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "person_id", nullable = false)
-    @NotNull
     private PersonComplement person;
-
-    @ManyToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "observation_concept_id", nullable = false)
-    @NotNull
     private Concept observationConcept;
-
-    @Column(name = "observation_date")
-    @Temporal(TemporalType.DATE)
     private Date date;
-
-    @Column(name = "observation_time")
-    // @Temporal(TemporalType.TIME)
     private String time;
-
-    @Column(name = "value_as_string")
     private String valueAsString;
-
-    @Column(name = "value_as_number")
     private BigDecimal valueAsNumber;
-
-    @Column(name = "range_low")
     private BigDecimal rangeLow;
-
-    @Column(name = "range_high")
     private BigDecimal rangeHigh;
-
-    @ManyToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "value_as_concept_id")
     private Concept valueAsConcept;
-
-//	@ManyToOne(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
-//	@JoinColumn(name = "relevant_condition_concept_id")
-//	private Concept relevantCondition;
-
-    @ManyToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "observation_type_concept_id", nullable = false)
-    @NotNull
     private Concept type;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "provider_id")
     private Provider provider;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "visit_occurrence_id")
     private VisitOccurrence visitOccurrence;
-
-    @Column(name = "source_value")
     private String sourceValue;
-
-    @Column(name = "value_source_value")
     private String valueSourceValue;
-
-    @ManyToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "unit_concept_id")
     private Concept unit;
-
-    @Column(name = "unit_source_value")
     private String unitSourceValue;
 
     public Observation() {
         super();
-    }
-
-    public Observation(Long id, PersonComplement person, Concept observationConcept, Date date, String time, String valueAsString,
-                       BigDecimal valueAsNumber, Concept valueAsConcept, /*Concept relevantCondition,*/ Concept type,
-                       Provider provider, VisitOccurrence visitOccurrence, String sourceValue, Concept unit,
-                       String unitsSourceValue) {
-        super();
-        this.id = id;
-        this.person = person;
-        this.observationConcept = observationConcept;
-        this.date = date;
-        this.time = time;
-        this.valueAsString = valueAsString;
-        this.valueAsNumber = valueAsNumber;
-        this.valueAsConcept = valueAsConcept;
-//		this.relevantCondition = relevantCondition;
-        this.type = type;
-        this.provider = provider;
-        this.visitOccurrence = visitOccurrence;
-        this.sourceValue = sourceValue;
-        this.unit = unit;
-        this.unitSourceValue = unitsSourceValue;
     }
 
     public Long getId() {
@@ -429,30 +347,6 @@ public class Observation extends BaseResourceEntity {
                 components.add(comp);
             }
 
-            List<Observation> results = ObservationDAO.getInstance().getDiastolicObservation(this);
-            if (results.size() > 0) {
-                Observation diastolicOb = results.get(0);
-                comp = new Component();
-                componentCode = new CodeableConceptDt(diastolicOb.observationConcept.getVocabulary().getSystemUri(),
-                        diastolicOb.observationConcept.getConceptCode());
-                componentCode.getCodingFirstRep().setDisplay(diastolicOb.observationConcept.getName());
-                comp.setCode(componentCode);
-
-                compValue = null;
-                if (diastolicOb.valueAsNumber != null) {
-                    QuantityDt quantity = new QuantityDt(diastolicOb.valueAsNumber.doubleValue());
-                    // Unit is defined as a concept code in omop v4, then unit and code are the same in this case
-                    if (diastolicOb.unit != null) {
-                        quantity.setUnit(diastolicOb.unit.getConceptCode());
-                        quantity.setCode(diastolicOb.unit.getConceptCode());
-                        quantity.setSystem(diastolicOb.unit.getVocabulary().getSystemUri());
-                    }
-                    compValue = quantity;
-                    comp.setValue(compValue);
-                    components.add(comp);
-                }
-            }
-
             if (components.size() > 0) {
                 observation.setComponent(components);
             }
@@ -512,13 +406,6 @@ public class Observation extends BaseResourceEntity {
                 observation.setEffective(appliesDate);
             }
         }
-//		if (// this.date != null &&
-//		this.time != null) { // WARNING notice that the resource field
-//								// 'appliesDate' relies only on the entity field
-//								// 'time'
-//			DateTimeDt appliesDate = new DateTimeDt(this.time);
-//			observation.setEffective(appliesDate);
-//		}
         if (this.person != null) {
             ResourceReferenceDt personRef = new ResourceReferenceDt(this.person.getIdDt());
             personRef.setDisplay(this.person.getNameAsSingleString());
@@ -527,8 +414,8 @@ public class Observation extends BaseResourceEntity {
         if (this.visitOccurrence != null)
             observation.getEncounter().setReference(new IdDt(VisitOccurrence.RES_TYPE, this.visitOccurrence.getId()));
 
-        if (this.type != null) {
-            if (this.type.getId() == 44818701L) {
+        if (type != null) {
+            if (type.getId() == 44818701L || type.getId() == 38000280L || type.getId() == 38000281L) {
                 // This is From physical examination.
                 CodeableConceptDt typeConcept = new CodeableConceptDt();
                 List<CodingDt> typeCodings = new ArrayList<CodingDt>();
@@ -536,15 +423,7 @@ public class Observation extends BaseResourceEntity {
                 typeCodings.add(typeCoding);
                 typeConcept.setCoding(typeCodings);
                 observation.setCategory(typeConcept);
-            } else if (this.type.getId() == 44818702L) {
-                CodeableConceptDt typeConcept = new CodeableConceptDt();
-                // This is Lab result
-                List<CodingDt> typeCodings = new ArrayList<CodingDt>();
-                CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "laboratory");
-                typeCodings.add(typeCoding);
-                typeConcept.setCoding(typeCodings);
-                observation.setCategory(typeConcept);
-            } else if (this.type.getId() == 45905771L) {
+            } else if (type.getId() == 45905771L) {
                 CodeableConceptDt typeConcept = new CodeableConceptDt();
                 // This is Lab result
                 List<CodingDt> typeCodings = new ArrayList<CodingDt>();
@@ -552,19 +431,11 @@ public class Observation extends BaseResourceEntity {
                 typeCodings.add(typeCoding);
                 typeConcept.setCoding(typeCodings);
                 observation.setCategory(typeConcept);
-            } else if (this.type.getId() == 38000277L || this.type.getId() == 38000278L) {
+            } else if (type.getId() == 38000277L || type.getId() == 38000278L || type.getId() == 44818702L) {
                 CodeableConceptDt typeConcept = new CodeableConceptDt();
                 // This is Lab result
                 List<CodingDt> typeCodings = new ArrayList<CodingDt>();
                 CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "laboratory");
-                typeCodings.add(typeCoding);
-                typeConcept.setCoding(typeCodings);
-                observation.setCategory(typeConcept);
-            } else if (this.type.getId() == 38000280L || this.type.getId() == 38000281L) {
-                CodeableConceptDt typeConcept = new CodeableConceptDt();
-                // This is Lab result
-                List<CodingDt> typeCodings = new ArrayList<CodingDt>();
-                CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "exam");
                 typeCodings.add(typeCoding);
                 typeConcept.setCoding(typeCodings);
                 observation.setCategory(typeConcept);

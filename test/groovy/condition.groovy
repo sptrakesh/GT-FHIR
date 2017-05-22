@@ -25,17 +25,17 @@ def create( data )
       uri.path = "$baseUrl/${json.resourceType}"
       body = data
 
-      response.success =
-      {
+      response.success = 
+      { 
         resp, reader ->
-          println "Create response status: ${resp.statusLine}"
-          resp.getFirstHeader( 'Location' ).value
+        println "Create response status: ${resp.statusLine}"
+        resp.getFirstHeader( 'Location' ).value
       }
 
       response.failure =
-      {
+      { 
         resp ->
-          println "Create request failed with status ${resp.status}"
+        println "Create request failed with status ${resp.status}"
       }
     }
   }
@@ -49,17 +49,17 @@ def read( url )
     def http = new HTTPBuilder( url )
     http.request( Method.GET, 'application/json' )
     {
-      response.success =
-      {
+      response.success = 
+      { 
         resp, json ->
-          println "Read json with type: ${json.resourceType} and id: ${json.id}"
-          json
+        println "Read json with type: ${json.resourceType} and id: ${json.id}"
+        json
       }
 
       response.failure =
       {
         resp ->
-          println "read request failed with status ${resp.status}"
+        println "read request failed with status ${resp.status}"
       }
     }
   }
@@ -73,50 +73,37 @@ def delete( url )
     def http = new HTTPBuilder( url )
     http.request( Method.DELETE )
     {
-      response.success =
-      {
+      response.success = 
+      { 
         resp, data ->
-          println "Delete response status: ${resp.statusLine}"
+        println "Delete response status: ${resp.statusLine}"
       }
 
       response.failure =
       {
         resp ->
-          println "Delete request failed with status ${resp.status}"
+        println "Delete request failed with status ${resp.status}"
       }
     }
   }
   catch ( Throwable t ) { println "$url\n$t" }
 }
 
-def measurement( object, patientId )
+def condition( object, patientId )
 {
-  def measurement = object.getMeasurement patientId
-  def measurementUrl = create measurement
-  println "Created measurement at url: $measurementUrl"
-  if ( ! measurementUrl ) System.exit 1
+  def condition = object.getCondition patientId
 
-  def json = read measurementUrl
-  def original = new JsonSlurper().parseText measurement
-  assert original.code.coding[0].code == json.code.coding[0].code
+  def conditionUrl = create condition
+  println "Created condition at url: $conditionUrl"
+  if ( ! conditionUrl ) System.exit 1
 
-  println "Deleting observation with type: ${json.resourceType} and id: ${json.id}"
-  delete measurementUrl
-}
+  def json = read conditionUrl
 
-def observation( object, patientId )
-{
-  def observation = object.getObservation patientId
-  def observationUrl = create observation
-  println "Created observation at url: $observationUrl"
-  if ( ! observationUrl ) System.exit 1
+  println "Deleting condition with type: ${json.resourceType} and id: ${json.id}"
+  delete conditionUrl
 
-  def json = read observationUrl
-  def original = new JsonSlurper().parseText observation
-  assert original.code.coding[0].code == json.code.coding[0].code
-
-  println "Deleting observation with type: ${json.resourceType} and id: ${json.id}"
-  delete observationUrl
+  println "Attempting to read deleted condition"
+  read conditionUrl
 }
 
 def sourceFile = new File( 'Data.groovy' )
@@ -134,12 +121,10 @@ try
 {
   def parts = patientUrl.split '/'
   def patientId = parts[parts.length - 1]
-  measurement object, patientId
-  observation object, patientId
+  condition object, patientId
 }
 finally
 {
   println "Deleting patient at URL: $patientUrl"
   script.delete patientUrl
 }
-

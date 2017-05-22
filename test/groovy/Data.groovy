@@ -258,4 +258,41 @@ class Data
   }
 }"""
   }
+
+  String getCondition( patientId )
+  {
+"""{
+  "resourceType": "Condition",
+  "meta": {
+    "versionId": "2",
+    "lastUpdated": "2017-03-16T10:23:39.915-04:00"
+  },
+  "patient": {
+    "reference": "Patient/$patientId",
+    "display": "Chen Shae"
+  },
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "448952004",
+        "display": "Infiltrating duct carcinoma of female breast"
+      }
+    ],
+    "text": "IDC"
+  },
+  "category": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "39154008",
+        "display": "Clinical diagnosis"
+      }
+    ]
+  },
+  "clinicalStatus": "active",
+  "verificationStatus": "confirmed",
+  "onsetDateTime": "2014-01-01"
+}"""
+  }
 }
