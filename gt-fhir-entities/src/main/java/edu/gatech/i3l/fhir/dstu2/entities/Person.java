@@ -338,6 +338,7 @@ public class Person extends BaseResourceEntity {
         }
 
         if (death != null) patient.setDeceased(new BooleanDt(true));
+        else patient.setDeceased(new BooleanDt(false));
         return patient;
     }
 
@@ -381,7 +382,10 @@ public class Person extends BaseResourceEntity {
                 {
                     death = new Death(this);
                 }
-            } else death = null;
+            } else {
+                death = null;
+                DeathDAO.getInstance().remove(id);
+            }
         } else death = null;
 
         final String genderString = patient.getGender();
