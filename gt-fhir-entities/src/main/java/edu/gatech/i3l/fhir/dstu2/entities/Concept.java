@@ -7,9 +7,9 @@ import java.util.Date;
 @Table(name = "concept")
 @NamedQueries(value = {
         @NamedQuery(name = "findConceptByCode",
-                query = "select id from Concept c where c.conceptCode like :code"),
+                query = "select id from Concept c where c.conceptCode = :code"),
         @NamedQuery(name = "findDomainByCode",
-                query = "select domain from Concept c where c.conceptCode like :code")
+                query = "select domain from Concept c where c.conceptCode = :code")
 })
 public class Concept {
 

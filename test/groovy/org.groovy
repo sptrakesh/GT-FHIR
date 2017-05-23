@@ -4,14 +4,14 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
-import groovyx.net.http.RESTClient
+import groovy.transform.Field
 
-server = 'http://localhost:8080'
-baseUrl = '/gt-fhir-webapp/base'
+@Field def server = 'http://localhost:8080'
+@Field def baseUrl = '/gt-fhir-webapp/base'
 
 String.metaClass.encodeURL =
 {
-   java.net.URLEncoder.encode( delegate, 'UTF-8' )
+   java.net.URLEncoder.encode delegate, 'UTF-8'
 }
 
 def create( data )
@@ -119,35 +119,10 @@ def delete( url )
   catch ( Throwable t ) { println "$url\n$t" }
 }
 
-def org = 
-'''{
-  "resourceType": "Organization",
-  "meta": {
-    "versionId": "1",
-    "lastUpdated": "2017-02-20T01:23:47.502-05:00"
-  },
-  "text": {
-    "status": "generated",
-    "div": "UWEARME - A DIVISION OF HEALTH GIZMOS CORP"
-  },
-  "identifier": [
-    {
-      "system": "www.nationalorgidentifier.gov/ids",
-      "value": "UWEARME"
-    }
-  ],
-  "name": "UWEARME",
-  "address": [
-    {
-      "line": [
-        "2000 WEARABLE DRIVE"
-      ],
-      "city": "ANN ARBOR",
-      "state": "MI",
-      "country": "US"
-    }
-  ]
-}'''
+def sourceFile = new File( 'Data.groovy' )
+def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
+def object = (GroovyObject) cls.newInstance()
+def org = object.organisation
 
 def orgUrl = create org
 println "Created org at url: $orgUrl"

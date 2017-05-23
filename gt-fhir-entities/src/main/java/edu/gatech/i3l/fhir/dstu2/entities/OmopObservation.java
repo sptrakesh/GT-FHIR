@@ -13,6 +13,7 @@ import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -21,9 +22,6 @@ import java.util.List;
 @Table(name = "observation")
 public class OmopObservation extends BaseResourceEntity {
 
-    /**
-     *
-     */
     private static final String RES_TYPE = "Observation";
 
     @Id
@@ -32,7 +30,7 @@ public class OmopObservation extends BaseResourceEntity {
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(cascade = {CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinColumn(name = "person_id", nullable = false)
     @NotNull
     private PersonComplement person;
@@ -42,9 +40,8 @@ public class OmopObservation extends BaseResourceEntity {
     @NotNull
     private Concept observationConcept;
 
-    @Column(name = "observation_date", nullable = false)
+    @Column(name = "observation_date")
     @Temporal(TemporalType.DATE)
-    @NotNull
     private Date date;
 
     @Column(name = "observation_time")
@@ -62,8 +59,7 @@ public class OmopObservation extends BaseResourceEntity {
     private Concept valueAsConcept;
 
     @ManyToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "observation_type_concept_id", nullable = false)
-    @NotNull
+    @JoinColumn(name = "observation_type_concept_id")
     private Concept type;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -220,8 +216,23 @@ public class OmopObservation extends BaseResourceEntity {
 
     @Override
     public IResource getRelatedResource() {
-        // TODO Auto-generated method stub
-        return null;
+        final Observation observation = new Observation();
+        observation.setId(id);
+        observation.setPerson(person);
+        if (observationConcept != null) observation.setObservationConcept(observationConcept);
+        if (date != null) observation.setDate(date);
+        if (time != null) observation.setTime(time);
+        if (valueAsString != null) observation.setValueAsString(valueAsString);
+        if (valueAsNumber != null) observation.setValueAsNumber(new BigDecimal(valueAsNumber));
+        if (valueAsConcept != null) observation.setValueAsConcept(valueAsConcept);
+        if (type != null) observation.setType(type);
+        if (provider != null) observation.setProvider(provider);
+        if (visitOccurrence != null) observation.setVisitOccurrence(visitOccurrence);
+        if (sourceValue != null) observation.setSourceValue(sourceValue);
+        if (unit != null) observation.setUnit(unit);
+        if (unitSourceValue != null) observation.setUnitSourceValue(unitSourceValue);
+
+        return observation.getRelatedResource();
     }
 
     @Override
@@ -244,7 +255,7 @@ public class OmopObservation extends BaseResourceEntity {
 
         // We are writing to the database. Keep the source so we know where it is coming from
         OmopConceptMapping ocm = OmopConceptMapping.getInstance();
-        if (obs.getId() != null) {
+        if (obs.getId() != null && obs.getId().getIdPartAsLong() != null && obs.getId().getIdPart() != null) {
             // See if we already have this in the source field. If so,
             // then we want update not create
             OmopObservation origObservation = (OmopObservation) ocm.loadEntityBySource(OmopObservation.class, "OmopObservation", "sourceValue", obs.getId().getIdPart());
@@ -256,11 +267,9 @@ public class OmopObservation extends BaseResourceEntity {
 
         String code = obs.getCode().getCodingFirstRep().getCode();
         Long obsConceptRef = ocm.get(code);
-        setObservationConcept(new Concept());
         if (obsConceptRef != null) {
-            getObservationConcept().setId(obsConceptRef);
+            setObservationConcept(new Concept(obsConceptRef));
         } else {
-            getObservationConcept().setId(0L);
             System.out.println("Observation code not recognized: " + code + ". System: " + obs.getCode().getCodingFirstRep().getSystem());
         }
 
@@ -281,8 +290,7 @@ public class OmopObservation extends BaseResourceEntity {
         } else if (value instanceof CodeableConceptDt) {
             Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode());
             if (valueAsConceptId != null) {
-                this.valueAsConcept = new Concept();
-                this.valueAsConcept.setId(valueAsConceptId);
+                valueAsConcept = new Concept(valueAsConceptId);
             }
         } else if (value instanceof StringDt) {
             String valueAsString = ((StringDt) value).getValueAsString();
@@ -292,13 +300,15 @@ public class OmopObservation extends BaseResourceEntity {
             }
         }
 
-        if (obs.getEffective() instanceof DateTimeDt) {
-            this.date = ((DateTimeDt) obs.getEffective()).getValue();
-            SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-            this.time = timeFormat.format(((DateTimeDt) obs.getEffective()).getValue());
-        } else if (obs.getEffective() instanceof PeriodDt) {
-            // TODO: we need to handle period. We can probably use
-            // we can use range_low and range_high. These are only available in Measurement
+        if (obs.getEffective() != null) {
+            if (obs.getEffective() instanceof DateTimeDt) {
+                this.date = ((DateTimeDt) obs.getEffective()).getValue();
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                this.time = timeFormat.format(((DateTimeDt) obs.getEffective()).getValue());
+            } else if (obs.getEffective() instanceof PeriodDt) {
+                // TODO: we need to handle period. We can probably use
+                // we can use range_low and range_high. These are only available in Measurement
+            }
         }
 
 		/* Set visit occurrence */
@@ -308,30 +318,21 @@ public class OmopObservation extends BaseResourceEntity {
             this.visitOccurrence.setId(visitOccurrenceId);
         }
 
-		/* measture type concept id - this is required field in OMOP v5. */
-        setType(new Concept());
+		/* measure type concept id - this is required field in OMOP v5. */
         CodeableConceptDt obsCategory = obs.getCategory();
-        if (obsCategory.isEmpty()) {
-            getType().setId(0L);
-        } else {
+        if (!obsCategory.isEmpty()) {
             List<CodingDt> catCodes = obsCategory.getCoding();
             for (CodingDt catCode : catCodes) {
                 if (catCode.getCode().equalsIgnoreCase("exam")) {
-                    if (isValueString)
-                        getType().setId(38000281L);
-                    else
-                        getType().setId(38000280L);
+                    if (isValueString) setType(new Concept(38000281L));
+                    else setType(new Concept(38000280L));
                 } else if (catCode.getCode().equalsIgnoreCase("laboratory")) {
-                    if (isValueString)
-                        getType().setId(38000278L);
-                    else
-                        getType().setId(38000277L);
+                    if (isValueString) setType(new Concept(38000278L));
+                    else setType(new Concept(38000277L));
                 } else if (catCode.getCode().equalsIgnoreCase("survey")) {
-                    getType().setId(45905771L);
+                    setType(new Concept(45905771L));
                 } else if (catCode.getCode().equalsIgnoreCase("vital-signs")) {
-                    getType().setId(38000280L);
-                } else {
-                    getType().setId(0L);
+                    setType(new Concept(38000280L));
                 }
             }
         }

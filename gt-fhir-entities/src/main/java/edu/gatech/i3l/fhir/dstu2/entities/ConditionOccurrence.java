@@ -41,7 +41,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "person_id", nullable = false)
     @NotNull
     private PersonComplement person;
@@ -73,11 +73,11 @@ public class ConditionOccurrence extends BaseResourceEntity {
      * @fhirVersion 0.4.0
      * @omopVersion 4.0
      */
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "provider_id")
     private Provider provider;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "visit_occurrence_id")
     private VisitOccurrence encounter;
 
@@ -214,17 +214,10 @@ public class ConditionOccurrence extends BaseResourceEntity {
             ResourceReferenceDt patientResource = condition.getPatient();
             if (patientResource == null) return null; // We have to have a patient
 
-//			Long patientRef = patientResource.getReference().getIdPartAsLong();
             PersonComplement person = PersonComplement.searchAndUpdate(patientResource);
+            this.setPerson(person);
             if (person == null) return null; // We must have a patient
 
-            this.setPerson(person);
-
-//			Long patientRef = condition.getPatient().getReference().getIdPartAsLong();
-//			if(patientRef != null){
-//				this.person =  new PersonComplement();
-//				this.person.setId(patientRef);
-//			}
 
             // We are writing to the database. Keep the source so we know where it is coming from
             OmopConceptMapping ocm = OmopConceptMapping.getInstance();

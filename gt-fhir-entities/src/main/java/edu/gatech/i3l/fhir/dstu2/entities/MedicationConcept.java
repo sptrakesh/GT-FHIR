@@ -34,7 +34,7 @@ public final class MedicationConcept extends BaseResourceEntity {
     @JoinColumn(name = "domain_id", referencedColumnName = "domain_id")
     private Domain domain;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "vocabulary_id", insertable = false, updatable = false)
     private Vocabulary vocabulary;
 

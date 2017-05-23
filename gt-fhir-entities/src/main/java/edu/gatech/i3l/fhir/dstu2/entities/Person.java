@@ -7,10 +7,12 @@ import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
+import ca.uhn.fhir.model.primitive.BooleanDt;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.DeathDAO;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 import javax.persistence.*;
@@ -55,15 +57,15 @@ public class Person extends BaseResourceEntity {
     @JoinColumn(name = "ethnicity_concept_id")
     private Concept ethnicityConcept;
 
-    @ManyToOne(cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "location_id")
     private Location location;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "provider_id")
     private Provider provider;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "care_site_id")
     private CareSite careSite;
 
@@ -94,7 +96,9 @@ public class Person extends BaseResourceEntity {
 //	@OneToMany(orphanRemoval=true, mappedBy="person")
 //	private Set<ConditionOccurrence> conditions;
 
-    //private Death death;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "person")
+    @JoinColumn(name = "person_id")
+    private Death death;
 
     public Person() {
         super();
@@ -279,13 +283,8 @@ public class Person extends BaseResourceEntity {
         this.ethnicitySourceConcept = ethnicitySourceConcept;
     }
 
-//	public Death getDeath() {
-//		return death;
-//	}
-//	
-//	public void setDeath(Death death) {
-//		this.death = death;
-//	}
+	public Death getDeath() { return death; }
+	public void setDeath(Death death) { this.death = death; }
 
     @Override
     public Patient getRelatedResource() {
@@ -337,6 +336,9 @@ public class Person extends BaseResourceEntity {
             pracResourceRefs.add(practitionerResourceRef);
             patient.setCareProvider(pracResourceRefs);
         }
+
+        if (death != null) patient.setDeceased(new BooleanDt(true));
+        else patient.setDeceased(new BooleanDt(false));
         return patient;
     }
 
@@ -369,21 +371,29 @@ public class Person extends BaseResourceEntity {
             this.monthOfBirth = c.get(Calendar.MONTH) + 1;
             this.dayOfBirth = c.get(Calendar.DAY_OF_MONTH);
         }
-        //TODO set deceased value in Person; Set gender concept (source value is set); list of addresses (?)
-//			this.death = patient.getDeceased();
-        this.genderConcept = new Concept();
-        String genderString = patient.getGender();
-        if (genderString != null)
-            this.genderConcept.setId(OmopConceptMapping.getInstance().get(genderString.substring(0, 1), OmopConceptMapping.GENDER));
-        else
-            this.genderConcept.setId(0L);
 
-//			Location location;
-//			if(this.location != null){
-//				location = this.location;
-//			}else {
-//				location = new Location();
-//			}
+        if (patient.getDeceased() != null)
+        {
+            final BooleanDt value = (BooleanDt) patient.getDeceased();
+            if (value.getValue())
+            {
+                death = DeathDAO.getInstance().getById(id);
+                if (death == null)
+                {
+                    death = new Death(this);
+                }
+            } else {
+                death = null;
+                DeathDAO.getInstance().remove(id);
+            }
+        } else death = null;
+
+        final String genderString = patient.getGender();
+        if (genderString != null)
+        {
+            genderConcept = new Concept();
+            genderConcept.setId(OmopConceptMapping.getInstance().get(genderString.substring(0, 1), OmopConceptMapping.GENDER));
+        }
 
         List<AddressDt> addresses = patient.getAddress();
         if (addresses != null && addresses.size() > 0) {
@@ -393,39 +403,6 @@ public class Person extends BaseResourceEntity {
             if (retLocation != null) {
                 this.setLocation(retLocation);
             }
-
-////				location.setAddressUse(address.getUseElement().getValueAsEnum());
-//				List<StringDt> addressLines = address.getLine();
-//				if (addressLines.size() > 0) {
-//					String line1 = addressLines.get(0).getValue();
-//					String line2 = null;
-//					if (address.getLine().size() > 1)
-//						line2 = address.getLine().get(1).getValue();
-//					String zipCode = address.getPostalCode();
-//					String city = address.getCity();
-//					String state = address.getState();
-//
-//					Location location = (Location) OmopConceptMapping.getInstance()
-//							.loadEntityByLocation(Location.class, line1, line2, city, state, zipCode);
-//					if (location != null) {
-//						System.out.println("location exists in DB");
-//						this.setLocation(location);
-//					} else {
-//						if (this.location != null) {
-//							this.location.setAddress1(line1);
-//							if (line2 != null)
-//								this.location.setAddress2(line2);
-//							this.location.setZipCode(zipCode);
-//							this.location.setCity(city);
-//							this.location.setState(state);
-//						} else {
-//							this.location = new Location (line1, line2, city, state, zipCode);
-//						}
-//					}
-//
-////					location.setEndDate(address.getPeriod().getEnd());
-////					location.setStartDate(address.getPeriod().getStart());
-//				}
         }
 
         List<ResourceReferenceDt> providers = patient.getCareProvider();

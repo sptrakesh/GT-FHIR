@@ -15,16 +15,6 @@ import java.util.List;
  * Created by rakesh.vidyadharan on 5/11/17.
  */
 public class CareSiteDAO {
-    private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(CareSiteDAO.class);
-
-    private static final CareSiteDAO singleton = new CareSiteDAO();
-    private final EntityManager entityManager;
-
-    private CareSiteDAO() {
-        String baseFhirDao = "myBaseDao";
-        WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
-        entityManager = myAppCtx.getBean(baseFhirDao, BaseFhirDao.class).getEntityManager();
-    }
 
     public static CareSiteDAO getInstance() {
         return singleton;
@@ -43,7 +33,7 @@ public class CareSiteDAO {
             builder.append(" AND o.location.id = :location");
         }
 
-        TypedQuery<? extends BaseResourceEntity> query = entityManager.createQuery(builder.toString(), CareSite.class);
+        TypedQuery<? extends BaseResourceEntity> query = DAO.getInstance().getEntityManager().createQuery(builder.toString(), CareSite.class);
         query.setParameter("name", name);
         if (location != null) query = query.setParameter("location", location.getId());
 
@@ -53,4 +43,7 @@ public class CareSiteDAO {
             return cs.getId();
         } else return null;
     }
+
+    private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(CareSiteDAO.class);
+    private static final CareSiteDAO singleton = new CareSiteDAO();
 }

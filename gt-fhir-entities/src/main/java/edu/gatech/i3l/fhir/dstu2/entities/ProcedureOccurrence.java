@@ -32,7 +32,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
     @Access(AccessType.PROPERTY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "person_id", nullable = false)
     @NotNull
     private PersonComplement person;

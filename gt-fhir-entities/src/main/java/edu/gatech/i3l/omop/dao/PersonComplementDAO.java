@@ -16,16 +16,6 @@ import java.util.List;
  * Created by rakesh.vidyadharan on 5/12/17.
  */
 public class PersonComplementDAO {
-    private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PersonComplementDAO.class);
-
-    private static final PersonComplementDAO singleton = new PersonComplementDAO();
-    private final EntityManager entityManager;
-
-    private PersonComplementDAO() {
-        String baseFhirDao = "myBaseDao";
-        WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
-        entityManager = myAppCtx.getBean(baseFhirDao, BaseFhirDao.class).getEntityManager();
-    }
 
     public static PersonComplementDAO getInstance() {
         return singleton;
@@ -64,7 +54,7 @@ public class PersonComplementDAO {
 
         System.out.println("Query for Person: " + builder);
 
-        TypedQuery<? extends BaseResourceEntity> query = entityManager.createQuery(builder.toString(), PersonComplement.class);
+        TypedQuery<? extends BaseResourceEntity> query = DAO.getInstance().getEntityManager().createQuery(builder.toString(), PersonComplement.class);
         if (StringUtils.isNotBlank(family_name)) query = query.setParameter("fname", family_name);
         if (StringUtils.isNotBlank(given1_name)) query = query.setParameter("gname1", given1_name);
         if (StringUtils.isNotBlank(given2_name)) query = query.setParameter("gname2", given2_name);
@@ -81,4 +71,7 @@ public class PersonComplementDAO {
             return person_c.getId();
         } else return null;
     }
+
+    private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PersonComplementDAO.class);
+    private static final PersonComplementDAO singleton = new PersonComplementDAO();
 }
