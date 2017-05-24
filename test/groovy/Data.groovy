@@ -26,6 +26,7 @@ class Data
       ],
       "city": "ANN ARBOR",
       "state": "MI",
+      "postalCode": "11111"
       "country": "US"
     }
   ]
