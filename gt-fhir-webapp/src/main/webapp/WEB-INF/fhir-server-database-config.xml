@@ -11,12 +11,11 @@
     This file configures the database connection for the HAPI JPA Server.
     -->
 
-    <!-- Add an entry to /etc/hosts (or equivalent) that points fhir.database.server to appropriate IP -->
     <bean id="myPersistenceDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="url" value="jdbc:postgresql://sciencepg.devtempus.com:5432/fhir_omop" />
+        <property name="url" value="jdbc:postgresql://#database.server#:#port#/#database.name#" />
         <property name="driverClassName" value="org.postgresql.Driver" />
-        <property name="username" value="fhir"/>
-        <property name="password" value="fhir"/>
+        <property name="username" value="#database.user#"/>
+        <property name="password" value="#database.password#"/>
     </bean>
 
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
