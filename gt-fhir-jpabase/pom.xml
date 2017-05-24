@@ -430,17 +430,6 @@
                             <outputFile>${project.build.directory}/schema_hsql.sql</outputFile>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>mariadb</id>
-                        <goals>
-                            <goal>create</goal>
-                        </goals>
-                        <phase>process-classes</phase>
-                        <configuration>
-                            <dialect>org.hibernate.dialect.MariaDBDialect</dialect>
-                            <outputFile>${project.build.directory}/schema_mariadb.sql</outputFile>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             -->

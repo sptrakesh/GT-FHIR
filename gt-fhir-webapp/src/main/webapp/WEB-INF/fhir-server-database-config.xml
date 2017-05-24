@@ -11,14 +11,7 @@
     This file configures the database connection for the HAPI JPA Server.
     -->
 
-    <!--
-    The following bean configures the database connection. The 'url' property value
-    of "jdbc:derby:directory:jpaserver_derby_files;create=true" indicates that the
-    server should save resources in a directory called "jpaserver_derby_files".
-
-    A URL to a remote database could also be placed here, along with login credentials
-    and other properties supported by BasicDataSource.
-    -->
+    <!-- Add an entry to /etc/hosts (or equivalent) that points fhir.database.server to appropriate IP -->
     <bean id="myPersistenceDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="url" value="jdbc:postgresql://sciencepg.devtempus.com:5432/fhir_omop" />
         <property name="driverClassName" value="org.postgresql.Driver" />
@@ -26,11 +19,6 @@
         <property name="password" value="fhir"/>
     </bean>
 
-    <!--
-    Hibernate can be configured with other dialects if you wish to connect to another
-    database (e.g. Postgres). Consult the Hibernate documentation to see a list of
-    available dialects.
-    -->
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="dataSource" ref="myPersistenceDataSource" />
         <property name="persistenceXmlLocation" value="classpath:META-INF/persistence.xml" />
