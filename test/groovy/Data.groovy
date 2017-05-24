@@ -10,7 +10,7 @@ class Data
   },
   "text": {
     "status": "generated",
-    "div": "UWEARME - A DIVISION OF HEALTH GIZMOS CORP"
+    "div": "UnitTest - A DIVISION OF HEALTH GIZMOS CORP"
   },
   "identifier": [
     {
@@ -22,10 +22,10 @@ class Data
   "address": [
     {
       "line": [
-        "2000 WEARABLE DRIVE"
+        "2000 UnitTest DRIVE"
       ],
-      "city": "ANN ARBOR",
-      "state": "MI",
+      "city": "Unit Test",
+      "state": "AA",
       "postalCode": "11111"
       "country": "US"
     }
@@ -270,7 +270,7 @@ class Data
   },
   "patient": {
     "reference": "Patient/$patientId",
-    "display": "Chen Shae"
+    "display": "Unit Test"
   },
   "code": {
     "coding": [
