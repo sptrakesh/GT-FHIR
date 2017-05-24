@@ -88,9 +88,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <version>1.5.9</version>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>6.0.6</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -102,7 +102,7 @@
     <build>
 
         <finalName>gt-fhir-webapp</finalName>
-        <!-- finalName>gt-fhir-webapp-1.0.2-SNAPSHOT</finalName -->
+
         <plugins>
             <!-- The configuration here tells the WAR plugin to include the FHIR Tester
                 overlay. You can omit it if you are not using that feature. -->

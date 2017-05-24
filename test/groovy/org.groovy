@@ -134,13 +134,19 @@ def json = read orgUrl
 def address = json.address[0].city
 
 println "Searching for entity with name: ${json.name}"
-println read( "${server}$baseUrl/${json.resourceType}?name=${json.name}" )
+def result = read( "${server}$baseUrl/${json.resourceType}?name=${json.name}" )
+assert result.entry.size > 0
+assert result.entry[0].fullUrl == orgUrl
 
 println "Searching for entity with city part of address: $address"
-println read( "${server}$baseUrl/${json.resourceType}?address=${address.encodeURL()}" )
+result = read( "${server}$baseUrl/${json.resourceType}?address=${address.encodeURL()}" )
+assert result.entry.size > 0
+assert result.entry[0].fullUrl == orgUrl
 
 println "Searching for entity with name: ${json.name} and city: $address"
-println read( "${server}$baseUrl/${json.resourceType}?name=${json.name}&address=${address.encodeURL()}" )
+result = read( "${server}$baseUrl/${json.resourceType}?name=${json.name}&address=${address.encodeURL()}" )
+assert result.entry.size > 0
+assert result.entry[0].fullUrl == orgUrl
 
 println "Updating enity with type: ${json.resourceType} and id: ${json.id}"
 update json
