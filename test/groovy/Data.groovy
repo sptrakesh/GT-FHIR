@@ -26,7 +26,7 @@ class Data
       ],
       "city": "Unit Test",
       "state": "AA",
-      "postalCode": "11111"
+      "postalCode": "11111",
       "country": "US"
     }
   ]
