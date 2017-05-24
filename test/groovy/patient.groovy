@@ -151,6 +151,20 @@ def delete( url )
   catch ( Throwable t ) { println "$url\n$t" }
 }
 
+def matchUrl( result, url )
+{
+  def found = false
+  for ( entry in result.entry )
+  {
+    if ( entry.fullUrl == url )
+    {
+      found = true
+      break
+    }
+  }
+  assert found
+}
+
 def sourceFile = new File( 'Data.groovy' )
 def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
 def object = (GroovyObject) cls.newInstance()
@@ -170,7 +184,7 @@ def name = parseName json
 println "Searching for patient with name: $name"
 def result = read( "${server}$baseUrl/${json.resourceType}?name=${name.toString().encodeURL()}" )
 assert result.entry.size > 0
-assert result.entry[0].fullUrl == patientUrl
+matchUrl result, patientUrl
 
 println "Updating patient with type: ${json.resourceType} and id: ${json.id}"
 if ( update( json ) == 500 ) System.exit 2

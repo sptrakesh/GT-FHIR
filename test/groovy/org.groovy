@@ -119,6 +119,20 @@ def delete( url )
   catch ( Throwable t ) { println "$url\n$t" }
 }
 
+def matchUrl( result, url )
+{
+  def found = false
+  for ( entry in result.entry )
+  {
+    if ( entry.fullUrl == url )
+    {
+      found = true
+      break
+    }
+  }
+  assert found
+}
+
 def sourceFile = new File( 'Data.groovy' )
 def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
 def object = (GroovyObject) cls.newInstance()
@@ -136,17 +150,17 @@ def address = json.address[0].city
 println "Searching for entity with name: ${json.name}"
 def result = read( "${server}$baseUrl/${json.resourceType}?name=${json.name}" )
 assert result.entry.size > 0
-assert result.entry[0].fullUrl == orgUrl
+matchUrl result, orgUrl
 
 println "Searching for entity with city part of address: $address"
 result = read( "${server}$baseUrl/${json.resourceType}?address=${address.encodeURL()}" )
 assert result.entry.size > 0
-assert result.entry[0].fullUrl == orgUrl
+matchUrl result, orgUrl
 
 println "Searching for entity with name: ${json.name} and city: $address"
 result = read( "${server}$baseUrl/${json.resourceType}?name=${json.name}&address=${address.encodeURL()}" )
 assert result.entry.size > 0
-assert result.entry[0].fullUrl == orgUrl
+matchUrl result, orgUrl
 
 println "Updating enity with type: ${json.resourceType} and id: ${json.id}"
 update json
