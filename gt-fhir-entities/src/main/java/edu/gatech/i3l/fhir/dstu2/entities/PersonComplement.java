@@ -342,15 +342,6 @@ public class PersonComplement extends Person {
                 this.setContactPoint3(system + ":" + use + ":" + value);
             }
 
-            for (final ExtensionDt extension : patient.getAllUndeclaredExtensions()) {
-                switch (extension.getUrl()) {
-                    case "http://hl7.org/fhir/StructureDefinition/us-core-race":
-                    case "http://hl7.org/fhir/StructureDefinition/us-core-ethnicity":
-                        ourLog.info("Extension url: {}, value: {}", extension.getUrl(), extension.getValue());
-                        break;
-                }
-            }
-
             //MARITAL STATUS
 //			this.maritalStatus.setId(OmopConceptMapping.getInstance().get(patient.getMaritalStatus().getText(), OmopConceptMapping.MARITAL_STATUS));
         } else {

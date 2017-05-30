@@ -131,7 +131,6 @@ def observation( object, patientId, encounterId )
   if ( ! observationUrl ) System.exit 1
 
   def json = read observationUrl
-  println json
   def original = new JsonSlurper().parseText observation
   assert original.code.coding[0].code == json.code.coding[0].code
   assert original.effectiveDateTime == json.effectiveDateTime

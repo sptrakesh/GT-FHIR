@@ -1,8 +1,11 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.model.api.ExtensionDt;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
 import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
@@ -25,8 +28,10 @@ import java.util.List;
 @Table(name = "person")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Person extends BaseResourceEntity {
+    private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(Person.class);
 
     public static final String RES_TYPE = "Patient";
+    public static final String US_CORE_RACE = "http://hl7.org/fhir/StructureDefinition/us-core-race";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -340,6 +345,16 @@ public class Person extends BaseResourceEntity {
 
         if (death != null) patient.setDeceased(new BooleanDt(true));
         else patient.setDeceased(new BooleanDt(false));
+
+        if (raceConcept != null) {
+            final CodeableConceptDt cdt = new CodeableConceptDt();
+            cdt.addCoding(new CodingDt(raceConcept.getVocabulary().getId(),raceConcept.getConceptCode()));
+            final ExtensionDt edt = new ExtensionDt();
+            edt.setUrl(US_CORE_RACE);
+            edt.setValue(cdt);
+            patient.addUndeclaredExtension(edt);
+        }
+
         return patient;
     }
 
@@ -418,6 +433,27 @@ public class Person extends BaseResourceEntity {
         if (providers.size() > 0) {
             // We can handle only one provider.
             this.setProvider(Provider.searchAndUpdate(providers.get(0)));
+        }
+
+        for (final ExtensionDt extension : patient.getAllUndeclaredExtensions()) {
+            switch (extension.getUrl()) {
+                case US_CORE_RACE:
+                    if (extension.getValue() instanceof CodeableConceptDt) {
+                        final CodeableConceptDt cdt = (CodeableConceptDt) extension.getValue();
+                        final CodingDt cd = cdt.getCodingFirstRep();
+                        switch (cd.getSystem()) {
+                            case "http://snomed.info/sct":
+                            case "SNOMED":
+                                raceConcept = new Concept(ConceptDAO.getInstance().getConcept(cd.getCode(), "SNOMED"));
+                                break;
+                            default:
+                                ourLog.warn("Unsupported race extension system: {} with value: {} and text: {}",
+                                        cd.getSystem(), cd.getCode(), cd.getDisplay());
+                                raceConcept = new Concept(ConceptDAO.getInstance().getConcept("415226007", "SNOMED"));
+                        }
+                    }
+                    break;
+            }
         }
 
         return this;

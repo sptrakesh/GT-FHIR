@@ -104,8 +104,8 @@ class Data
         "text": "Asian",
         "coding": [
           {
-            "system": "2.16.840.1.113883.5.104",
-            "code": "2028-9",
+            "system": "http://snomed.info/sct",
+            "code": "413582008",
             "display": "Asian"
           }
         ]

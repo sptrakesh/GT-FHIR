@@ -180,6 +180,9 @@ assert patientUrl == patientUrl1
 
 def json = read patientUrl
 def name = parseName json
+def original = new JsonSlurper().parseText patient
+assert original.extension[0].url == json.extension[0].url
+assert original.extension[0].valueCodeableConcept.coding[0].code == json.extension[0].valueCodeableConcept.coding[0].code
 
 println "Searching for patient with name: $name"
 def result = read( "${server}$baseUrl/${json.resourceType}?name=${name.toString().encodeURL()}" )
