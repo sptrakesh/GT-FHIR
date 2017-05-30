@@ -1,5 +1,6 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import ca.uhn.fhir.model.api.ExtensionDt;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.*;
 import ca.uhn.fhir.model.dstu2.resource.Patient;
@@ -184,15 +185,11 @@ public class PersonComplement extends Person {
 
     @Override
     public Patient getRelatedResource() {
-        Patient patient = (Patient) super.getRelatedResource();
+        Patient patient = super.getRelatedResource();
         patient.addName().addFamily(this.familyName).addGiven(this.givenName1);
-        if (this.givenName2 != null)
-            patient.getName().get(0).addGiven(this.givenName2);
-//		short active = this.active != null ? this.active : 0;
-        if (this.active == null || this.active == 0)
-            patient.setActive(false);
-        else
-            patient.setActive(true);
+        if (this.givenName2 != null) patient.getName().get(0).addGiven(this.givenName2);
+        if (this.active == null || this.active == 0) patient.setActive(false);
+        else patient.setActive(true);
 
         if (this.maritalStatus != null && !this.maritalStatus.isEmpty()) {
             patient.setMaritalStatus(MaritalStatusCodesEnum.valueOf(this.maritalStatus.toUpperCase()));
@@ -302,18 +299,7 @@ public class PersonComplement extends Person {
                 if (existingID != null) {
                     ourLog.info("Patient Exists with PID={}", existingID);
                     this.setId(existingID);
-                } /* else {
-                    //TODO: Add this to OmopConceptMapping class. Race Concept is required in OMOP v5
-					//      But, FHIR Patient does not have race data element
-					Concept race = new Concept();
-					race.setId(8552L);
-					this.setRaceConcept(race);
-
-					// Ethnicity is not available in FHIR resource. Set to 0L as there is no unknown ethnicity.
-					Concept ethnicity = new Concept();
-					ethnicity.setId(0L);
-					this.setEthnicityConcept(ethnicity);
-				} */
+                }
             }
 
             Boolean active = patient.getActive();
@@ -354,6 +340,15 @@ public class PersonComplement extends Person {
                 String use = contactPoint.getUse();
                 String value = contactPoint.getValue();
                 this.setContactPoint3(system + ":" + use + ":" + value);
+            }
+
+            for (final ExtensionDt extension : patient.getAllUndeclaredExtensions()) {
+                switch (extension.getUrl()) {
+                    case "http://hl7.org/fhir/StructureDefinition/us-core-race":
+                    case "http://hl7.org/fhir/StructureDefinition/us-core-ethnicity":
+                        ourLog.info("Extension url: {}, value: {}", extension.getUrl(), extension.getValue());
+                        break;
+                }
             }
 
             //MARITAL STATUS

@@ -30,7 +30,6 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "condition_occurrence")
-@Inheritance(strategy = InheritanceType.JOINED)
 public class ConditionOccurrence extends BaseResourceEntity {
 
     public static final String RESOURCE_TYPE = "Condition";

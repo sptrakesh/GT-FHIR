@@ -12,6 +12,7 @@ import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
 import edu.gatech.i3l.omop.dao.DeathDAO;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
@@ -391,8 +392,16 @@ public class Person extends BaseResourceEntity {
         final String genderString = patient.getGender();
         if (genderString != null)
         {
-            genderConcept = new Concept();
-            genderConcept.setId(OmopConceptMapping.getInstance().get(genderString.substring(0, 1), OmopConceptMapping.GENDER));
+            switch (genderString) {
+                case "male":
+                    genderConcept = new Concept(ConceptDAO.getInstance().getConcept("248153007","SNOMED")); // SNOMED Male concept
+                    break;
+                case "female":
+                    genderConcept = new Concept(ConceptDAO.getInstance().getConcept("248152002","SNOMED")); // SNOMED Female concept
+                    break;
+                default:
+                    genderConcept = new Concept(OmopConceptMapping.getInstance().get(genderString.substring(0, 1), OmopConceptMapping.GENDER));
+            }
         }
 
         List<AddressDt> addresses = patient.getAddress();

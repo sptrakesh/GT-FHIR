@@ -41,10 +41,6 @@ class Data
     "versionId": "5",
     "lastUpdated": "2017-04-28T14:59:13.048-04:00"
   },
-  "text": {
-    "status": "generated",
-    "div": "<div xmlns='http://www.w3.org/1999/xhtml'>SANTIAGO KUROWSKI</div>"
-  },
   "name": [
     {
       "use": "official",
@@ -100,7 +96,48 @@ class Data
       }
     ]
   },
-  "deceasedBoolean": true
+  "deceasedBoolean": true,
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/us-core-race",
+      "valueCodeableConcept": {
+        "text": "Asian",
+        "coding": [
+          {
+            "system": "2.16.840.1.113883.5.104",
+            "code": "2028-9",
+            "display": "Asian"
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/us-core-ethnicity",
+      "valueCodeableConcept": {
+        "text": "Not Hispanic or Latino",
+        "coding": [
+          {
+            "system": "2.16.840.1.113883.5.50",
+            "code": "2186-5",
+            "display": "Not Hispanic or Latino"
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/us-core-birth-sex",
+      "valueCodeableConcept": {
+        "text": "Male",
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/v3/AdministrativeGender",
+            "code": "M",
+            "display": "Male"
+          }
+        ]
+      }
+    }
+  ]
 }
 '''
   }
@@ -178,7 +215,41 @@ class Data
 }'''
   }
 
-  String getMeasurement( patientId )
+  String getEncounter( patientId )
+  {
+"""{
+  "resourceType": "Encounter",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2017-03-26T11:37:52.119-04:00"
+  },
+  "status": "finished",
+  "class": {
+    "code": "outpatient"
+  },
+  "type": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "185349003"
+        }
+      ],
+      "text": "Outpatient Encounter"
+    }
+  ],
+  "patient": {
+    "reference": "Patient/$patientId"
+  },
+  "period": {
+    "start": "2014-10-01T02:46:18-04:00",
+    "end": "2014-10-01T03:01:18-04:00"
+  }
+}
+"""
+  }
+
+  String getMeasurement( patientId, encounterId )
   {
 """{
   "resourceType": "Observation",
@@ -209,6 +280,9 @@ class Data
   "subject": {
   "reference": "Patient/$patientId"
   },
+  "context": {
+    "reference": "Encounter/$encounterId"
+  },
   "effectiveDateTime": "2017-02-03T13:23:33.000-05:00",
   "valueQuantity": {
   "value": 128,
@@ -219,7 +293,7 @@ class Data
 }"""
   }
 
-  String getObservation( patientId )
+  String getObservation( patientId, encounterId )
   {
 """{
   "resourceType": "Observation",
@@ -239,7 +313,7 @@ class Data
     "coding": [
       {
         "system": "urn:oid:2.16.840.1.113883.6.96",
-        "code": "8392000",
+        "code": "85956000",
         "display": "SNOMEDCT"
       }
     ]
@@ -247,16 +321,35 @@ class Data
   "subject": {
     "reference": "Patient/$patientId"
   },
-  "valueCodeableConcept": {
-    "coding": [
-      {
-        "system": "http://snomed.info/sct",
-        "code": "8392000",
-        "display": "Smoking"
+  "context": {
+    "reference": "Encounter/$encounterId"
+  },
+  "component": [
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "urn:oid:2.16.840.1.113883.6.96",
+            "code": "85956000",
+            "display": "Adenoid squamous cell carcinoma"
+          }
+        ]
       }
-    ],
-    "text": "Smoking"
-  }
+    },
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "373375007",
+            "display": "Well differentiated histological grade finding"
+          }
+        ]
+      },
+      "valueString": "Grade 1 (well differentiated)"
+    }
+  ],
+  "effectiveDateTime": "2017-03-07T23:50:16+00:00"
 }"""
   }
 
@@ -276,8 +369,7 @@ class Data
     "coding": [
       {
         "system": "http://snomed.info/sct",
-        "code": "448952004",
-        "display": "Infiltrating duct carcinoma of female breast"
+        "code": "363402007"
       }
     ],
     "text": "IDC"

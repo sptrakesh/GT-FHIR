@@ -18,8 +18,6 @@ import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ReferenceAndListParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import edu.gatech.i3l.fhir.jpa.dao.SearchParameterMap;
-// import ca.uhn.fhir.model.dstu2.resource.Bundle;
-// import ca.uhn.fhir.model.api.Bundle;
 
 public class EncounterResourceProvider extends 
 	JpaResourceProviderDstu2<Encounter>

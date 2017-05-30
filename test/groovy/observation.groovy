@@ -6,13 +6,14 @@ import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
 import groovy.transform.Field
 
-String.metaClass.encodeURL =
-{
-  java.net.URLEncoder.encode( delegate, 'UTF-8' )
-}
-
 @Field def server = 'http://localhost:8080'
 @Field def baseUrl = '/gt-fhir-webapp/base'
+
+def getEntityId( entityUrl )
+{
+  def parts = entityUrl.split '/'
+  parts[parts.length - 1]
+}
 
 def create( data )
 {
@@ -89,9 +90,27 @@ def delete( url )
   catch ( Throwable t ) { println "$url\n$t" }
 }
 
-def measurement( object, patientId )
+def patient( object, shell )
 {
-  def measurement = object.getMeasurement patientId
+  def script = shell.parse new File( 'patient.groovy' )
+  def url = script.create object.patient
+  println "Created patient at url: $url"
+  read url
+  url
+}
+
+def encounter( object, shell, patientId )
+{
+  def script = shell.parse new File( 'encounter.groovy' )
+  def url = script.create object.getEncounter( patientId )
+  println "Created encounter at url: $url"
+  read url
+  url
+}
+
+def measurement( object, patientId, encounterId )
+{
+  def measurement = object.getMeasurement patientId, encounterId
   def measurementUrl = create measurement
   println "Created measurement at url: $measurementUrl"
   if ( ! measurementUrl ) System.exit 1
@@ -104,16 +123,18 @@ def measurement( object, patientId )
   delete measurementUrl
 }
 
-def observation( object, patientId )
+def observation( object, patientId, encounterId )
 {
-  def observation = object.getObservation patientId
+  def observation = object.getObservation patientId, encounterId
   def observationUrl = create observation
   println "Created observation at url: $observationUrl"
   if ( ! observationUrl ) System.exit 1
 
   def json = read observationUrl
+  println json
   def original = new JsonSlurper().parseText observation
   assert original.code.coding[0].code == json.code.coding[0].code
+  assert original.effectiveDateTime == json.effectiveDateTime
 
   println "Deleting observation with type: ${json.resourceType} and id: ${json.id}"
   delete observationUrl
@@ -124,22 +145,24 @@ def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
 def object = (GroovyObject) cls.newInstance()
 
 def shell = new GroovyShell()
-def script = shell.parse new File( 'patient.groovy' )
-def patientUrl = script.create object.patient
-read patientUrl
 
-println "Created patient at url: $patientUrl"
+def patientUrl = patient object, shell
+def patientId = getEntityId patientUrl
+
+def encounterUrl = encounter object, shell, patientId
+def encounterId = getEntityId encounterUrl
 
 try
 {
-  def parts = patientUrl.split '/'
-  def patientId = parts[parts.length - 1]
-  measurement object, patientId
-  observation object, patientId
+  measurement object, patientId, encounterId
+  observation object, patientId, encounterId
 }
 finally
 {
+  println "Deleting encounter at URL: $encounterUrl"
+  delete encounterUrl
+
   println "Deleting patient at URL: $patientUrl"
-  script.delete patientUrl
+  delete patientUrl
 }
 

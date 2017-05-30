@@ -19,17 +19,16 @@ def create( data )
       uri.path = "$baseUrl/${json.resourceType}"
       body = data
 
-      response.success = 
-      { 
+      response.success =
+      {
         resp, reader ->
-        println "Create response status: ${resp.statusLine}"
-        resp.getFirstHeader( 'Location' ).value
+          println "Create response status: ${resp.statusLine}"
+          resp.getFirstHeader( 'Location' ).value
       }
 
       response.failure =
-      { 
-        resp ->
-        println "Create request failed with status ${resp.status}"
+      {
+        resp -> println "Create request failed with status ${resp.status}"
       }
     }
   }
@@ -43,17 +42,16 @@ def read( url )
     def http = new HTTPBuilder( url )
     http.request( Method.GET, 'application/json' )
     {
-      response.success = 
-      { 
+      response.success =
+      {
         resp, json ->
-        println "Read json with type: ${json.resourceType} and id: ${json.id}"
-        json
+          println "Read json with type: ${json.resourceType} and id: ${json.id}"
+          json
       }
 
       response.failure =
       {
-        resp ->
-        println "read request failed with status ${resp.status}"
+        resp -> println "read request failed with status ${resp.status}"
       }
     }
   }
@@ -67,39 +65,33 @@ def delete( url )
     def http = new HTTPBuilder( url )
     http.request( Method.DELETE )
     {
-      response.success = 
-      { 
-        resp, data ->
-        println "Delete response status: ${resp.statusLine}"
+      response.success =
+      {
+        resp, data -> println "Delete response status: ${resp.statusLine}"
       }
 
       response.failure =
       {
-        resp ->
-        println "Delete request failed with status ${resp.status}"
+        resp -> println "Delete request failed with status ${resp.status}"
       }
     }
   }
   catch ( Throwable t ) { println "$url\n$t" }
 }
 
-def condition( object, patientId )
+def encounter( object, patientId )
 {
-  def condition = object.getCondition patientId
+  def encounter = object.getEncounter patientId
+  def encounterUrl = create encounter
+  println "Created Encounter at url: $encounterUrl"
 
-  def conditionUrl = create condition
-  println "Created condition at url: $conditionUrl"
-  if ( ! conditionUrl ) System.exit 1
+  def json = read encounterUrl
 
-  def json = read conditionUrl
-  def data = new JsonSlurper().parseText condition
-  assert json.onsetDateTime.startsWith( data.onsetDateTime )
+  println "Deleting enity with type: ${json.resourceType} and id: ${json.id}"
+  delete encounterUrl
 
-  println "Deleting condition with type: ${json.resourceType} and id: ${json.id}"
-  delete conditionUrl
-
-  println "Attempting to read deleted condition"
-  read conditionUrl
+  println "Attempting to read deleted entity"
+  read encounterUrl
 }
 
 def sourceFile = new File( 'Data.groovy' )
@@ -111,13 +103,11 @@ def script = shell.parse new File( 'patient.groovy' )
 def patientUrl = script.create object.patient
 read patientUrl
 
-println "Created patient at url: $patientUrl"
-
 try
 {
   def parts = patientUrl.split '/'
   def patientId = parts[parts.length - 1]
-  condition object, patientId
+  encounter object, patientId
 }
 finally
 {

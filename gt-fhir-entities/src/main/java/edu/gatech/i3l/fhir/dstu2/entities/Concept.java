@@ -1,5 +1,12 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
+import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.dstu2.resource.ValueSet;
+import ca.uhn.fhir.model.primitive.InstantDt;
+import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
+import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -11,7 +18,9 @@ import java.util.Date;
         @NamedQuery(name = "findDomainByCode",
                 query = "select domain from Concept c where c.conceptCode = :code")
 })
-public class Concept {
+public class Concept extends BaseResourceEntity {
+
+    public static final String RES_TYPE = "ValueSet";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -77,6 +86,37 @@ public class Concept {
 
     public Long getId() {
         return id;
+    }
+
+    @Override
+    public FhirVersionEnum getFhirVersion() {
+        return FhirVersionEnum.DSTU2;
+    }
+
+    @Override
+    public String getResourceType() {
+        return RES_TYPE;
+    }
+
+    @Override
+    public InstantDt getUpdated() {
+        return null;
+    }
+
+    @Override
+    public String translateSearchParam(String theSearchParam) {
+        return null;
+    }
+
+    @Override
+    public IResource getRelatedResource() {
+        return null;
+    }
+
+    @Override
+    public IResourceEntity constructEntityFromResource(IResource resource) {
+        if (!( resource instanceof ValueSet)) return this;
+        return null;
     }
 
     public void setId(Long id) {
