@@ -346,14 +346,7 @@ public class Person extends BaseResourceEntity {
         if (death != null) patient.setDeceased(new BooleanDt(true));
         else patient.setDeceased(new BooleanDt(false));
 
-        if (raceConcept != null) {
-            final CodeableConceptDt cdt = new CodeableConceptDt();
-            cdt.addCoding(new CodingDt(raceConcept.getVocabulary().getId(),raceConcept.getConceptCode()));
-            final ExtensionDt edt = new ExtensionDt();
-            edt.setUrl(US_CORE_RACE);
-            edt.setValue(cdt);
-            patient.addUndeclaredExtension(edt);
-        }
+        addRace(patient);
 
         return patient;
     }
@@ -435,6 +428,24 @@ public class Person extends BaseResourceEntity {
             this.setProvider(Provider.searchAndUpdate(providers.get(0)));
         }
 
+        processRace(patient);
+
+        return this;
+    }
+
+    @Override
+    public String translateSearchParam(String link) {
+        switch (link) {
+            case Patient.SP_CAREPROVIDER:
+                return "provider";
+            default:
+                break;
+        }
+
+        return link;
+    }
+
+    private void processRace(final Patient patient) {
         for (final ExtensionDt extension : patient.getAllUndeclaredExtensions()) {
             switch (extension.getUrl()) {
                 case US_CORE_RACE:
@@ -455,19 +466,16 @@ public class Person extends BaseResourceEntity {
                     break;
             }
         }
-
-        return this;
     }
 
-    @Override
-    public String translateSearchParam(String link) {
-        switch (link) {
-            case Patient.SP_CAREPROVIDER:
-                return "provider";
-            default:
-                break;
+    private void addRace(final Patient patient) {
+        if (raceConcept != null) {
+            final CodeableConceptDt cdt = new CodeableConceptDt();
+            cdt.addCoding(new CodingDt(raceConcept.getVocabulary().getId(),raceConcept.getConceptCode()));
+            final ExtensionDt edt = new ExtensionDt();
+            edt.setUrl(US_CORE_RACE);
+            edt.setValue(cdt);
+            patient.addUndeclaredExtension(edt);
         }
-
-        return link;
     }
 }
