@@ -20,16 +20,19 @@ public class ConceptDAO {
         final String key = hash(conceptCode, vocabulary);
         if (cache.containsKey(key)) return cache.get(key);
 
-        final String sql = "select c from Concept c where c.vocabulary.id = :vocabulary and c.conceptCode = :conceptCode";
-        TypedQuery<? extends BaseResourceEntity> query = DAO.getInstance().getEntityManager().createQuery(sql, Concept.class);
+        final String sql = "select c.id from Concept c where c.vocabulary.id = :vocabulary and c.conceptCode = :conceptCode";
+        TypedQuery<Long> query = DAO.getInstance().getEntityManager().createQuery(sql, Long.class);
         query.setParameter("vocabulary", vocabulary);
         query.setParameter("conceptCode", conceptCode);
-        List<? extends BaseResourceEntity> results = query.getResultList();
+        List<Long> results = query.getResultList();
         if (results.isEmpty()) return null;
 
-        final Concept c = (Concept) results.get(0);
-        cache.put(key,c.getId());
-        return c.getId();
+        cache.put(key,results.get(0));
+        return results.get(0);
+    }
+
+    public Long getDefaultRace() {
+        return getConcept("415226007", "SNOMED");
     }
 
     private String hash(final String conceptCode, final String vocabulary) {

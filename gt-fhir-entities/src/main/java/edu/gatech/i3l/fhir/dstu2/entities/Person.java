@@ -460,7 +460,7 @@ public class Person extends BaseResourceEntity {
                             default:
                                 ourLog.warn("Unsupported race extension system: {} with value: {} and text: {}",
                                         cd.getSystem(), cd.getCode(), cd.getDisplay());
-                                raceConcept = new Concept(ConceptDAO.getInstance().getConcept("415226007", "SNOMED"));
+                                raceConcept = new Concept(ConceptDAO.getInstance().getDefaultRace());
                         }
                     }
                     break;
