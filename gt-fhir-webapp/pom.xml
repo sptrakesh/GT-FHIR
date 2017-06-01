@@ -23,14 +23,6 @@
         <parent_version>2.0-SNAPSHOT</parent_version>
     </properties>
     <dependencies>
-        <!-- This dependency is used for the "FHIR Tester" web app overlay -->
-        <dependency>
-            <groupId>edu.gatech.i3l</groupId>
-            <artifactId>gt-fhir-overlay</artifactId>
-            <version>${parent_version}</version>
-            <type>war</type>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>edu.gatech.i3l</groupId>
             <artifactId>gt-fhir-entities</artifactId>
