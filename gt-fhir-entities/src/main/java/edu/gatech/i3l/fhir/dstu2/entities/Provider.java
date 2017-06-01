@@ -14,6 +14,7 @@ import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.DAO;
 import edu.gatech.i3l.omop.dao.ProviderDAO;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 import org.springframework.web.context.ContextLoaderListener;
@@ -111,8 +112,7 @@ public class Provider extends BaseResourceEntity {
         if (resourceRef == null) return null;
 
         // See if this exists.
-        Provider provider =
-                (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, resourceRef.getReference().getIdPartAsLong());
+        Provider provider = DAO.getInstance().loadEntityById(Provider.class, resourceRef.getReference().getIdPartAsLong());
         if (provider != null) {
             return provider;
         } else {

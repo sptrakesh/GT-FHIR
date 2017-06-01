@@ -10,6 +10,7 @@ import ca.uhn.fhir.model.dstu2.valueset.MaritalStatusCodesEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.DAO;
 import edu.gatech.i3l.omop.dao.PersonComplementDAO;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
@@ -67,8 +68,7 @@ public class PersonComplement extends Person {
         if (patientResourceRef == null) return null;
 
         Long patientRef = patientResourceRef.getReference().getIdPartAsLong();
-        PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance()
-                .loadEntityById(PersonComplement.class, patientRef);
+        PersonComplement person = DAO.getInstance().loadEntityById(PersonComplement.class, patientRef);
         if (person != null) {
             return person;
         } else {
@@ -279,7 +279,7 @@ public class PersonComplement extends Person {
 
             IdDt myID = patient.getId();
             if (myID != null && myID.getIdPartAsLong() != null && myID.getIdPart() != null) {
-                PersonComplement person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityById(PersonComplement.class, myID.getIdPartAsLong());
+                PersonComplement person = DAO.getInstance().loadEntityById(PersonComplement.class, myID.getIdPartAsLong());
                 if (person != null) {
                     this.setId(myID.getIdPartAsLong());
                 } else {

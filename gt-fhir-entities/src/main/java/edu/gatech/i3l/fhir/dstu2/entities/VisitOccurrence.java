@@ -15,6 +15,7 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.DAO;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 import javax.persistence.*;
@@ -116,8 +117,7 @@ public class VisitOccurrence extends BaseResourceEntity {
         if (encounterRef == null) return null;
 
         // See if this exists.
-        VisitOccurrence visitOccurrence =
-                (VisitOccurrence) OmopConceptMapping.getInstance().loadEntityById(VisitOccurrence.class, encounterRef);
+        VisitOccurrence visitOccurrence = DAO.getInstance().loadEntityById(VisitOccurrence.class, encounterRef);
         if (visitOccurrence != null) {
             return visitOccurrence;
         } else {

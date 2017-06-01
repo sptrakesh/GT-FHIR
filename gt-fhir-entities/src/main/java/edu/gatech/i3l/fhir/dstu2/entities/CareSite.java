@@ -13,6 +13,7 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.dao.CareSiteDAO;
+import edu.gatech.i3l.omop.dao.DAO;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 import javax.persistence.*;
@@ -70,8 +71,7 @@ public class CareSite extends BaseResourceEntity {
         if (resourceRef == null) return null;
 
         // See if this exists.
-        CareSite careSite =
-                (CareSite) OmopConceptMapping.getInstance().loadEntityById(CareSite.class, resourceRef.getReference().getIdPartAsLong());
+        CareSite careSite = DAO.getInstance().loadEntityById(CareSite.class, resourceRef.getReference().getIdPartAsLong());
         if (careSite != null) {
             return careSite;
         } else {

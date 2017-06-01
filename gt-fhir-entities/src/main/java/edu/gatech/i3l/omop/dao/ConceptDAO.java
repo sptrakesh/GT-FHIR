@@ -1,8 +1,5 @@
 package edu.gatech.i3l.omop.dao;
 
-import edu.gatech.i3l.fhir.dstu2.entities.Concept;
-import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
-
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +11,7 @@ import static java.lang.String.format;
  * Created by rakesh.vidyadharan on 5/30/17.
  */
 public class ConceptDAO {
+    public static final String SNOMED = "SNOMED";
     public static ConceptDAO getInstance() {return singleton;}
 
     public Long getConcept(final String conceptCode, final String vocabulary) {
@@ -32,7 +30,7 @@ public class ConceptDAO {
     }
 
     public Long getDefaultRace() {
-        return getConcept("415226007", "SNOMED");
+        return getConcept("415226007", SNOMED);
     }
 
     private String hash(final String conceptCode, final String vocabulary) {

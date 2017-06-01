@@ -7,7 +7,7 @@ import groovyx.net.http.Method
 import groovy.transform.Field
 
 @Field def server = 'http://localhost:8080'
-@Field def baseUrl = '/gt-fhir-webapp/base'
+@Field def baseUrl = '/base'
 
 def getEntityId( entityUrl )
 {
@@ -139,6 +139,23 @@ def observation( object, patientId, encounterId )
   delete observationUrl
 }
 
+def numberOfPregnancies( object, patientId, encounterId )
+{
+  def observation = object.getNumberOfPregnancies patientId, encounterId, 3
+  def observationUrl = create observation
+  println "Created pregnancy observation at url: $observationUrl"
+  if ( ! observationUrl ) System.exit 1
+
+  def json = read observationUrl
+  def original = new JsonSlurper().parseText observation
+  assert original.code.coding[0].code == json.code.coding[0].code
+  assert original.valueString == json.valueString
+  assert original.effectiveDateTime == json.effectiveDateTime
+
+  println "Deleting pregnancy observation with type: ${json.resourceType} and id: ${json.id}"
+  delete observationUrl
+}
+
 def sourceFile = new File( 'Data.groovy' )
 def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
 def object = (GroovyObject) cls.newInstance()
@@ -155,6 +172,7 @@ try
 {
   measurement object, patientId, encounterId
   observation object, patientId, encounterId
+  numberOfPregnancies object, patientId, encounterId
 }
 finally
 {

@@ -25,7 +25,7 @@ public class PersonComplementDAO {
         if (person == null) return null;
 
         final StringBuilder builder = new StringBuilder(128);
-        builder.append("SELECT p FROM PersonComplement p where ");
+        builder.append("SELECT p.id FROM PersonComplement p where ");
 
         String family_name = person.getFamilyName();
         String given1_name = person.getGivenName1();
@@ -52,24 +52,14 @@ public class PersonComplementDAO {
             else builder.append(" AND p.location.id = :location");
         }
 
-        System.out.println("Query for Person: " + builder);
-
-        TypedQuery<? extends BaseResourceEntity> query = DAO.getInstance().getEntityManager().createQuery(builder.toString(), PersonComplement.class);
+        TypedQuery<Long> query = DAO.getInstance().getEntityManager().createQuery(builder.toString(), Long.class);
         if (StringUtils.isNotBlank(family_name)) query = query.setParameter("fname", family_name);
         if (StringUtils.isNotBlank(given1_name)) query = query.setParameter("gname1", given1_name);
         if (StringUtils.isNotBlank(given2_name)) query = query.setParameter("gname2", given2_name);
         if (location != null) query = query.setParameter("location", location.getId());
 
-        if (location != null) {
-            System.out.println("family:" + family_name + " gname1:" + given1_name + " gname2:" + given2_name + " location:" + location.getId());
-        } else {
-            System.out.println("family:" + family_name + " gname1:" + given1_name + " gname2:" + given2_name);
-        }
-        List<? extends BaseResourceEntity> results = query.getResultList();
-        if (results.size() > 0) {
-            PersonComplement person_c = (PersonComplement) results.get(0);
-            return person_c.getId();
-        } else return null;
+        List<Long> results = query.getResultList();
+        return (results.isEmpty()) ? null : results.get(0);
     }
 
     private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PersonComplementDAO.class);

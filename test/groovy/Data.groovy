@@ -305,16 +305,16 @@ class Data
   "category": {
     "coding": [
       {
-        "code": "social-history"
+        "code": "exam"
       }
     ]
   },
   "code": {
     "coding": [
       {
-        "system": "urn:oid:2.16.840.1.113883.6.96",
+        "system": "http://snomed.info/sct",
         "code": "85956000",
-        "display": "SNOMEDCT"
+        "display": "Adenoid squamous cell carcinoma"
       }
     ]
   },
@@ -353,7 +353,43 @@ class Data
 }"""
   }
 
-  String getCondition( patientId )
+  String getNumberOfPregnancies( patientId, encounterId, number )
+  {
+"""{
+  "resourceType": "Observation",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2017-03-07T18:50:16.717-05:00"
+  },
+  "status": "final",
+  "category": {
+    "coding": [
+      {
+        "code": "social-history"
+      }
+    ]
+  },
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "161732006",
+        "display": "Gravida"
+      }
+    ]
+  },
+  "valueString": "$number",
+  "subject": {
+    "reference": "Patient/$patientId"
+  },
+  "context": {
+    "reference": "Encounter/$encounterId"
+  },
+  "effectiveDateTime": "2017-03-07T23:50:16+00:00"
+}"""
+  }
+
+  String getCondition( patientId, encounterId )
   {
 """{
   "resourceType": "Condition",
@@ -362,8 +398,10 @@ class Data
     "lastUpdated": "2017-03-16T10:23:39.915-04:00"
   },
   "patient": {
-    "reference": "Patient/$patientId",
-    "display": "Unit Test"
+    "reference": "Patient/$patientId"
+  },
+  "encounter": {
+    "reference": "Encounter/$encounterId"
   },
   "code": {
     "coding": [

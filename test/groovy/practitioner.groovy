@@ -19,7 +19,7 @@ class Name
 }
 
 @Field def server = 'http://localhost:8080'
-@Field def baseUrl = '/gt-fhir-webapp/base'
+@Field def baseUrl = '/base'
 
 def parseName( json )
 {

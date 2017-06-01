@@ -1,4 +1,6 @@
 #!/usr/bin/env groovy
+println 'Testing Healthcheck endpoint'
+evaluate new File( 'healthcheck.groovy' )
 println 'Testing Organization entity'
 evaluate new File( 'org.groovy' )
 println 'Testing Patient entity'

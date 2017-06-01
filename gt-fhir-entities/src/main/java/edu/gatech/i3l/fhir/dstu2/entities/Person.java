@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static edu.gatech.i3l.omop.dao.ConceptDAO.SNOMED;
+
 @Entity
 @Table(name = "person")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -454,8 +456,8 @@ public class Person extends BaseResourceEntity {
                         final CodingDt cd = cdt.getCodingFirstRep();
                         switch (cd.getSystem()) {
                             case "http://snomed.info/sct":
-                            case "SNOMED":
-                                raceConcept = new Concept(ConceptDAO.getInstance().getConcept(cd.getCode(), "SNOMED"));
+                            case SNOMED:
+                                raceConcept = new Concept(ConceptDAO.getInstance().getConcept(cd.getCode(), SNOMED));
                                 break;
                             default:
                                 ourLog.warn("Unsupported race extension system: {} with value: {} and text: {}",

@@ -1,6 +1,7 @@
 package edu.gatech.i3l.omop.dao;
 
 import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
+import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -14,9 +15,13 @@ public class DAO {
 
     public EntityManager getEntityManager() { return entityManager; }
 
+    public <T extends BaseResourceEntity> T loadEntityById(final Class<T> cls, final Object primaryKey) {
+        return entityManager.find(cls, primaryKey);
+    }
+
     private DAO() {
-        String baseFhirDao = "myBaseDao";
-        WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
+        final String baseFhirDao = "myBaseDao";
+        final WebApplicationContext myAppCtx = ContextLoaderListener.getCurrentWebApplicationContext();
         entityManager = myAppCtx.getBean(baseFhirDao, BaseFhirDao.class).getEntityManager();
     }
 

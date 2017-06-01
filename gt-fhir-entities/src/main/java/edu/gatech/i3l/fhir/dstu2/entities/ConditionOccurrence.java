@@ -18,6 +18,7 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.DAO;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
@@ -283,7 +284,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
                     && asserterReference.getResourceType().equalsIgnoreCase(Provider.RESOURCE_TYPE)) {
                 Long providerId = asserterReference.getIdPartAsLong();
                 if (providerId != null) {
-                    Provider provider = (Provider) OmopConceptMapping.getInstance().loadEntityById(Provider.class, providerId);
+                    Provider provider = DAO.getInstance().loadEntityById(Provider.class, providerId);
                     if (provider != null) {
                         this.setProvider(provider);
                     } else {

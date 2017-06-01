@@ -25,7 +25,7 @@ public class ProviderDAO {
         if (provider == null) return null;
 
         final StringBuilder builder = new StringBuilder(128);
-        builder.append("SELECT p FROM Provider p where ");
+        builder.append("SELECT p.id FROM Provider p where ");
 
         String name = provider.getProviderName();
         builder.append("p.providerName = :name");
@@ -34,15 +34,12 @@ public class ProviderDAO {
             builder.append(" AND p.careSite.location.id = :location");
         }
 
-        TypedQuery<? extends BaseResourceEntity> query = DAO.getInstance().getEntityManager().createQuery(builder.toString(), Provider.class);
+        TypedQuery<Long> query = DAO.getInstance().getEntityManager().createQuery(builder.toString(), Long.class);
         query.setParameter("name", name);
         if (location != null) query = query.setParameter("location", location.getId());
 
-        List<? extends BaseResourceEntity> results = query.getResultList();
-        if (results.size() > 0) {
-            Provider pr = (Provider) results.get(0);
-            return pr.getId();
-        } else return null;
+        List<Long> results = query.getResultList();
+        return (results.isEmpty()) ? null : results.get(0);
     }
 
     private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(ProviderDAO.class);

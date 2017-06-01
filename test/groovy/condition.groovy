@@ -6,7 +6,13 @@ import groovyx.net.http.Method
 import groovy.transform.Field
 
 @Field def server = 'http://localhost:8080'
-@Field def baseUrl = '/gt-fhir-webapp/base'
+@Field def baseUrl = '/base'
+
+def getEntityId( entityUrl )
+{
+  def parts = entityUrl.split '/'
+  parts[parts.length - 1]
+}
 
 def create( data )
 {
@@ -83,9 +89,27 @@ def delete( url )
   catch ( Throwable t ) { println "$url\n$t" }
 }
 
-def condition( object, patientId )
+def patient( object, shell )
 {
-  def condition = object.getCondition patientId
+  def script = shell.parse new File( 'patient.groovy' )
+  def url = script.create object.patient
+  println "Created patient at url: $url"
+  read url
+  url
+}
+
+def encounter( object, shell, patientId )
+{
+  def script = shell.parse new File( 'encounter.groovy' )
+  def url = script.create object.getEncounter( patientId )
+  println "Created encounter at url: $url"
+  read url
+  url
+}
+
+def condition( object, patientId, encounterId )
+{
+  def condition = object.getCondition patientId, encounterId
 
   def conditionUrl = create condition
   println "Created condition at url: $conditionUrl"
@@ -94,6 +118,8 @@ def condition( object, patientId )
   def json = read conditionUrl
   def data = new JsonSlurper().parseText condition
   assert json.onsetDateTime.startsWith( data.onsetDateTime )
+  assert json.patient.reference == data.patient.reference
+  assert json.encounter.reference == data.encounter.reference
 
   println "Deleting condition with type: ${json.resourceType} and id: ${json.id}"
   delete conditionUrl
@@ -107,20 +133,22 @@ def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
 def object = (GroovyObject) cls.newInstance()
 
 def shell = new GroovyShell()
-def script = shell.parse new File( 'patient.groovy' )
-def patientUrl = script.create object.patient
-read patientUrl
 
-println "Created patient at url: $patientUrl"
+def patientUrl = patient object, shell
+def patientId = getEntityId patientUrl
+
+def encounterUrl = encounter object, shell, patientId
+def encounterId = getEntityId encounterUrl
 
 try
 {
-  def parts = patientUrl.split '/'
-  def patientId = parts[parts.length - 1]
-  condition object, patientId
+  condition object, patientId, encounterId
 }
 finally
 {
+  println "Deleting encounter at URL: $encounterUrl"
+  delete encounterUrl
+
   println "Deleting patient at URL: $patientUrl"
-  script.delete patientUrl
+  delete patientUrl
 }

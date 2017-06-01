@@ -7,7 +7,7 @@ import groovyx.net.http.Method
 import groovy.transform.Field
 
 @Field def server = 'http://localhost:8080'
-@Field def baseUrl = '/gt-fhir-webapp/base'
+@Field def baseUrl = '/base'
 
 String.metaClass.encodeURL =
 {

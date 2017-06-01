@@ -24,7 +24,7 @@ public class CareSiteDAO {
         if (organization == null) return null;
 
         final StringBuilder builder = new StringBuilder(128);
-        builder.append("SELECT o FROM CareSite o where ");
+        builder.append("SELECT o.id FROM CareSite o where ");
 
         String name = organization.getCareSiteName();
         builder.append("o.careSiteName = :name");
@@ -33,15 +33,12 @@ public class CareSiteDAO {
             builder.append(" AND o.location.id = :location");
         }
 
-        TypedQuery<? extends BaseResourceEntity> query = DAO.getInstance().getEntityManager().createQuery(builder.toString(), CareSite.class);
+        TypedQuery<Long> query = DAO.getInstance().getEntityManager().createQuery(builder.toString(), Long.class);
         query.setParameter("name", name);
         if (location != null) query = query.setParameter("location", location.getId());
 
-        List<? extends BaseResourceEntity> results = query.getResultList();
-        if (results.size() > 0) {
-            CareSite cs = (CareSite) results.get(0);
-            return cs.getId();
-        } else return null;
+        List<Long> results = query.getResultList();
+        return (results.isEmpty()) ? null : results.get(0);
     }
 
     private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(CareSiteDAO.class);
