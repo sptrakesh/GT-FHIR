@@ -2,6 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.ExtensionDt;
+import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.AddressDt;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
@@ -12,6 +13,7 @@ import ca.uhn.fhir.model.dstu2.valueset.AddressUseEnum;
 import ca.uhn.fhir.model.dstu2.valueset.AdministrativeGenderEnum;
 import ca.uhn.fhir.model.primitive.BooleanDt;
 import ca.uhn.fhir.model.primitive.DateDt;
+import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
@@ -383,19 +385,19 @@ public class Person extends BaseResourceEntity {
             this.dayOfBirth = c.get(Calendar.DAY_OF_MONTH);
         }
 
-        if (patient.getDeceased() != null)
-        {
-            final BooleanDt value = (BooleanDt) patient.getDeceased();
-            if (value.getValue())
-            {
-                death = DeathDAO.getInstance().getById(id);
-                if (death == null)
-                {
-                    death = new Death(this);
+        final IDatatype deceased = patient.getDeceased();
+        if (deceased != null) {
+            if (deceased instanceof BooleanDt) {
+                final BooleanDt value = (BooleanDt) patient.getDeceased();
+                if (value.getValue()) {
+                    death = DeathDAO.getInstance().getById(id);
+                    if (death == null) { death = new Death(this); }
+                } else {
+                    death = null;
+                    DeathDAO.getInstance().remove(id);
                 }
-            } else {
-                death = null;
-                DeathDAO.getInstance().remove(id);
+            }
+            else if (deceased instanceof DateTimeDt) {
             }
         } else death = null;
 

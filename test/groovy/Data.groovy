@@ -1,5 +1,83 @@
+import groovyx.net.http.HTTPBuilder
+import groovyx.net.http.Method
+
 class Data
 {
+  String server = System.getProperty 'server', 'http://localhost:8080'
+  String baseUrl = '/base'
+
+  String fixProtocol( url )
+  {
+   ( server.startsWith( 'https://') ) ? url.replace( 'http://', 'https://' ) : url
+  }
+
+  def getEntityId( entityUrl )
+  {
+    def parts = entityUrl.split '/'
+    parts[parts.length - 1]
+  }
+
+  def read( url )
+  {
+    try
+    {
+      def http = new HTTPBuilder( url )
+      http.request( Method.GET, 'application/json' )
+      {
+        response.success =
+        {
+          resp, json ->
+            println "Read json with type: ${json.resourceType} and id: ${json.id}"
+            return json
+        }
+
+        response.failure =
+        {
+          resp ->
+            println "read request failed with status ${resp.status}"
+        }
+      }
+    }
+    catch ( Throwable t ) { println "$url\n$t" }
+  }
+
+  def delete( url )
+  {
+    try
+    {
+      def http = new HTTPBuilder( url )
+      http.request( Method.DELETE )
+      {
+        response.success =
+        {
+          resp, data ->
+            println "Delete response status: ${resp.statusLine}"
+        }
+
+        response.failure =
+        {
+          resp ->
+            println "Delete request failed with status ${resp.status}"
+        }
+      }
+    }
+    catch ( Throwable t ) { println "$url\n$t" }
+  }
+
+  def matchUrl( result, url )
+  {
+    def found = false
+    for ( entry in result.entry )
+    {
+      if ( fixProtocol( entry.fullUrl ) == url )
+      {
+        found = true
+        break
+      }
+    }
+    assert found
+  }
+
   String getOrganisation()
   {
 '''{
@@ -293,6 +371,41 @@ class Data
 }"""
   }
 
+  String getGradedMeasurement( patientId, encounterId )
+  {
+"""{
+  "resourceType": "Observation",
+  "meta": {
+    "versionId": "2",
+    "lastUpdated": "2017-05-15T11:56:28.904-04:00"
+  },
+  "status": "final",
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "373375007"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/$patientId"
+  },
+  "context": {
+    "reference": "Encounter/$encounterId"
+  },
+  "effectiveDateTime": "2017-02-03T13:23:33.000-05:00",
+  "valueCodeableConcept": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "258244004"
+      }
+    ]
+  }
+}"""
+  }
+
   String getObservation( patientId, encounterId )
   {
 """{
@@ -424,6 +537,28 @@ class Data
   "clinicalStatus": "active",
   "verificationStatus": "confirmed",
   "onsetDateTime": "2014-01-01"
+}"""
+  }
+
+  String getMedicationStatement( patientId, encounterId )
+  {
+"""{
+  "resourceType": "MedicationStatement",
+  "status": "active",
+  "patient": {
+    "reference": "Patient/$patientId"
+  },
+  "supportingInformation": [
+    { "reference": "Encounter/$encounterId" }
+  ],
+  "medicationCodeableConcept": {
+    "coding": [
+      {
+        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+        "code": "4492"
+      }
+    ]
+  }
 }"""
   }
 }

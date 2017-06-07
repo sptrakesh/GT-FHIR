@@ -276,8 +276,6 @@ public class OmopMeasurement extends BaseResourceEntity {
 		/* Set the value of the observation */
         IDatatype value = obs.getValue();
         if (value instanceof QuantityDt) {
-//			Long unitId = ocm.get(((QuantityDt) value).getUnit(), OmopConceptMapping.UCUM_CODE,
-//					OmopConceptMapping.UCUM_CODE_STANDARD, OmopConceptMapping.UCUM_CODE_CUSTOM);
             String unitCode = ((QuantityDt) value).getCode();
             if (unitCode == null) {
                 unitCode = ((QuantityDt) value).getUnit();
@@ -295,8 +293,6 @@ public class OmopMeasurement extends BaseResourceEntity {
                 this.rangeLow = obs.getReferenceRangeFirstRep().getLow().getValue().doubleValue();
 
         } else if (value instanceof CodeableConceptDt) {
-//			Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode(),
-//					OmopConceptMapping.CLINICAL_FINDING);
             Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode());
             if (valueAsConceptId != null) {
                 this.valueAsConcept = new Concept();
@@ -334,6 +330,5 @@ public class OmopMeasurement extends BaseResourceEntity {
         return this;
 
     }
-
 
 }

@@ -18,8 +18,8 @@ class Name
   String toString() { "$given $family" }
 }
 
-@Field def server = 'http://localhost:8080'
-@Field def baseUrl = '/base'
+@Field def server
+@Field def baseUrl
 
 def parseName( json )
 {
@@ -58,30 +58,6 @@ def create( data )
   catch ( Throwable t ) { println "$t" }
 }
 
-def read( url )
-{
-  try
-  {
-    def http = new HTTPBuilder( url )
-    http.request( Method.GET, 'application/json' )
-    {
-      response.success = 
-      { 
-        resp, json ->
-        println "Read json with type: ${json.resourceType} and id: ${json.id}"
-        json
-      }
-
-      response.failure =
-      {
-        resp ->
-        println "read request failed with status ${resp.status}"
-      }
-    }
-  }
-  catch ( Throwable t ) { println "$url\n$t" }
-}
-
 def update( practitioner )
 {
   def status = 404
@@ -117,69 +93,37 @@ def update( practitioner )
   status
 }
 
-def delete( url )
-{
-  try
-  {
-    def http = new HTTPBuilder( url )
-    http.request( Method.DELETE )
-    {
-      response.success = 
-      { 
-        resp, data ->
-        println "Delete response status: ${resp.statusLine}"
-      }
-
-      response.failure =
-      {
-        resp ->
-        println "Delete request failed with status ${resp.status}"
-      }
-    }
-  }
-  catch ( Throwable t ) { println "$url\n$t" }
-}
-
-def matchUrl( result, url )
-{
-  def found = false
-  for ( entry in result.entry )
-  {
-    if ( entry.fullUrl == url )
-    {
-      found = true
-      break
-    }
-  }
-  assert found
-}
-
 def sourceFile = new File( 'Data.groovy' )
 def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
 def object = (GroovyObject) cls.newInstance()
+
+this.server = object.server
+this.baseUrl = object.baseUrl
 def practitioner = object.practitioner
 
 def practitionerUrl = create practitioner
+practitionerUrl = object.fixProtocol practitionerUrl
 println "Created practitioner at url: $practitionerUrl"
 if ( ! practitionerUrl ) System.exit 1
 
 def practitionerUrl1 = create practitioner
+practitionerUrl1 = object.fixProtocol practitionerUrl1
 assert practitionerUrl == practitionerUrl1
 
-def json = read practitionerUrl
+def json = object.read practitionerUrl
 def name = parseName json
 
 println "Searching for practitioner with name: $name"
-def result = read( "${server}$baseUrl/${json.resourceType}?name=${name.toString().encodeURL()}" )
+def result = object.read( "${server}$baseUrl/${json.resourceType}?name=${name.toString().encodeURL()}" )
 assert result.entry.size > 0
-matchUrl result, practitionerUrl
+object.matchUrl result, practitionerUrl
 
 println "Updating practitioner with type: ${json.resourceType} and id: ${json.id}"
-def modified = read practitionerUrl
+def modified = object.read practitionerUrl
 assert json.name == modified.name
 
 println "Deleting practitioner with type: ${json.resourceType} and id: ${json.id}"
-delete practitionerUrl
+object.delete practitionerUrl
 
 println "Attempting to read deleted practitioner"
-read practitionerUrl
+object.read practitionerUrl

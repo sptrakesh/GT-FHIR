@@ -5,7 +5,7 @@ import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
 import groovy.transform.Field
 
-@Field def server = 'http://localhost:8080'
+@Field def server = System.getProperty 'server', 'http://localhost:8080'
 @Field def baseUrl = '/base'
 
 def create( data )
@@ -35,73 +35,34 @@ def create( data )
   catch ( Throwable t ) { println "$t" }
 }
 
-def read( url )
-{
-  try
-  {
-    def http = new HTTPBuilder( url )
-    http.request( Method.GET, 'application/json' )
-    {
-      response.success =
-      {
-        resp, json ->
-          println "Read json with type: ${json.resourceType} and id: ${json.id}"
-          json
-      }
-
-      response.failure =
-      {
-        resp -> println "read request failed with status ${resp.status}"
-      }
-    }
-  }
-  catch ( Throwable t ) { println "$url\n$t" }
-}
-
-def delete( url )
-{
-  try
-  {
-    def http = new HTTPBuilder( url )
-    http.request( Method.DELETE )
-    {
-      response.success =
-      {
-        resp, data -> println "Delete response status: ${resp.statusLine}"
-      }
-
-      response.failure =
-      {
-        resp -> println "Delete request failed with status ${resp.status}"
-      }
-    }
-  }
-  catch ( Throwable t ) { println "$url\n$t" }
-}
-
 def encounter( object, patientId )
 {
   def encounter = object.getEncounter patientId
   def encounterUrl = create encounter
+  encounterUrl = object.fixProtocol encounterUrl
   println "Created Encounter at url: $encounterUrl"
 
-  def json = read encounterUrl
+  def json = object.read encounterUrl
 
   println "Deleting enity with type: ${json.resourceType} and id: ${json.id}"
-  delete encounterUrl
+  object.delete encounterUrl
 
   println "Attempting to read deleted entity"
-  read encounterUrl
+  object.read encounterUrl
 }
 
 def sourceFile = new File( 'Data.groovy' )
 def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
 def object = (GroovyObject) cls.newInstance()
 
+this.server = object.server
+this.baseUrl = object.baseUrl
+
 def shell = new GroovyShell()
 def script = shell.parse new File( 'patient.groovy' )
 def patientUrl = script.create object.patient
-read patientUrl
+patientUrl = object.fixProtocol patientUrl
+object.read patientUrl
 
 try
 {
@@ -112,5 +73,5 @@ try
 finally
 {
   println "Deleting patient at URL: $patientUrl"
-  script.delete patientUrl
+  object.delete patientUrl
 }

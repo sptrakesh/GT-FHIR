@@ -1,10 +1,15 @@
+#!/usr/bin/env groovy
 @Grab('org.codehaus.groovy.modules.http-builder:http-builder:0.7.1' )
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
 import groovy.transform.Field
 
-@Field def server = 'http://localhost:8080'
-@Field def baseUrl = '/healthcheck'
+def sourceFile = new File( 'Data.groovy' )
+def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
+def object = (GroovyObject) cls.newInstance()
+
+def server = object.server
+def baseUrl = '/healthcheck'
 
 def http = new HTTPBuilder( "$server$baseUrl" )
 http.request( Method.GET, 'text/plain' )

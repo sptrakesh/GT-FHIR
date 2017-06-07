@@ -56,26 +56,25 @@ def encounter( object, shell, patientId )
   url
 }
 
-def condition( object, patientId, encounterId )
+def medicationStatement( object, patientId, encounterId )
 {
-  def condition = object.getCondition patientId, encounterId
+  def ms = object.getMedicationStatement patientId, encounterId
 
-  def conditionUrl = create condition
-  conditionUrl = object.fixProtocol conditionUrl
-  println "Created condition at url: $conditionUrl"
-  if ( ! conditionUrl ) System.exit 1
+  def msUrl = create ms
+  msUrl = object.fixProtocol msUrl
+  println "Created MedicationStatement at url: $msUrl"
+  if ( ! msUrl ) System.exit 1
 
-  def json = object.read conditionUrl
-  def data = new JsonSlurper().parseText condition
-  assert json.onsetDateTime.startsWith( data.onsetDateTime )
+  def json = object.read msUrl
+  def data = new JsonSlurper().parseText ms
   assert json.patient.reference == data.patient.reference
   assert json.encounter.reference == data.encounter.reference
 
-  println "Deleting condition with type: ${json.resourceType} and id: ${json.id}"
-  object.delete conditionUrl
+  println "Deleting MedicationStatement with type: ${json.resourceType} and id: ${json.id}"
+  object.delete msUrl
 
-  println "Attempting to read deleted condition"
-  object.read conditionUrl
+  println "Attempting to read deleted MedicationStatement"
+  object.read msUrl
 }
 
 def sourceFile = new File( 'Data.groovy' )
@@ -95,7 +94,7 @@ def encounterId = object.getEntityId encounterUrl
 
 try
 {
-  condition object, patientId, encounterId
+  medicationStatement object, patientId, encounterId
 }
 finally
 {
