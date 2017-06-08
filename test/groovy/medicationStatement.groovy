@@ -68,7 +68,9 @@ def medicationStatement( object, patientId, encounterId )
   def json = object.read msUrl
   def data = new JsonSlurper().parseText ms
   assert json.patient.reference == data.patient.reference
-  assert json.encounter.reference == data.encounter.reference
+  assert json.supportingInformation[0].reference == data.supportingInformation[0].reference
+  assert json.effectivePeriod.start == data.effectivePeriod.start
+  assert json.effectivePeriod.end == data.effectivePeriod.end
 
   println "Deleting MedicationStatement with type: ${json.resourceType} and id: ${json.id}"
   object.delete msUrl

@@ -1,7 +1,9 @@
 package edu.gatech.i3l.fhir.dstu2.entities;
 
 import ca.uhn.fhir.context.FhirVersionEnum;
+import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
+import ca.uhn.fhir.model.api.TemporalPrecisionEnum;
 import ca.uhn.fhir.model.dstu2.composite.*;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration;
 import ca.uhn.fhir.model.dstu2.resource.MedicationAdministration.Dosage;
@@ -13,9 +15,11 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.dao.ConceptDAO;
+import edu.gatech.i3l.omop.dao.DAO;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,6 +41,10 @@ public final class DrugExposureStatement extends DrugExposure {
     @JoinColumn(name = "person_id", nullable = false)
     @NotNull
     private PersonComplement person;
+
+    @ManyToOne(cascade = {CascadeType.MERGE})
+    @JoinColumn(name = "visit_occurrence_id")
+    private VisitOccurrence visitOccurrence;
 
     @Column(name = "drug_exposure_start_date")
     private Date startDate;
@@ -61,6 +69,10 @@ public final class DrugExposureStatement extends DrugExposure {
     public PersonComplement getPerson() { return person; }
 
     public void setPerson(PersonComplement person) { this.person = person; }
+
+    public VisitOccurrence getVisitOccurrence() { return visitOccurrence; }
+
+    public void setVisitOccurrence(VisitOccurrence visitOccurrence) { this.visitOccurrence = visitOccurrence; }
 
     public String getStopReason() {
         return stopReason;
@@ -151,7 +163,13 @@ public final class DrugExposureStatement extends DrugExposure {
     public IResource getRelatedResource() {
         MedicationStatement resource = new MedicationStatement();
         resource.setId(this.getIdDt());
-        resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
+        resource.setPatient(new ResourceReferenceDt(person.getIdDt()));
+
+        if (visitOccurrence != null) {
+            final List<ResourceReferenceDt> encounter = new ArrayList<>();
+            encounter.add(new ResourceReferenceDt(visitOccurrence.getIdDt()));
+            resource.setSupportingInformation(encounter);
+        }
 
         // Adding medication to Contained.
         CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
@@ -164,6 +182,19 @@ public final class DrugExposureStatement extends DrugExposure {
 
         resource.setMedication(codeDt);
 
+        if (startDate != null) {
+            if (endDate != null) {
+                final PeriodDt period = new PeriodDt();
+                period.setStart(this.startDate, TemporalPrecisionEnum.DAY);
+                period.setEnd(this.endDate, TemporalPrecisionEnum.DAY);
+                resource.setEffective(period);
+            } else {
+                final DateTimeDt start = new DateTimeDt(startDate);
+                start.setPrecision(TemporalPrecisionEnum.DAY);
+                resource.setEffective(start);
+            }
+        }
+
         return resource;
     }
 
@@ -172,6 +203,8 @@ public final class DrugExposureStatement extends DrugExposure {
         if (!(resource instanceof MedicationStatement)) return null;
 
         final MedicationStatement medicationStatement = (MedicationStatement) resource;
+
+        drugExposureType = DAO.getInstance().getEntityManager().find(Concept.class, 38000178L);
 
         if (medicationStatement.getMedication() instanceof CodeableConceptDt) {
             final CodeableConceptDt ccd = (CodeableConceptDt) medicationStatement.getMedication();
@@ -185,8 +218,8 @@ public final class DrugExposureStatement extends DrugExposure {
                     logger.warn("Unsupported medication system: {} with code: {}", cd.getSystem(), cd.getCode());
             }
         } else if (medicationStatement.getMedication() instanceof ResourceReferenceDt) {
-            ResourceReferenceDt medicationRef = (ResourceReferenceDt) medicationStatement.getMedication();
-            Long medicationRefId = medicationRef.getReference().getIdPartAsLong();
+            final ResourceReferenceDt medicationRef = (ResourceReferenceDt) medicationStatement.getMedication();
+            final Long medicationRefId = medicationRef.getReference().getIdPartAsLong();
             if (medicationRef != null) {
                 medication = new Concept(medicationRefId);
             }
@@ -201,10 +234,24 @@ public final class DrugExposureStatement extends DrugExposure {
             for (final ResourceReferenceDt ref : medicationStatement.getSupportingInformation()) {
                 switch (ref.getReference().getResourceType()) {
                     case VisitOccurrence.RES_TYPE:
+                        visitOccurrence = new VisitOccurrence();
+                        visitOccurrence.setId(ref.getReference().getIdPartAsLong());
                         break;
                     default:
-                        logger.info("Unsupported supportingInformation reference {}", ref.getReference().getResourceType());
+                        logger.warn("Unsupported supportingInformation reference {}", ref.getReference().getResourceType());
                 }
+            }
+        }
+
+        final IDatatype effective = medicationStatement.getEffective();
+        if (effective != null)
+        {
+            if (effective instanceof DateTimeDt) {
+                this.startDate = ((DateTimeDt) effective).getValue();
+            } else if (effective instanceof PeriodDt) {
+                final PeriodDt period = (PeriodDt) effective;
+                this.startDate = period.getStart();
+                this.endDate = period.getEnd();
             }
         }
 

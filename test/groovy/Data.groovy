@@ -558,6 +558,10 @@ class Data
         "code": "4492"
       }
     ]
+  },
+  "effectivePeriod": {
+    "start": "2014-01-01",
+    "end": "2014-01-05"
   }
 }"""
   }
