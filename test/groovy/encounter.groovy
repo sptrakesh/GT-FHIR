@@ -1,44 +1,14 @@
 #!/usr/bin/env groovy
 @Grab('org.codehaus.groovy.modules.http-builder:http-builder:0.7.1' )
-import groovy.json.JsonSlurper
-import groovyx.net.http.HTTPBuilder
-import groovyx.net.http.Method
 import groovy.transform.Field
 
 @Field def server = System.getProperty 'server', 'http://localhost:8080'
 @Field def baseUrl = '/base'
 
-def create( data )
-{
-  try
-  {
-    def json = new JsonSlurper().parseText data
-    def http = new HTTPBuilder( server )
-    http.request( Method.POST, 'application/json' )
-    {
-      uri.path = "$baseUrl/${json.resourceType}"
-      body = data
-
-      response.success =
-      {
-        resp, reader ->
-          println "Create response status: ${resp.statusLine}"
-          resp.getFirstHeader( 'Location' ).value
-      }
-
-      response.failure =
-      {
-        resp -> println "Create request failed with status ${resp.status}"
-      }
-    }
-  }
-  catch ( Throwable t ) { println "$t" }
-}
-
 def encounter( object, patientId )
 {
   def encounter = object.getEncounter patientId
-  def encounterUrl = create encounter
+  def encounterUrl = object.create encounter
   encounterUrl = object.fixProtocol encounterUrl
   println "Created Encounter at url: $encounterUrl"
 

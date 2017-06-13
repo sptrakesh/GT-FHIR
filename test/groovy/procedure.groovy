@@ -1,9 +1,6 @@
 #!/usr/bin/env groovy
 @Grab('org.codehaus.groovy.modules.http-builder:http-builder:0.7.1' )
 import groovy.json.JsonSlurper
-import groovyx.net.http.HTTPBuilder
-import groovyx.net.http.Method
-import groovy.transform.Field
 
 def patient( object, shell )
 {
@@ -15,7 +12,7 @@ def patient( object, shell )
   url
 }
 
-def encounter( object, shell, patientId )
+def encounter( object, patientId )
 {
   def url = object.create object.getEncounter( patientId )
   url = object.fixProtocol url
@@ -24,26 +21,26 @@ def encounter( object, shell, patientId )
   url
 }
 
-def condition( object, patientId, encounterId )
+def procedure( object, patientId, encounterId )
 {
-  def condition = object.getCondition patientId, encounterId
+  def ms = object.getProcedure patientId, encounterId
 
-  def conditionUrl = object.create condition
-  conditionUrl = object.fixProtocol conditionUrl
-  println "Created condition at url: $conditionUrl"
-  if ( ! conditionUrl ) System.exit 1
+  def msUrl = object.create ms
+  msUrl = object.fixProtocol msUrl
+  println "Created Procedure at url: $msUrl"
+  if ( ! msUrl ) System.exit 1
 
-  def json = object.read conditionUrl
-  def data = new JsonSlurper().parseText condition
-  assert json.onsetDateTime.startsWith( data.onsetDateTime )
-  assert json.patient.reference == data.patient.reference
+  def json = object.read msUrl
+  def data = new JsonSlurper().parseText ms
+  assert json.subject.reference == data.subject.reference
   assert json.encounter.reference == data.encounter.reference
+  assert json.performedDateTime == data.performedDateTime
 
-  println "Deleting condition with type: ${json.resourceType} and id: ${json.id}"
-  object.delete conditionUrl
+  println "Deleting Procedure with type: ${json.resourceType} and id: ${json.id}"
+  object.delete msUrl
 
-  println "Attempting to read deleted condition"
-  object.read conditionUrl
+  println "Attempting to read deleted Procedure"
+  object.read msUrl
 }
 
 def sourceFile = new File( 'Data.groovy' )
@@ -58,12 +55,12 @@ def shell = new GroovyShell()
 def patientUrl = patient object, shell
 def patientId = object.getEntityId patientUrl
 
-def encounterUrl = encounter object, shell, patientId
+def encounterUrl = encounter object, patientId
 def encounterId = object.getEntityId encounterUrl
 
 try
 {
-  condition object, patientId, encounterId
+  procedure object, patientId, encounterId
 }
 finally
 {

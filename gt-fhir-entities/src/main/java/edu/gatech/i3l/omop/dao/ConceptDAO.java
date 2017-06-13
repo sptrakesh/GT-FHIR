@@ -12,9 +12,12 @@ import static java.lang.String.format;
  */
 public class ConceptDAO {
     public static final String SNOMED = "SNOMED";
+    public static final String SNOMED_URL = "http://snomed.info/sct";
+
     public static ConceptDAO getInstance() {return singleton;}
 
-    public Long getConcept(final String conceptCode, final String vocabulary) {
+    public Long getConcept(final String conceptCode, final String vocabularyOrUrl) {
+        final String vocabulary = getVocabularyName(vocabularyOrUrl);
         final String key = hash(conceptCode, vocabulary);
         if (cache.containsKey(key)) return cache.get(key);
 
@@ -27,6 +30,40 @@ public class ConceptDAO {
 
         cache.put(key,results.get(0));
         return results.get(0);
+    }
+
+    public String getVocabularyName(final String systemUrl) {
+        if (systemUrl == null) return null;
+        switch (systemUrl) {
+            case SNOMED_URL : return SNOMED;
+            case "http://hl7.org/fhir/sname/icd-9-cm": return "ICD9CM";
+            case "http://hl7.org/fhir/sname/icd-9-cm/procedure": return "ICD9Proc";
+            case "http://www.ama-assn.org/go/cpt": return "CPT4";
+            case "http://purl.bioontology.org/ontology/HCPCS": return "HCPCS";
+            case "http://loinc.org": return "LOINC";
+            case "http://www.nlm.nih.gov/research/umls/rxnorm": return "RxNorm";
+            case "http://unitsofmeasure.org": return "UCUM";
+            case "http://hl7.org/fhir/sname/ndc": return "NDC";
+            case "urn:oid:2.16.840.1.113883.3.26.1.1": return "NCI";
+            default: return systemUrl;
+        }
+    }
+
+    public String getSystemUri(final String vocabulary) {
+        if (vocabulary == null) return null;
+        switch (vocabulary) {
+            case SNOMED: return SNOMED_URL;
+            case "ICD9CM": return "http://hl7.org/fhir/sid/icd-9-cm";
+            case "ICD9Proc": return "http://hl7.org/fhir/sid/icd-9-cm/procedure";
+            case "CPT4": return "http://www.ama-assn.org/go/cpt";
+            case "HCPCS": return "http://purl.bioontology.org/ontology/HCPCS";
+            case "LOINC": return "http://loinc.org";
+            case "RxNorm": return "http://www.nlm.nih.gov/research/umls/rxnorm";
+            case "UCUM": return "http://unitsofmeasure.org";
+            case "NDC": return "http://hl7.org/fhir/sid/ndc";
+            case "NCI": return "urn:oid:2.16.840.1.113883.3.26.1.1";
+            default: return vocabulary;
+        }
     }
 
     public Long getDefaultRace() {

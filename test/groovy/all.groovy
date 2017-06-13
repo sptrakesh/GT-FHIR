@@ -15,4 +15,6 @@ println 'Testing Condition entity'
 evaluate new File( 'condition.groovy' )
 println 'Testing MedicationStatement entity'
 evaluate new File( 'medicationStatement.groovy' )
+println 'Testing Procedure entity'
+evaluate new File( 'procedure.groovy' )
 println 'All tests completed'

@@ -1,3 +1,4 @@
+import groovy.json.JsonSlurper
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
 
@@ -15,6 +16,33 @@ class Data
   {
     def parts = entityUrl.split '/'
     parts[parts.length - 1]
+  }
+
+  def create( data )
+  {
+    try
+    {
+      def json = new JsonSlurper().parseText data
+      def http = new HTTPBuilder( server )
+      http.request( Method.POST, 'application/json' )
+      {
+        uri.path = "$baseUrl/${json.resourceType}"
+        body = data
+
+        response.success =
+        {
+          resp, reader ->
+            println "Create response status: ${resp.statusLine}"
+            resp.getFirstHeader( 'Location' ).value
+        }
+
+        response.failure =
+        {
+          resp -> println "Create request failed with status ${resp.status}"
+        }
+      }
+    }
+    catch ( Throwable t ) { println "$t" }
   }
 
   def read( url )
@@ -115,52 +143,19 @@ class Data
   {
 '''{
   "resourceType": "Patient",
-  "meta": {
-    "versionId": "5",
-    "lastUpdated": "2017-04-28T14:59:13.048-04:00"
-  },
   "name": [
     {
       "use": "official",
       "text": "UnitTest User",
-      "family": [
-        "User"
-      ],
-      "given": [
-        "UnitTest"
-      ]
-    },
-    {
-      "family": [
-        "User1"
-      ],
-      "given": [
-        "UnitTest1"
-      ]
+      "family": [ "User" ],
+      "given": [ "UnitTest" ]
     }
   ],
   "gender": "female",
   "birthDate": "1937-05-14",
   "address": [
     {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/geolocation",
-          "extension": [
-            {
-              "url": "latitude",
-              "valueDecimal": 41.94717542029152
-            },
-            {
-              "url": "longitude",
-              "valueDecimal": -71.35055546377211
-            }
-          ]
-        }
-      ],
-      "line": [
-        "1111 Unit Test Street"
-      ],
+      "line": [ "1111 Unit Test Street" ],
       "city": "Unit Test",
       "state": "AA",
       "postalCode": "11111"
@@ -506,10 +501,6 @@ class Data
   {
 """{
   "resourceType": "Condition",
-  "meta": {
-    "versionId": "2",
-    "lastUpdated": "2017-03-16T10:23:39.915-04:00"
-  },
   "patient": {
     "reference": "Patient/$patientId"
   },
@@ -522,15 +513,13 @@ class Data
         "system": "http://snomed.info/sct",
         "code": "363402007"
       }
-    ],
-    "text": "IDC"
+    ]
   },
   "category": {
     "coding": [
       {
         "system": "http://snomed.info/sct",
-        "code": "39154008",
-        "display": "Clinical diagnosis"
+        "code": "39154008"
       }
     ]
   },
@@ -564,5 +553,28 @@ class Data
     "end": "2014-01-05"
   }
 }"""
+  }
+
+  String getProcedure( patientId, encounterId ) {
+"""{
+  "resourceType": "Procedure",
+  "status": "completed",
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "33195004"
+      }
+    ]
+  },
+  "subject": {
+    "reference": "Patient/$patientId"
+  },
+  "encounter": {
+    "reference": "Encounter/$encounterId"
+  },
+  "performedDateTime": "2016-06-28T15:50:29+00:00"
+}
+"""
   }
 }

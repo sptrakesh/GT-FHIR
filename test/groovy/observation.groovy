@@ -6,37 +6,6 @@ import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
 import groovy.transform.Field
 
-@Field def server
-@Field def baseUrl
-
-def create( data )
-{
-  try
-  {
-    def json = new JsonSlurper().parseText data
-    def http = new HTTPBuilder( server )
-    http.request( Method.POST, 'application/json' )
-    {
-      uri.path = "$baseUrl/${json.resourceType}"
-      body = data
-
-      response.success =
-      {
-        resp, reader ->
-          println "Create response status: ${resp.statusLine}"
-          resp.getFirstHeader( 'Location' ).value
-      }
-
-      response.failure =
-      {
-        resp ->
-          println "Create request failed with status ${resp.status}"
-      }
-    }
-  }
-  catch ( Throwable t ) { println "$t" }
-}
-
 def patient( object, shell )
 {
   def script = shell.parse new File( 'patient.groovy' )
@@ -49,8 +18,7 @@ def patient( object, shell )
 
 def encounter( object, shell, patientId )
 {
-  def script = shell.parse new File( 'encounter.groovy' )
-  def url = script.create object.getEncounter( patientId )
+  def url = object.create object.getEncounter( patientId )
   url = object.fixProtocol url
   println "Created encounter at url: $url"
   object.read url
@@ -60,7 +28,7 @@ def encounter( object, shell, patientId )
 def measurement( object, patientId, encounterId )
 {
   def measurement = object.getMeasurement patientId, encounterId
-  def measurementUrl = create measurement
+  def measurementUrl = object.create measurement
   measurementUrl = object.fixProtocol measurementUrl
   println "Created measurement at url: $measurementUrl"
   if ( ! measurementUrl ) System.exit 1
@@ -76,7 +44,7 @@ def measurement( object, patientId, encounterId )
 def gradedMeasurement( object, patientId, encounterId )
 {
   def measurement = object.getGradedMeasurement patientId, encounterId
-  def measurementUrl = create measurement
+  def measurementUrl = object.create measurement
   measurementUrl = object.fixProtocol measurementUrl
   println "Created graded measurement at url: $measurementUrl"
   if ( ! measurementUrl ) System.exit 1
@@ -93,7 +61,7 @@ def gradedMeasurement( object, patientId, encounterId )
 def observation( object, patientId, encounterId )
 {
   def observation = object.getObservation patientId, encounterId
-  def observationUrl = create observation
+  def observationUrl = object.create observation
   observationUrl = object.fixProtocol observationUrl
   println "Created observation at url: $observationUrl"
   if ( ! observationUrl ) System.exit 1
@@ -110,7 +78,7 @@ def observation( object, patientId, encounterId )
 def numberOfPregnancies( object, patientId, encounterId )
 {
   def observation = object.getNumberOfPregnancies patientId, encounterId, 3
-  def observationUrl = create observation
+  def observationUrl = object.create observation
   observationUrl = object.fixProtocol observationUrl
   println "Created pregnancy observation at url: $observationUrl"
   if ( ! observationUrl ) System.exit 1

@@ -27,6 +27,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import static edu.gatech.i3l.omop.dao.ConceptDAO.SNOMED;
+import static edu.gatech.i3l.omop.dao.ConceptDAO.SNOMED_URL;
 
 @Entity
 @Table(name = "person")
@@ -391,13 +392,17 @@ public class Person extends BaseResourceEntity {
                 final BooleanDt value = (BooleanDt) patient.getDeceased();
                 if (value.getValue()) {
                     death = DeathDAO.getInstance().getById(id);
-                    if (death == null) { death = new Death(this); }
+                    if (death == null) death = new Death(this);
                 } else {
                     death = null;
                     DeathDAO.getInstance().remove(id);
                 }
             }
             else if (deceased instanceof DateTimeDt) {
+                final DateTimeDt value = (DateTimeDt) deceased;
+                death = DeathDAO.getInstance().getById(id);
+                if (death == null) death = new Death(this);
+                death.setDeathDate(value.getValue());
             }
         } else death = null;
 
@@ -457,7 +462,7 @@ public class Person extends BaseResourceEntity {
                         final CodeableConceptDt cdt = (CodeableConceptDt) extension.getValue();
                         final CodingDt cd = cdt.getCodingFirstRep();
                         switch (cd.getSystem()) {
-                            case "http://snomed.info/sct":
+                            case SNOMED_URL:
                             case SNOMED:
                                 raceConcept = new Concept(ConceptDAO.getInstance().getConcept(cd.getCode(), SNOMED));
                                 break;

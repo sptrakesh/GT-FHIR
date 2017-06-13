@@ -5,37 +5,6 @@ import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
 import groovy.transform.Field
 
-@Field def server
-@Field def baseUrl
-
-def create( data )
-{
-  try
-  {
-    def json = new JsonSlurper().parseText data
-    def http = new HTTPBuilder( server )
-    http.request( Method.POST, 'application/json' )
-    {
-      uri.path = "$baseUrl/${json.resourceType}"
-      body = data
-
-      response.success = 
-      { 
-        resp, reader ->
-        println "Create response status: ${resp.statusLine}"
-        resp.getFirstHeader( 'Location' ).value
-      }
-
-      response.failure =
-      { 
-        resp ->
-        println "Create request failed with status ${resp.status}"
-      }
-    }
-  }
-  catch ( Throwable t ) { println "$t" }
-}
-
 def patient( object, shell )
 {
   def script = shell.parse new File( 'patient.groovy' )
@@ -48,8 +17,7 @@ def patient( object, shell )
 
 def encounter( object, shell, patientId )
 {
-  def script = shell.parse new File( 'encounter.groovy' )
-  def url = script.create object.getEncounter( patientId )
+  def url = object.create object.getEncounter( patientId )
   url = object.fixProtocol url
   println "Created encounter at url: $url"
   object.read url
@@ -60,7 +28,7 @@ def medicationStatement( object, patientId, encounterId )
 {
   def ms = object.getMedicationStatement patientId, encounterId
 
-  def msUrl = create ms
+  def msUrl = object.create ms
   msUrl = object.fixProtocol msUrl
   println "Created MedicationStatement at url: $msUrl"
   if ( ! msUrl ) System.exit 1

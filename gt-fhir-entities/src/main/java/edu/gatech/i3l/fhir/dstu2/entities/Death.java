@@ -2,7 +2,7 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Date;
+import java.util.Date;
 
 
 @Entity
@@ -16,6 +16,7 @@ public class Death implements Serializable {
     private Person person;
 
     @Column(name = "death_date")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date deathDate;
 
     @OneToOne(cascade = {CascadeType.MERGE})

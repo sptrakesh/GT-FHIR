@@ -4,7 +4,9 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
 import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
 import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.resource.Practitioner;
 import ca.uhn.fhir.model.dstu2.resource.Procedure;
 import ca.uhn.fhir.model.dstu2.valueset.ProcedureStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
@@ -12,6 +14,8 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
+import org.hl7.fhir.instance.model.api.IBaseResource;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -42,7 +46,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
     private Concept procedureConcept;
 
     @Column(name = "procedure_date", nullable = false)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @NotNull
     private Date date;
 
@@ -233,65 +237,100 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 
         // Set patient
         ResourceReferenceDt patientReference = new ResourceReferenceDt(new IdDt(person.getResourceType(), person.getId()));
-        String patientName = "";
+        final StringBuilder patientName = new StringBuilder(128);
         if (person.getGivenName1() != null && !person.getGivenName1().isEmpty()) {
-            patientName = person.getGivenName1();
+            patientName.append(person.getGivenName1());
         }
         if (person.getGivenName2() != null && !person.getGivenName2().isEmpty()) {
-            patientName += " " + person.getGivenName2();
+            patientName.append(" ").append(person.getGivenName2());
         }
         if (person.getFamilyName() != null && !person.getFamilyName().isEmpty()) {
-            patientName += " " + person.getFamilyName();
+            patientName.append(" ").append(person.getFamilyName());
         }
-        patientReference.setDisplay(patientName);
+        patientReference.setDisplay(patientName.toString());
         procedure.setSubject(patientReference);
 
-        //TODO: revisit this. For now just set to in-progress
-        procedure.setStatus(ProcedureStatusEnum.IN_PROGRESS);
+        if (visitOccurrence != null) {
+            procedure.setEncounter(new ResourceReferenceDt(new IdDt(visitOccurrence.getResourceType(), visitOccurrence.getId())));
+        }
 
-        String theSystem = procedureConcept.getVocabulary().getSystemUri();
-        String theCode = procedureConcept.getConceptCode();
+        //TODO: revisit this. For now just set to completed
+        procedure.setStatus(ProcedureStatusEnum.COMPLETED);
 
-        CodeableConceptDt procedureCodeConcept = new CodeableConceptDt();
-        if (theSystem != "") {
-            // Create coding here. We have one coding in this condition as OMOP
-            // allows one coding concept per condition.
-            // In the future, if we want to allow multiple coding concepts here,
-            // we need to do it here.
-            CodingDt coding = new CodingDt(theSystem, theCode);
+        {
+            final CodeableConceptDt procedureCodeConcept = new CodeableConceptDt();
+            final CodingDt coding = new CodingDt(
+                    ConceptDAO.getInstance().getSystemUri(procedureConcept.getVocabulary().getName()), procedureConcept.getConceptCode());
             coding.setDisplay(procedureConcept.getName());
             procedureCodeConcept.addCoding(coding);
             procedure.setCode(procedureCodeConcept);
+
+            // FHIR does not require the coding. If our System URI is not mappable
+            // from OMOP database, then coding would be empty. Set Text here. Even text
+            // is not required in FHIR. But, then no reason to have this condition, I think...
+            String theText = procedureConcept.getName() + ", " + procedureConcept.getVocabulary().getName() + ", "
+                    + procedureConcept.getConceptCode();
+            procedureCodeConcept.setText(theText);
         }
 
-        // FHIR does not require the coding. If our System URI is not mappable
-        // from OMOP database, then coding would be empty. Set Text here. Even text
-        // is not required in FHIR. But, then no reason to have this condition, I think...
-        String theText = procedureConcept.getName() + ", " + procedureConcept.getVocabulary().getName() + ", "
-                + procedureConcept.getConceptCode();
-//
-//		System.out.println("Procedure:"+theText);
-//
-        procedureCodeConcept.setText(theText);
+        if (procedureTypeConcept != null) {
+            final CodeableConceptDt type = new CodeableConceptDt();
+            final CodingDt coding = new CodingDt(
+                    ConceptDAO.getInstance().getSystemUri(procedureTypeConcept.getVocabulary().getName()), procedureTypeConcept.getConceptCode());
+            coding.setDisplay(procedureTypeConcept.getName());
+            type.addCoding(coding);
+            procedure.setCategory(type);
+        }
 
-//		procedure.setCode(procedureCodeConcept);
-
-        //procedure.setType(procedureCodeConcept);
-
-        DateTimeDt DateDt = new DateTimeDt(date);
-        procedure.setPerformed(DateDt);
-
-        //TODO: where is code??? For now, I put it in the Note. This is CPT code.
-        // Now code is available. SO, we don't need this.
-        //procedure.setNotes(this.getProcedureConcept().getConceptCode());
+        DateTimeDt dateDt = new DateTimeDt(date);
+        procedure.setPerformed(dateDt);
 
         return procedure;
     }
 
     @Override
     public IResourceEntity constructEntityFromResource(IResource resource) {
-        // TODO CREATE UPDATE not implemented
-        return null;
+        if (!(resource instanceof Procedure)) return null;
+        final Procedure procedure = (Procedure) resource;
+
+        if (procedure.getSubject() != null) {
+            person = PersonComplement.searchAndUpdate(procedure.getSubject());
+        }
+
+        {
+            final CodingDt code = procedure.getCode().getCodingFirstRep();
+            procedureConcept = new Concept(ConceptDAO.getInstance().getConcept(code.getCode(), code.getSystem()));
+        }
+
+        if (procedure.getCategory() != null) {
+            final CodingDt category = procedure.getCategory().getCodingFirstRep();
+            final Long conceptId = ConceptDAO.getInstance().getConcept(category.getCode(), category.getSystem());
+            if (conceptId != null ) procedureTypeConcept = new Concept(conceptId);
+        }
+
+        if (procedure.getPerformed() != null) {
+            if (procedure.getPerformed() instanceof DateTimeDt) {
+                date = ((DateTimeDt) procedure.getPerformed()).getValue();
+            }
+            else if (procedure.getPerformed() instanceof PeriodDt) {
+                // TODO: OMOP does not support periods
+            }
+        }
+
+        if (procedure.getEncounter() != null) {
+            visitOccurrence = new VisitOccurrence();
+            visitOccurrence.setId(procedure.getEncounter().getReference().getIdPartAsLong());
+        }
+
+        if (procedure.getPerformer() != null && !procedure.getPerformer().isEmpty()) {
+            final IBaseResource res = procedure.getPerformer().get(0).getActor().getResource();
+            if (res instanceof Practitioner) {
+                provider = new Provider();
+                provider.setId(((Practitioner) res).getId().getIdPartAsLong());
+            }
+        }
+
+        return this;
     }
 
 }
