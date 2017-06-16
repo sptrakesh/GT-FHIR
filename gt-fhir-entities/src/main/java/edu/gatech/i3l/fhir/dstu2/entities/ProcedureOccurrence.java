@@ -37,12 +37,12 @@ public class ProcedureOccurrence extends BaseResourceEntity {
     private Long id;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "person_id", nullable = false)
+    @JoinColumn(name = "person_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_procedure_person"))
     @NotNull
     private PersonComplement person;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "procedure_concept_id")
+    @JoinColumn(name = "procedure_concept_id", foreignKey = @ForeignKey(name = "fpk_procedure_concept"))
     private Concept procedureConcept;
 
     @Column(name = "procedure_date", nullable = false)
@@ -51,29 +51,29 @@ public class ProcedureOccurrence extends BaseResourceEntity {
     private Date date;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "procedure_type_concept_id")
+    @JoinColumn(name = "procedure_type_concept_id", foreignKey = @ForeignKey(name = "fpk_procedure_type_concept"))
     private Concept procedureTypeConcept;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "modifier_concept_id")
+    @JoinColumn(name = "modifier_concept_id", foreignKey = @ForeignKey(name = "fpk_procedure_modifier"))
     private Concept modifierConcept;
 
     @Column(name = "quantity")
     private Long quantity;
 
     @ManyToOne   // (cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
-    @JoinColumn(name = "provider_id")
+    @JoinColumn(name = "provider_id", foreignKey = @ForeignKey(name = "fpk_procedure_provider"))
     private Provider provider;
 
     @ManyToOne
-    @JoinColumn(name = "visit_occurrence_id")
+    @JoinColumn(name = "visit_occurrence_id", foreignKey = @ForeignKey(name = "fpk_procedure_visit"))
     private VisitOccurrence visitOccurrence;
 
     @Column(name = "procedure_source_value")
     private String procedureSourceValue;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "procedure_source_concept_id")
+    @JoinColumn(name = "procedure_source_concept_id", foreignKey = @ForeignKey(name = "fpk_procedure_concept_s"))
     private Concept procedureSourceConcept;
 
     @Column(name = "qualifier_source_value")

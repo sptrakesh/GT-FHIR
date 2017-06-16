@@ -12,9 +12,11 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -22,29 +24,68 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@Entity
+@Table(name = "observation")
 public class Observation extends BaseResourceEntity {
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Observation.class);
 
-    public static final Long SYSTOLIC_CONCEPT_ID = 3004249L;
     public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;
     private static final String RES_TYPE = "Observation";
     private static final ObservationStatusEnum STATUS = ObservationStatusEnum.FINAL;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "observation_id", updatable = false)
+    @Access(AccessType.PROPERTY)
     private Long id;
+
+    @ManyToOne(cascade = {CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "person_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_observation_person"))
     private PersonComplement person;
+
+    @ManyToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "observation_concept_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_observation_concept"))
     private Concept observationConcept;
+
+    @Column(name = "observation_date")
+    @Temporal(TemporalType.DATE)
     private Date date;
+
+    @Column(name = "observation_time")
     private String time;
+
+    @Column(name = "value_as_string")
     private String valueAsString;
-    private BigDecimal valueAsNumber;
-    private BigDecimal rangeLow;
-    private BigDecimal rangeHigh;
+
+    @Column(name = "value_as_number")
+    private Double valueAsNumber;
+
+    @ManyToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "value_as_concept_id", foreignKey = @ForeignKey(name = "fpk_observation_value"))
     private Concept valueAsConcept;
+
+    @ManyToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "observation_type_concept_id", foreignKey = @ForeignKey(name = "fpk_observation_type_concept"))
     private Concept type;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "provider_id", foreignKey = @ForeignKey(name = "fpk_observation_provider"))
     private Provider provider;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "visit_occurrence_id", foreignKey = @ForeignKey(name = "fpk_observation_visit"))
     private VisitOccurrence visitOccurrence;
+
+    @Column(name = "observation_source_value")
     private String sourceValue;
+
     private String valueSourceValue;
+
+    @ManyToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_concept_id", foreignKey = @ForeignKey(name = "fpk_observation_unit_concept"))
     private Concept unit;
+
+    @Column(name = "unit_source_value")
     private String unitSourceValue;
 
     public Observation() {
@@ -65,22 +106,6 @@ public class Observation extends BaseResourceEntity {
 
     public void setTime(String time) {
         this.time = time;
-    }
-
-    public BigDecimal getRangeLow() {
-        return rangeLow;
-    }
-
-    public void setRangeLow(BigDecimal rangeLow) {
-        this.rangeLow = rangeLow;
-    }
-
-    public BigDecimal getRangeHigh() {
-        return rangeHigh;
-    }
-
-    public void setRangeHigh(BigDecimal rangeHigh) {
-        this.rangeHigh = rangeHigh;
     }
 
     public PersonComplement getPerson() {
@@ -115,11 +140,11 @@ public class Observation extends BaseResourceEntity {
         this.valueAsString = valueAsString;
     }
 
-    public BigDecimal getValueAsNumber() {
+    public Double getValueAsNumber() {
         return valueAsNumber;
     }
 
-    public void setValueAsNumber(BigDecimal valueAsNumber) {
+    public void setValueAsNumber(Double valueAsNumber) {
         this.valueAsNumber = valueAsNumber;
     }
 
@@ -130,14 +155,6 @@ public class Observation extends BaseResourceEntity {
     public void setValueAsConcept(Concept valueAsConcept) {
         this.valueAsConcept = valueAsConcept;
     }
-
-//	public Concept getRelevantCondition() {
-//		return relevantCondition;
-//	}
-//
-//	public void setRelevantCondition(Concept relevantCondition) {
-//		this.relevantCondition = relevantCondition;
-//	}
 
     public Concept getType() {
         return type;
@@ -197,12 +214,44 @@ public class Observation extends BaseResourceEntity {
 
     @Override
     public IResourceEntity constructEntityFromResource(IResource resource) {
-        System.out.println("Trying to write to Observation View Table");
-        // TODO: This is view, which is read-only. We need to come up with a way to write
-        // to either measurement or observation tables in OMOP. We may write them manually
-        // and just return null for this. But then, response will not be correct. Revisit this.
         ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
         OmopConceptMapping ocm = OmopConceptMapping.getInstance();
+
+        if (observation.getId() != null && observation.getId().getIdPartAsLong() != null && observation.getId().getIdPart() != null) {
+            // See if we already have this in the source field. If so,
+            // then we want update not create
+            Observation origObservation = (Observation) ocm.loadEntityBySource(Observation.class, "Observation", "sourceValue", observation.getId().getIdPart());
+            if (origObservation == null)
+                this.setSourceValue(observation.getId().getIdPart());
+            else
+                this.setId(origObservation.getId());
+        }
+
+		/*
+         * Set subject: currently supporting only type Person TODO create
+		 * entity-complement to specify other types of subjects
+		 */
+        ResourceReferenceDt subjectReference = observation.getSubject();
+        if ((subjectReference != null) && (observation.getSubject().getReference().getIdPartAsLong() != null)) {
+            if ("Patient".equals(subjectReference.getReference().getResourceType())) {
+                person = PersonComplement.searchAndUpdate(subjectReference);
+                if (person == null) return null; // We must have a patient
+            } else {
+                // Group, Device, and Location are not supported in OMOP v5
+                return null;
+            }
+        } else {
+            // We must have subject reference.
+            return null;
+        }
+
+        String code = observation.getCode().getCodingFirstRep().getCode();
+        Long obsConceptRef = ocm.get(code);
+        if (obsConceptRef != null) {
+            setObservationConcept(new Concept(obsConceptRef));
+        } else {
+            logger.warn("Observation code not recognized.  Code: {}; System: {}", code, observation.getCode().getCodingFirstRep().getSystem());
+        }
 
         if (observation.getEffective() != null)
         {
@@ -213,24 +262,6 @@ public class Observation extends BaseResourceEntity {
             } else if (observation.getEffective() instanceof PeriodDt) {
                 // TODO: we need to handle period. We can probably use
                 // we can use range_low and range_high. These are only available in Measurement
-            }
-        }
-
-		/*
-         * Set subject: currently supporting only type Person TODO create
-		 * entity-complement to specify other types of subjects
-		 */
-        IdDt reference = observation.getSubject().getReference();
-        if (reference.getIdPartAsLong() != null) {
-            if ("Patient".equals(reference.getResourceType())) {
-                this.person = new PersonComplement();
-                this.person.setId(reference.getIdPartAsLong());
-            } else if ("Group".equals(reference.getResourceType())) {
-                //
-            } else if ("Device".equals(reference.getResourceType())) {
-                //
-            } else if ("Location".equals(reference.getResourceType())) {
-                //
             }
         }
 
@@ -252,13 +283,7 @@ public class Observation extends BaseResourceEntity {
         this.type = new Concept();
         if (observation.getMethod().getCodingFirstRep() != null) {
             this.type.setId(Omop4ConceptsFixedIds.OBSERVATION_FROM_LAB_NUMERIC_RESULT.getConceptId()); // assuming
-            // all
-            // results
-            // on
-            // this
-            // table
-            // are
-            // quantitative:
+            // all results on this table are quantitative:
             // http://hl7.org/fhir/2015May/valueset-observation-methods.html
         } else {
             this.type.setId(Omop4ConceptsFixedIds.OBSERVATION_FROM_EHR.getConceptId());
@@ -267,24 +292,27 @@ public class Observation extends BaseResourceEntity {
 		/* Set the value of the observation */
         IDatatype value = observation.getValue();
         if (value instanceof QuantityDt) {
-            Long unitId = ocm.get(((QuantityDt) value).getUnit(), OmopConceptMapping.UCUM_CODE,
-                    OmopConceptMapping.UCUM_CODE_STANDARD, OmopConceptMapping.UCUM_CODE_CUSTOM);
-            this.valueAsNumber = ((QuantityDt) value).getValue();
+            String unitCode = ((QuantityDt) value).getCode();
+            if (unitCode == null) {
+                unitCode = ((QuantityDt) value).getUnit();
+            }
+            Long unitId = ocm.get(unitCode);
+            this.valueAsNumber = ((QuantityDt) value).getValue().doubleValue();
             if (unitId != null) {
                 this.unit = new Concept();
                 this.unit.setId(unitId);
             }
-            this.rangeHigh = observation.getReferenceRangeFirstRep().getHigh().getValue();
-            this.rangeLow = observation.getReferenceRangeFirstRep().getLow().getValue();
         } else if (value instanceof CodeableConceptDt) {
-            Long valueAsConceptId = ocm.get(((CodeableConceptDt) value).getCodingFirstRep().getCode(),
-                    OmopConceptMapping.CLINICAL_FINDING);
+            final CodeableConceptDt ccd = (CodeableConceptDt) value;
+            final Long valueAsConceptId = ConceptDAO.getInstance().getConcept(ccd.getCodingFirstRep().getCode(), ccd.getCodingFirstRep().getSystem());
             if (valueAsConceptId != null) {
-                this.valueAsConcept = new Concept();
-                this.valueAsConcept.setId(valueAsConceptId);
+                valueAsConcept = new Concept(valueAsConceptId);
             }
-        } else {
-            this.valueAsString = ((StringDt) value).getValue();
+        } else if (value instanceof StringDt) {
+            String valueAsString = ((StringDt) value).getValueAsString();
+            if (valueAsString != null) {
+                this.valueAsString = valueAsString;
+            }
         }
 
         // quick solution.
@@ -303,6 +331,12 @@ public class Observation extends BaseResourceEntity {
         ca.uhn.fhir.model.dstu2.resource.Observation observation = new ca.uhn.fhir.model.dstu2.resource.Observation();
         observation.setId(this.getIdDt());
 
+        if (this.person != null) {
+            ResourceReferenceDt personRef = new ResourceReferenceDt(this.person.getIdDt());
+            personRef.setDisplay(this.person.getNameAsSingleString());
+            observation.setSubject(personRef);
+        }
+
         String systemUriString = null;
         String codeString = null;
         String displayString = null;
@@ -313,44 +347,7 @@ public class Observation extends BaseResourceEntity {
             displayString = (observationConcept.getId() == 0L) ? getSourceValue() : observationConcept.getName();
         }
 
-        // OMOP database maintains Systolic and Diastolic Blood Pressures separately.
-        // FHIR however keeps them together. Observation DAO filters out Diastolic values.
-        // Here, when we are reading systolic, we search for matching diastolic and put them
-        // together. The Observation ID will be systolic's OMOP ID.
-        // public static final Long SYSTOLIC_CONCEPT_ID = new Long(3004249);
-        // public static final Long DIASTOLIC_CONCEPT_ID = new Long(3012888);
-        if (observationConcept != null && SYSTOLIC_CONCEPT_ID.equals(observationConcept.getId())) {
-            // Set coding for systolic and diastolic observation
-            systemUriString = "http://loinc.org";
-            codeString = "55284-4";
-            displayString = "Blood pressure systolic & diastolic";
-
-            List<Component> components = new ArrayList<Component>();
-            // First we add systolic component.
-            Component comp = new Component();
-            CodeableConceptDt componentCode = new CodeableConceptDt(this.observationConcept.getVocabulary().getSystemUri(),
-                    this.observationConcept.getConceptCode());
-            componentCode.getCodingFirstRep().setDisplay(this.observationConcept.getName());
-            comp.setCode(componentCode);
-
-            IDatatype compValue = null;
-            if (this.valueAsNumber != null) {
-                QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
-                // Unit is defined as a concept code in omop v4, then unit and code are the same in this case
-                if (this.unit != null) {
-                    quantity.setUnit(this.unit.getConceptCode());
-                    quantity.setCode(this.unit.getConceptCode());
-                    quantity.setSystem(this.unit.getVocabulary().getSystemUri());
-                }
-                compValue = quantity;
-                comp.setValue(compValue);
-                components.add(comp);
-            }
-
-            if (components.size() > 0) {
-                observation.setComponent(components);
-            }
-        } else {
+        {
             IDatatype value = null;
             if (this.valueAsNumber != null) {
                 QuantityDt quantity = new QuantityDt(this.valueAsNumber.doubleValue());
@@ -373,11 +370,6 @@ public class Observation extends BaseResourceEntity {
             }
             observation.setValue(value);
         }
-
-        if (this.rangeLow != null)
-            observation.getReferenceRangeFirstRep().setLow(new SimpleQuantityDt(this.rangeLow.doubleValue()));
-        if (this.rangeHigh != null)
-            observation.getReferenceRangeFirstRep().setHigh(new SimpleQuantityDt(this.rangeHigh.doubleValue()));
 
         CodeableConceptDt code = new CodeableConceptDt(systemUriString, codeString);
         code.getCodingFirstRep().setDisplay(displayString);
@@ -406,41 +398,8 @@ public class Observation extends BaseResourceEntity {
                 observation.setEffective(appliesDate);
             }
         }
-        if (this.person != null) {
-            ResourceReferenceDt personRef = new ResourceReferenceDt(this.person.getIdDt());
-            personRef.setDisplay(this.person.getNameAsSingleString());
-            observation.setSubject(personRef);
-        }
         if (this.visitOccurrence != null)
             observation.getEncounter().setReference(new IdDt(VisitOccurrence.RES_TYPE, this.visitOccurrence.getId()));
-
-        if (type != null) {
-            if (type.getId() == 44818701L || type.getId() == 38000280L || type.getId() == 38000281L) {
-                // This is From physical examination.
-                CodeableConceptDt typeConcept = new CodeableConceptDt();
-                List<CodingDt> typeCodings = new ArrayList<CodingDt>();
-                CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "exam");
-                typeCodings.add(typeCoding);
-                typeConcept.setCoding(typeCodings);
-                observation.setCategory(typeConcept);
-            } else if (type.getId() == 45905771L) {
-                CodeableConceptDt typeConcept = new CodeableConceptDt();
-                // This is Lab result
-                List<CodingDt> typeCodings = new ArrayList<CodingDt>();
-                CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "survey");
-                typeCodings.add(typeCoding);
-                typeConcept.setCoding(typeCodings);
-                observation.setCategory(typeConcept);
-            } else if (type.getId() == 38000277L || type.getId() == 38000278L || type.getId() == 44818702L) {
-                CodeableConceptDt typeConcept = new CodeableConceptDt();
-                // This is Lab result
-                List<CodingDt> typeCodings = new ArrayList<CodingDt>();
-                CodingDt typeCoding = new CodingDt("http://hl7.org/fhir/observation-category", "laboratory");
-                typeCodings.add(typeCoding);
-                typeConcept.setCoding(typeCodings);
-                observation.setCategory(typeConcept);
-            }
-        }
 
         return observation;
     }
@@ -458,7 +417,6 @@ public class Observation extends BaseResourceEntity {
 
     @Override
     public String translateSearchParam(String theSearchParam) {
-        System.out.println("Observation Search:" + theSearchParam);
         switch (theSearchParam) {
             case ca.uhn.fhir.model.dstu2.resource.Observation.SP_SUBJECT:
                 return "person";

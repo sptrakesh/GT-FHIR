@@ -36,6 +36,7 @@ def measurement( object, patientId, encounterId )
   def json = object.read measurementUrl
   def original = new JsonSlurper().parseText measurement
   assert original.code.coding[0].code == json.code.coding[0].code
+  assert original.valueQuantity.value == json.valueQuantity.value
 
   println "Deleting measurement with type: ${json.resourceType} and id: ${json.id}"
   object.delete measurementUrl
@@ -69,6 +70,7 @@ def observation( object, patientId, encounterId )
   def json = object.read observationUrl
   def original = new JsonSlurper().parseText observation
   assert original.code.coding[0].code == json.code.coding[0].code
+  assert original.valueCodeableConcept.coding[0].code == json.valueCodeableConcept.coding[0].code
   assert original.effectiveDateTime == json.effectiveDateTime
 
   println "Deleting observation with type: ${json.resourceType} and id: ${json.id}"

@@ -45,7 +45,7 @@ public class Person extends BaseResourceEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "gender_concept_id", nullable = false)
+    @JoinColumn(name = "gender_concept_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_person_gender_concept"))
     private Concept genderConcept;
 
     @Column(name = "year_of_birth", nullable = false)
@@ -61,23 +61,23 @@ public class Person extends BaseResourceEntity {
     private String timeOfBirth;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "race_concept_id")
+    @JoinColumn(name = "race_concept_id", foreignKey = @ForeignKey(name = "fpk_person_race_concept"))
     private Concept raceConcept;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "ethnicity_concept_id")
+    @JoinColumn(name = "ethnicity_concept_id", foreignKey = @ForeignKey(name = "fpk_person_ethnicity_concept"))
     private Concept ethnicityConcept;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "location_id")
+    @JoinColumn(name = "location_id", foreignKey = @ForeignKey(name = "fpk_person_location"))
     private Location location;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "provider_id")
+    @JoinColumn(name = "provider_id", foreignKey = @ForeignKey(name = "fpk_person_provider"))
     private Provider provider;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "care_site_id")
+    @JoinColumn(name = "care_site_id", foreignKey = @ForeignKey(name = "fpk_person_care_site"))
     private CareSite careSite;
 
     @Column(name = "person_source_value")
@@ -87,21 +87,21 @@ public class Person extends BaseResourceEntity {
     private String genderSourceValue;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "gender_source_concept_id")
+    @JoinColumn(name = "gender_source_concept_id", foreignKey = @ForeignKey(name = "fpk_person_gender_concept_s"))
     private Concept genderSourceConcept;
 
     @Column(name = "race_source_value")
     private String raceSourceValue;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "race_source_concept_id")
+    @JoinColumn(name = "race_source_concept_id", foreignKey = @ForeignKey(name = "fpk_person_race_concept_s"))
     private Concept raceSourceConcept;
 
     @Column(name = "ethnicity_source_value")
     private String ethnicitySourceValue;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "ethnicity_source_concept_id")
+    @JoinColumn(name = "ethnicity_source_concept_id", foreignKey = @ForeignKey(name = "fpk_person_ethnicity_concept_s"))
     private Concept ethnicitySourceConcept;
 
 //	@OneToMany(orphanRemoval=true, mappedBy="person")
@@ -158,14 +158,6 @@ public class Person extends BaseResourceEntity {
         this.genderConcept = genderConcept;
     }
 
-    //	public Set<ConditionOccurrence> getConditions() {
-//		return conditions;
-//	}
-//	
-//	public void setConditions(Set<ConditionOccurrence> conditions) {
-//		this.conditions = conditions;
-//	}
-//
     public Integer getYearOfBirth() {
         return yearOfBirth;
     }
@@ -314,9 +306,6 @@ public class Person extends BaseResourceEntity {
         patient.setBirthDate(new DateDt(calendar.getTime()));
 
         if (this.location != null && this.location.getId() != 0L) {
-//			PeriodDt period = new PeriodDt();
-//			period.setStart(new DateTimeDt(this.location.getStartDate()));
-//			period.setEnd(new DateTimeDt(this.location.getEndDate()));
             patient.addAddress()
                     .setUse(AddressUseEnum.HOME)
                     .addLine(this.location.getAddress1())
@@ -324,7 +313,6 @@ public class Person extends BaseResourceEntity {
                     .setCity(this.location.getCity())
                     .setPostalCode(this.location.getZipCode())
                     .setState(this.location.getState());
-//				.setPeriod(period);
         }
 
         if (this.genderConcept != null) {
@@ -348,7 +336,13 @@ public class Person extends BaseResourceEntity {
             patient.setCareProvider(pracResourceRefs);
         }
 
-        if (death != null) patient.setDeceased(new BooleanDt(true));
+        if (death != null) {
+            if (death.getDeathDate() != null) {
+                patient.setDeceased(new DateTimeDt(death.getDeathDate()));
+            } else {
+                patient.setDeceased(new BooleanDt(true));
+            }
+        }
         else patient.setDeceased(new BooleanDt(false));
 
         addRace(patient);

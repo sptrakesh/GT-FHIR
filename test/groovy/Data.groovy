@@ -110,10 +110,6 @@ class Data
   {
 '''{
   "resourceType": "Organization",
-  "meta": {
-    "versionId": "1",
-    "lastUpdated": "2017-02-20T01:23:47.502-05:00"
-  },
   "text": {
     "status": "generated",
     "div": "UnitTest - A DIVISION OF HEALTH GIZMOS CORP"
@@ -143,6 +139,16 @@ class Data
   {
 '''{
   "resourceType": "Patient",
+  "identifier": [
+    {
+      "system": "urn:tempus:emr:identifier",
+      "value": "1234"
+    },
+    {
+      "system": "urn:some:other:identifier",
+      "value": "asdflkjh"
+    }
+  ],
   "name": [
     {
       "use": "official",
@@ -169,7 +175,7 @@ class Data
       }
     ]
   },
-  "deceasedBoolean": true,
+  "deceasedDateTime": "2017-06-15T10:30:20+00:00",
   "extension": [
     {
       "url": "http://hl7.org/fhir/StructureDefinition/us-core-race",
@@ -219,10 +225,6 @@ class Data
   {
 '''{
   "resourceType": "Practitioner",
-  "meta": {
-    "versionId": "1",
-    "lastUpdated": "2017-01-07T01:04:56.511-05:00"
-  },
   "text": {
     "status": "generated",
     "div": "<div xmlns='http://www.w3.org/1999/xhtml'><p><b>Generated Narrative with Details</b></p><p><b>id</b>: f201</p><p><b>identifier</b>: UZI-nummer = 12345678901 (OFFICIAL)</p><p><b>active</b>: true</p><p><b>name</b>: Dokter Bronsig(OFFICIAL)</p><p><b>telecom</b>: ph: +31715269111(WORK)</p> <p><b>address</b>: Walvisbaai 3 C4 - Automatisering Den helder 2333ZA NLD (WORK)</p>\\n  <p><b>gender</b>: male</p>\\n  <p><b>birthDate</b>: Dec 24, 1956</p>\\n  <h3>Roles</h3>\\n  <table>\\n    <tr>\\n      <td>-</td>\\n      <td>\\n        <b>Organization</b>\\n      </td>\\n      <td>\\n        <b>Code</b>\\n      </td>\\n      <td>\\n        <b>Specialty</b>\\n      </td>\\n    </tr>\\n    <tr>\\n      <td>*</td>\\n      <td>\\n        <a>AUMC</a>\\n      </td>\\n      <td>Implementation of planned interventions <span>(Details : {SNOMED CT code '225304007' = 'Implementation of planned interventions (procedure)', given as 'Implementation of planned interventions'})</span></td>\\n      <td>Medical oncologist <span>(Details : {SNOMED CT code '310512001' = 'Medical oncologist (occupation)', given as 'Medical oncologist'})</span></td>\\n    </tr>\\n  </table>\\n  <h3>Qualifications</h3>\\n  <table>\\n    <tr>\\n      <td>-</td>\\n      <td>\\n        <b>Code</b>\\n      </td>\\n    </tr>\\n    <tr>\\n      <td>*</td>\\n      <td>Pulmonologist <span>(Details : {SNOMED CT code '41672002' = 'Respiratory disease specialist (occupation)', given as 'Pulmonologist'})</span></td></tr></table></div>"
@@ -292,10 +294,6 @@ class Data
   {
 """{
   "resourceType": "Encounter",
-  "meta": {
-    "versionId": "1",
-    "lastUpdated": "2017-03-26T11:37:52.119-04:00"
-  },
   "status": "finished",
   "class": {
     "code": "outpatient"
@@ -326,10 +324,6 @@ class Data
   {
 """{
   "resourceType": "Observation",
-  "meta": {
-  "versionId": "2",
-  "lastUpdated": "2017-05-15T11:56:28.904-04:00"
-  },
   "text": {
   "status": "generated",
   "div": "<div xmlns='http://www.w3.org/1999/xhtml'>UW Device for Pat Id # winkler Systolic BP: 128 mmHg on 2017-02-03 13:23:33</div>"
@@ -358,10 +352,10 @@ class Data
   },
   "effectiveDateTime": "2017-02-03T13:23:33.000-05:00",
   "valueQuantity": {
-  "value": 128,
-  "unit": "mmHg",
-  "system": "http://unitsofmeasure.org",
-  "code": "mm[Hg]"
+    "value": 128,
+    "unit": "mmHg",
+    "system": "SNOMED",
+    "code": "118582008"
   }
 }"""
   }
@@ -370,10 +364,6 @@ class Data
   {
 """{
   "resourceType": "Observation",
-  "meta": {
-    "versionId": "2",
-    "lastUpdated": "2017-05-15T11:56:28.904-04:00"
-  },
   "status": "final",
   "code": {
     "coding": [
@@ -405,10 +395,6 @@ class Data
   {
 """{
   "resourceType": "Observation",
-  "meta": {
-    "versionId": "1",
-    "lastUpdated": "2017-03-07T18:50:16.717-05:00"
-  },
   "status": "final",
   "category": {
     "coding": [
@@ -421,8 +407,7 @@ class Data
     "coding": [
       {
         "system": "http://snomed.info/sct",
-        "code": "85956000",
-        "display": "Adenoid squamous cell carcinoma"
+        "code": "85956000"
       }
     ]
   },
@@ -432,14 +417,21 @@ class Data
   "context": {
     "reference": "Encounter/$encounterId"
   },
+  "valueCodeableConcept":{  
+    "coding":[  
+      {  
+        "system":"SNOMED",
+        "code":"248957007"
+      }
+    ]
+  },
   "component": [
     {
       "code": {
         "coding": [
           {
             "system": "urn:oid:2.16.840.1.113883.6.96",
-            "code": "85956000",
-            "display": "Adenoid squamous cell carcinoma"
+            "code": "85956000"
           }
         ]
       }
@@ -449,8 +441,7 @@ class Data
         "coding": [
           {
             "system": "http://snomed.info/sct",
-            "code": "373375007",
-            "display": "Well differentiated histological grade finding"
+            "code": "373375007"
           }
         ]
       },
@@ -465,10 +456,6 @@ class Data
   {
 """{
   "resourceType": "Observation",
-  "meta": {
-    "versionId": "1",
-    "lastUpdated": "2017-03-07T18:50:16.717-05:00"
-  },
   "status": "final",
   "category": {
     "coding": [
@@ -481,8 +468,7 @@ class Data
     "coding": [
       {
         "system": "http://snomed.info/sct",
-        "code": "161732006",
-        "display": "Gravida"
+        "code": "161732006"
       }
     ]
   },

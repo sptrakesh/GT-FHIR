@@ -12,7 +12,7 @@ public class Death implements Serializable {
 
     @Id
     @OneToOne
-    @JoinColumn(name = "person_id", referencedColumnName = "person_id")
+    @JoinColumn(name = "person_id", referencedColumnName = "person_id", foreignKey = @ForeignKey(name = "fpk_death_person"))
     private Person person;
 
     @Column(name = "death_date")
@@ -20,18 +20,18 @@ public class Death implements Serializable {
     private Date deathDate;
 
     @OneToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "death_type_concept_id", referencedColumnName = "concept_id")
+    @JoinColumn(name = "death_type_concept_id", referencedColumnName = "concept_id", foreignKey = @ForeignKey(name = "fpk_death_type_concept"))
     private Concept deathType;
 
     @OneToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "cause_concept_id", referencedColumnName = "concept_id")
+    @JoinColumn(name = "cause_concept_id", referencedColumnName = "concept_id", foreignKey = @ForeignKey(name = "fpk_death_cause_concept"))
     private Concept causeOfDeath;
 
     @Column(name = "cause_source_value")
     private String causeSourceValue;
 
     @OneToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "cause_source_concept_id", referencedColumnName = "concept_id")
+    @JoinColumn(name = "cause_source_concept_id", referencedColumnName = "concept_id", foreignKey = @ForeignKey(name = "fpk_death_cause_concept_s"))
     private Concept causeSourceConcept;
 
     public Death() {}

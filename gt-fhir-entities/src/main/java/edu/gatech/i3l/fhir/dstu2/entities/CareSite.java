@@ -36,11 +36,11 @@ public class CareSite extends BaseResourceEntity {
     private Long id;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "location_id")
+    @JoinColumn(name = "location_id", foreignKey = @ForeignKey(name = "fpk_care_site_location"))
     private Location location;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "place_of_service_concept_id")
+    @JoinColumn(name = "place_of_service_concept_id", foreignKey = @ForeignKey(name = "fpk_care_site_place"))
     private Concept placeOfServiceConcept;
 
     @Column(name = "care_site_name")

@@ -104,6 +104,25 @@ def update( patient )
   status
 }
 
+def checkIdentifier( original, json )
+{
+  assert original.identifier.size == json.identifier.size
+
+  def found = false
+
+  for ( id in json.identifier )
+  {
+    if ( ( original.identifier[0].system == id.system ) && ( original.identifier[0].value == id.value ) ) found = true
+  }
+
+  for ( id in json.identifier )
+  {
+    if ( ( original.identifier[1].system == id.system ) && ( original.identifier[1].value == id.value ) ) found = found && true
+  }
+
+  assert found
+}
+
 def sourceFile = new File( 'Data.groovy' )
 def cls = new GroovyClassLoader(getClass().classLoader).parseClass sourceFile
 def object = (GroovyObject) cls.newInstance()
@@ -124,6 +143,7 @@ assert patientUrl == patientUrl1
 def json = object.read patientUrl
 def name = parseName json
 def original = new JsonSlurper().parseText patient
+checkIdentifier original, json
 assert original.extension[0].url == json.extension[0].url
 assert original.extension[0].valueCodeableConcept.coding[0].code == json.extension[0].valueCodeableConcept.coding[0].code
 

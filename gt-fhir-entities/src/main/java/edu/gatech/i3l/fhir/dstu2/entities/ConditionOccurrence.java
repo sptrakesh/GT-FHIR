@@ -42,12 +42,12 @@ public class ConditionOccurrence extends BaseResourceEntity {
     private Long id;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "person_id", nullable = false)
+    @JoinColumn(name = "person_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_condition_person"))
     @NotNull
     private PersonComplement person;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "condition_concept_id", nullable = false)
+    @JoinColumn(name = "condition_concept_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_condition_concept"))
     @NotNull
     private Concept conditionConcept;
 
@@ -59,7 +59,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
     private Date endDate;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "condition_type_concept_id", nullable = false)
+    @JoinColumn(name = "condition_type_concept_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_condition_type_concept"))
     @NotNull
     private Concept conditionTypeConcept;
 
@@ -74,18 +74,18 @@ public class ConditionOccurrence extends BaseResourceEntity {
      * @omopVersion 4.0
      */
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "provider_id")
+    @JoinColumn(name = "provider_id", foreignKey = @ForeignKey(name = "fpk_condition_provider"))
     private Provider provider;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "visit_occurrence_id")
+    @JoinColumn(name = "visit_occurrence_id", foreignKey = @ForeignKey(name = "fpk_condition_visit"))
     private VisitOccurrence encounter;
 
     @Column(name = "condition_source_value")
     private String sourceValue;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "condition_source_concept_id")
+    @JoinColumn(name = "condition_source_concept_id", foreignKey = @ForeignKey(name = "fpk_condition_concept_s"))
     private Concept sourceConcept;
 
     public ConditionOccurrence() {

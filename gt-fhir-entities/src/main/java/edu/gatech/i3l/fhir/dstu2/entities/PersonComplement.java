@@ -14,14 +14,11 @@ import edu.gatech.i3l.omop.dao.DAO;
 import edu.gatech.i3l.omop.dao.PersonComplementDAO;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import javax.persistence.*;
+import java.util.*;
+
+import static edu.gatech.i3l.omop.dao.ConceptDAO.SNOMED;
+import static edu.gatech.i3l.omop.dao.ConceptDAO.SNOMED_URL;
 
 /**
  * This class adds some properties to the Omop data model Person, in order to provide
@@ -31,10 +28,11 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "fhir_person")
-@PrimaryKeyJoinColumn(name = "person_id")
+@PrimaryKeyJoinColumn(name = "person_id", foreignKey = @ForeignKey(name = "fpk_fhir_person_person"))
 public class PersonComplement extends Person {
 
     private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PersonComplement.class);
+
     @Column(name = "contact_point1")
     String contactPoint1;
     @Column(name = "contact_point2")
@@ -59,6 +57,9 @@ public class PersonComplement extends Person {
     private String maritalStatus;
     @Column(name = "active")
     private Short active;
+
+    @OneToMany(mappedBy = "person", orphanRemoval = true, cascade = CascadeType.ALL)
+    private Set<PersonIdentifier> identifiers = new HashSet<>();
 
     public PersonComplement() {
         super();
@@ -183,6 +184,15 @@ public class PersonComplement extends Person {
         this.contactPoint3 = contactPoint3;
     }
 
+    public Set<PersonIdentifier> getIdentifiers() {
+        return Collections.unmodifiableSet(identifiers);
+    }
+
+    public void setIdentifiers(Collection<PersonIdentifier> identifiers) {
+        this.identifiers.clear();
+        this.identifiers.addAll(identifiers);
+    }
+
     @Override
     public Patient getRelatedResource() {
         Patient patient = super.getRelatedResource();
@@ -228,6 +238,7 @@ public class PersonComplement extends Person {
         }
 
         patient.setTelecom(contactPoints);
+        addIdentifier(patient);
 
 //MARITAL STATUS
 //		MaritalStatusCodesEnum[] values = MaritalStatusCodesEnum.values();
@@ -238,6 +249,7 @@ public class PersonComplement extends Person {
 //			}
 //		}
 //		or patient.setMaritalStatus(MaritalStatusCodesEnum.valueOf(""));
+
         return patient;
     }
 
@@ -342,8 +354,7 @@ public class PersonComplement extends Person {
                 this.setContactPoint3(system + ":" + use + ":" + value);
             }
 
-            //MARITAL STATUS
-//			this.maritalStatus.setId(OmopConceptMapping.getInstance().get(patient.getMaritalStatus().getText(), OmopConceptMapping.MARITAL_STATUS));
+            processIdentifier(patient);
         } else {
             ourLog.error("There was not possible to construct the entity ? using the resource ?. It should be used the resource ?.",
                     this.getClass().getSimpleName(), resource.getResourceName(), getResourceType());
@@ -386,4 +397,26 @@ public class PersonComplement extends Person {
         }
     }
 
+    private void processIdentifier(final Patient patient) {
+        if (patient.getIdentifier() != null) {
+            for (final IdentifierDt id : patient.getIdentifier()) {
+                PersonIdentifier pi = null;
+
+                if (patient.getId().getIdPartAsLong() != null) {
+                    pi = PersonComplementDAO.getInstance().getPersonIdentifier(this, id.getSystem(), id.getValue());
+                }
+
+                if (pi == null) {
+                    pi = new PersonIdentifier(this, id.getSystem(), id.getValue());
+                }
+                identifiers.add(pi);
+            }
+        }
+    }
+
+    private void addIdentifier(final Patient patient) {
+        for (final PersonIdentifier pi : identifiers) {
+            patient.addIdentifier(new IdentifierDt(pi.getSystem(), pi.getValue()));
+        }
+    }
 }

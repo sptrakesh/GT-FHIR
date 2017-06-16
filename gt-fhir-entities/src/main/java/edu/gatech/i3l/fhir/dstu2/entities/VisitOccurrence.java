@@ -47,7 +47,7 @@ public class VisitOccurrence extends BaseResourceEntity {
     private Long id;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "person_id", nullable = false)
+    @JoinColumn(name = "person_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_visit_person"))
     private PersonComplement person;
 
     @Column(name = "visit_start_date", nullable = false)
@@ -69,26 +69,26 @@ public class VisitOccurrence extends BaseResourceEntity {
     private Concept placeOfServiceConcept;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "visit_concept_id")
+    @JoinColumn(name = "visit_concept_id", foreignKey = @ForeignKey(name = "fpk_visit_concept"))
     private Concept visitConcept;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "visit_type_concept_id")
+    @JoinColumn(name = "visit_type_concept_id", foreignKey = @ForeignKey(name = "fpk_visit_type_concept"))
     private Concept visitTypeConcept;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "provider_id")
+    @JoinColumn(name = "provider_id", foreignKey = @ForeignKey(name = "fpk_visit_provider"))
     private Provider provider;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "care_site_id")
+    @JoinColumn(name = "care_site_id", foreignKey = @ForeignKey(name = "fpk_visit_care_site"))
     private CareSite careSite; //FIXME field names should reflect fhir names, for validation purposes.
 
     @Column(name = "visit_source_value")
     private String visitSourceValue;
 
     @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "visit_source_concept_id")
+    @JoinColumn(name = "visit_source_concept_id", foreignKey = @ForeignKey(name = "fpk_visit_concept_s"))
     private Concept visitSourceConcept;
 
     public VisitOccurrence() {

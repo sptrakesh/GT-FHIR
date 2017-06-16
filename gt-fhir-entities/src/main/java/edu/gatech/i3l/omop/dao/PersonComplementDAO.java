@@ -2,13 +2,9 @@ package edu.gatech.i3l.omop.dao;
 
 import edu.gatech.i3l.fhir.dstu2.entities.Location;
 import edu.gatech.i3l.fhir.dstu2.entities.PersonComplement;
-import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
-import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
+import edu.gatech.i3l.fhir.dstu2.entities.keys.PersonIdentifierPK;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.context.ContextLoaderListener;
-import org.springframework.web.context.WebApplicationContext;
 
-import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -60,6 +56,11 @@ public class PersonComplementDAO {
 
         List<Long> results = query.getResultList();
         return (results.isEmpty()) ? null : results.get(0);
+    }
+
+    public edu.gatech.i3l.fhir.dstu2.entities.PersonIdentifier getPersonIdentifier(final PersonComplement person, final String system, final String value) {
+        final PersonIdentifierPK pk = new PersonIdentifierPK(person, system, value);
+        return DAO.getInstance().getEntityManager().find(edu.gatech.i3l.fhir.dstu2.entities.PersonIdentifier.class, pk);
     }
 
     private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(PersonComplementDAO.class);

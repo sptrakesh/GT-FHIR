@@ -54,18 +54,18 @@ public class Provider extends BaseResourceEntity {
     private String dea;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "specialty_concept_id")
+    @JoinColumn(name = "specialty_concept_id", foreignKey = @ForeignKey(name = "fpk_provider_specialty"))
     private Concept specialtyConcept;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "care_site_id")
+    @JoinColumn(name = "care_site_id", foreignKey = @ForeignKey(name = "fpk_provider_care_site"))
     private CareSite careSite;
 
     @Column(name = "year_of_birth")
     private Integer yearOfBirth;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "gender_concept_id")
+    @JoinColumn(name = "gender_concept_id", foreignKey = @ForeignKey(name = "fpk_provider_gender"))
     private Concept genderConcept;
 
     @Column(name = "provider_source_value")
@@ -75,14 +75,14 @@ public class Provider extends BaseResourceEntity {
     private String specialtySourceValue;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "specialty_source_concept_id")
+    @JoinColumn(name = "specialty_source_concept_id", foreignKey = @ForeignKey(name = "fpk_provider_specialty_s"))
     private Concept specialtySourceConcept;
 
     @Column(name = "gender_source_value")
     private String genderSourceValue;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "gender_source_concept_id")
+    @JoinColumn(name = "gender_source_concept_id", foreignKey = @ForeignKey(name = "fpk_provider_gender_s"))
     private Concept genderSourceConcept;
 
     public Provider() {
