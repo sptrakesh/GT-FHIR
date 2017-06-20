@@ -13,6 +13,7 @@ import ca.uhn.fhir.model.dstu2.valueset.MedicationAdministrationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import com.typesafe.config.Config;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.dao.ConceptDAO;
 import edu.gatech.i3l.omop.dao.DAO;
@@ -30,20 +31,17 @@ public final class DrugExposureStatement extends DrugExposure {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DrugExposureStatement.class);
 
     public static final String RES_TYPE = "MedicationStatement";
-    public static final String RX_NORM = "RXNORM";
-    public static final String RX_NORM_SYSTEM = "http://www.nlm.nih.gov/research/umls/rxnorm";
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "drug_type_concept_id")
+    @JoinColumn(name = "drug_type_concept_id", foreignKey = @ForeignKey(name = "fpk_drug_type_concept"))
     private Concept drugExposureType;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "person_id", nullable = false)
-    @NotNull
+    @JoinColumn(name = "person_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_drug_person"))
     private PersonComplement person;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "visit_occurrence_id")
+    @JoinColumn(name = "visit_occurrence_id", foreignKey = @ForeignKey(name = "fpk_drug_visit"))
     private VisitOccurrence visitOccurrence;
 
     @Column(name = "drug_exposure_start_date")
@@ -62,8 +60,7 @@ public final class DrugExposureStatement extends DrugExposure {
     private Integer daysSupply;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "drug_concept_id")
-    @NotNull
+    @JoinColumn(name = "drug_concept_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_drug_concept"))
     private Concept medication;
 
     public PersonComplement getPerson() { return person; }
@@ -172,7 +169,7 @@ public final class DrugExposureStatement extends DrugExposure {
         }
 
         // Adding medication to Contained.
-        CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
+        CodingDt medCoding = new CodingDt(this.getMedication().getVocabularyReference(), this.getMedication().getConceptCode());
         medCoding.setDisplay(this.getMedication().getName());
 
         List<CodingDt> codingList = new ArrayList<CodingDt>();
@@ -204,25 +201,20 @@ public final class DrugExposureStatement extends DrugExposure {
 
         final MedicationStatement medicationStatement = (MedicationStatement) resource;
 
-        drugExposureType = DAO.getInstance().getEntityManager().find(Concept.class, 38000178L);
+        final ConceptDAO dao = ConceptDAO.getInstance();
+        final Config config = dao.config.getConfig("concept.medicationStatement");
+        drugExposureType = new Concept(dao.getConcept(config.getString("code"), config.getString("url")));
 
         if (medicationStatement.getMedication() instanceof CodeableConceptDt) {
             final CodeableConceptDt ccd = (CodeableConceptDt) medicationStatement.getMedication();
             final CodingDt cd = ccd.getCodingFirstRep();
-            switch (cd.getSystem()) {
-                case RX_NORM:
-                case RX_NORM_SYSTEM:
-                    medication = new Concept(ConceptDAO.getInstance().getConcept(cd.getCode(),RX_NORM));
-                    break;
-                default:
-                    logger.warn("Unsupported medication system: {} with code: {}", cd.getSystem(), cd.getCode());
-            }
+            final Long cid = ConceptDAO.getInstance().getConcept(cd);
+            if (cid != null) medication = new Concept(cid);
+            else logger.warn("Unsupported medication system: {} with code: {}", cd.getSystem(), cd.getCode());
         } else if (medicationStatement.getMedication() instanceof ResourceReferenceDt) {
             final ResourceReferenceDt medicationRef = (ResourceReferenceDt) medicationStatement.getMedication();
             final Long medicationRefId = medicationRef.getReference().getIdPartAsLong();
-            if (medicationRef != null) {
-                medication = new Concept(medicationRefId);
-            }
+            if (medicationRef != null) medication = new Concept(medicationRefId);
         }
 
         if (medicationStatement.getPatient() != null) {

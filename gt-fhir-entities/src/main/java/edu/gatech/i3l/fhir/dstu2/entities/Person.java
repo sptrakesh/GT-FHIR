@@ -15,19 +15,16 @@ import ca.uhn.fhir.model.primitive.BooleanDt;
 import ca.uhn.fhir.model.primitive.DateDt;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import com.typesafe.config.Config;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.dao.ConceptDAO;
 import edu.gatech.i3l.omop.dao.DeathDAO;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-
-import static edu.gatech.i3l.omop.dao.ConceptDAO.SNOMED;
-import static edu.gatech.i3l.omop.dao.ConceptDAO.SNOMED_URL;
 
 @Entity
 @Table(name = "person")
@@ -64,7 +61,7 @@ public class Person extends BaseResourceEntity {
     @JoinColumn(name = "race_concept_id", foreignKey = @ForeignKey(name = "fpk_person_race_concept"))
     private Concept raceConcept;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinColumn(name = "ethnicity_concept_id", foreignKey = @ForeignKey(name = "fpk_person_ethnicity_concept"))
     private Concept ethnicityConcept;
 
@@ -86,21 +83,21 @@ public class Person extends BaseResourceEntity {
     @Column(name = "gender_source_value")
     private String genderSourceValue;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinColumn(name = "gender_source_concept_id", foreignKey = @ForeignKey(name = "fpk_person_gender_concept_s"))
     private Concept genderSourceConcept;
 
     @Column(name = "race_source_value")
     private String raceSourceValue;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinColumn(name = "race_source_concept_id", foreignKey = @ForeignKey(name = "fpk_person_race_concept_s"))
     private Concept raceSourceConcept;
 
     @Column(name = "ethnicity_source_value")
     private String ethnicitySourceValue;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinColumn(name = "ethnicity_source_concept_id", foreignKey = @ForeignKey(name = "fpk_person_ethnicity_concept_s"))
     private Concept ethnicitySourceConcept;
 
@@ -336,15 +333,8 @@ public class Person extends BaseResourceEntity {
             patient.setCareProvider(pracResourceRefs);
         }
 
-        if (death != null) {
-            if (death.getDeathDate() != null) {
-                patient.setDeceased(new DateTimeDt(death.getDeathDate()));
-            } else {
-                patient.setDeceased(new BooleanDt(true));
-            }
-        }
-        else patient.setDeceased(new BooleanDt(false));
 
+        addDeath(patient);
         addRace(patient);
 
         return patient;
@@ -380,38 +370,12 @@ public class Person extends BaseResourceEntity {
             this.dayOfBirth = c.get(Calendar.DAY_OF_MONTH);
         }
 
-        final IDatatype deceased = patient.getDeceased();
-        if (deceased != null) {
-            if (deceased instanceof BooleanDt) {
-                final BooleanDt value = (BooleanDt) patient.getDeceased();
-                if (value.getValue()) {
-                    death = DeathDAO.getInstance().getById(id);
-                    if (death == null) death = new Death(this);
-                } else {
-                    death = null;
-                    DeathDAO.getInstance().remove(id);
-                }
-            }
-            else if (deceased instanceof DateTimeDt) {
-                final DateTimeDt value = (DateTimeDt) deceased;
-                death = DeathDAO.getInstance().getById(id);
-                if (death == null) death = new Death(this);
-                death.setDeathDate(value.getValue());
-            }
-        } else death = null;
-
-        final String genderString = patient.getGender();
-        if (genderString != null)
-        {
-            switch (genderString) {
-                case "male":
-                    genderConcept = new Concept(ConceptDAO.getInstance().getConcept("248153007","SNOMED")); // SNOMED Male concept
-                    break;
-                case "female":
-                    genderConcept = new Concept(ConceptDAO.getInstance().getConcept("248152002","SNOMED")); // SNOMED Female concept
-                    break;
-                default:
-                    genderConcept = new Concept(OmopConceptMapping.getInstance().get(genderString.substring(0, 1), OmopConceptMapping.GENDER));
+        if (patient.getGender() != null) {
+            final ConceptDAO dao = ConceptDAO.getInstance();
+            final Config config = dao.config.getConfig("concept.gender");
+            if (config.hasPath(patient.getGender())) {
+                final Config gender = config.getConfig(patient.getGender());
+                genderConcept = new Concept(dao.getConcept(gender.getString("code"), gender.getString("url")));
             }
         }
 
@@ -431,6 +395,7 @@ public class Person extends BaseResourceEntity {
             this.setProvider(Provider.searchAndUpdate(providers.get(0)));
         }
 
+        processDeath(patient);
         processRace(patient);
 
         return this;
@@ -448,6 +413,39 @@ public class Person extends BaseResourceEntity {
         return link;
     }
 
+    private void processDeath(final Patient patient) {
+        final IDatatype deceased = patient.getDeceased();
+        if (deceased != null) {
+            if (deceased instanceof BooleanDt) {
+                final BooleanDt value = (BooleanDt) patient.getDeceased();
+                if (value.getValue()) {
+                    death = DeathDAO.getInstance().getById(id);
+                    if (death == null) death = new Death(this);
+                } else {
+                    death = null;
+                    DeathDAO.getInstance().remove(id);
+                }
+            }
+            else if (deceased instanceof DateTimeDt) {
+                final DateTimeDt value = (DateTimeDt) deceased;
+                death = DeathDAO.getInstance().getById(id);
+                if (death == null) death = new Death(this);
+                death.setDeathDate(value.getValue());
+            }
+        } else death = null;
+    }
+
+    private void addDeath(final Patient patient) {
+        if (death != null) {
+            if (death.getDeathDate() != null) {
+                patient.setDeceased(new DateTimeDt(death.getDeathDate()));
+            } else {
+                patient.setDeceased(new BooleanDt(true));
+            }
+        }
+        else patient.setDeceased(new BooleanDt(false));
+    }
+
     private void processRace(final Patient patient) {
         for (final ExtensionDt extension : patient.getAllUndeclaredExtensions()) {
             switch (extension.getUrl()) {
@@ -455,15 +453,12 @@ public class Person extends BaseResourceEntity {
                     if (extension.getValue() instanceof CodeableConceptDt) {
                         final CodeableConceptDt cdt = (CodeableConceptDt) extension.getValue();
                         final CodingDt cd = cdt.getCodingFirstRep();
-                        switch (cd.getSystem()) {
-                            case SNOMED_URL:
-                            case SNOMED:
-                                raceConcept = new Concept(ConceptDAO.getInstance().getConcept(cd.getCode(), SNOMED));
-                                break;
-                            default:
-                                ourLog.warn("Unsupported race extension system: {} with value: {} and text: {}",
-                                        cd.getSystem(), cd.getCode(), cd.getDisplay());
-                                raceConcept = new Concept(ConceptDAO.getInstance().getDefaultRace());
+                        final Long cid = ConceptDAO.getInstance().getConcept(cd);
+                        if (cid != null) raceConcept = new Concept(cid);
+                        else {
+                            ourLog.warn("Unsupported race extension system: {} with value: {} and text: {}",
+                                    cd.getSystem(), cd.getCode(), cd.getDisplay());
+                            raceConcept = new Concept(ConceptDAO.getInstance().getDefaultRace());
                         }
                     }
                     break;
@@ -474,7 +469,7 @@ public class Person extends BaseResourceEntity {
     private void addRace(final Patient patient) {
         if (raceConcept != null) {
             final CodeableConceptDt cdt = new CodeableConceptDt();
-            cdt.addCoding(new CodingDt(raceConcept.getVocabulary().getId(),raceConcept.getConceptCode()));
+            cdt.addCoding(new CodingDt(raceConcept.getVocabulary(),raceConcept.getConceptCode()));
             final ExtensionDt edt = new ExtensionDt();
             edt.setUrl(US_CORE_RACE);
             edt.setValue(cdt);

@@ -14,9 +14,9 @@ import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.dao.BaseFhirDao;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
 import edu.gatech.i3l.omop.dao.DAO;
 import edu.gatech.i3l.omop.dao.ProviderDAO;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -117,7 +117,7 @@ public class Provider extends BaseResourceEntity {
             return provider;
         } else {
             // Check source column to see if we have received this before.
-            provider = (Provider) OmopConceptMapping.getInstance()
+            provider = DAO.getInstance()
                     .loadEntityBySource(Provider.class, "Provider", "providerSourceValue", resourceRef.getReference().getIdPart());
             if (provider != null) {
                 return provider;
@@ -262,7 +262,7 @@ public class Provider extends BaseResourceEntity {
 
         if (specialtyConcept != null &&
                 specialtyConcept.getId() > 0L) {
-            String systemUriString = specialtyConcept.getVocabulary().getReference();
+            String systemUriString = specialtyConcept.getVocabularyReference();
             String displayString = specialtyConcept.getName();
             String codeString = specialtyConcept.getConceptCode();
 
@@ -338,8 +338,7 @@ public class Provider extends BaseResourceEntity {
             }
         }
 
-        this.genderConcept = new Concept();
-        this.genderConcept.setId(OmopConceptMapping.getInstance().get(practitioner.getGender().substring(0, 1), OmopConceptMapping.GENDER));
+        genderConcept = ConceptDAO.getInstance().getGenderConcept(practitioner.getGender());
 
         Date birthDate = practitioner.getBirthDate();
         if (birthDate != null) {
@@ -387,7 +386,7 @@ public class Provider extends BaseResourceEntity {
                     CriteriaQuery<Concept> criteria = builder.createQuery(Concept.class);
                     Root<Concept> from = criteria.from(Concept.class);
                     criteria.select(from).where(
-                            builder.equal(from.get("conceptClassId"), OmopConceptMapping.SPECIALTY),
+                            builder.equal(from.get("conceptClassId"), "Specialty"),
                             builder.equal(from.get("name"), specialtyDisplay)
                     );
                     TypedQuery<Concept> query = entityManager.createQuery(criteria);

@@ -23,6 +23,7 @@ import java.util.Date;
 
 import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_ENCOUNTER;
 import static ca.uhn.fhir.model.dstu2.resource.Procedure.SP_PATIENT;
+import static java.lang.String.format;
 
 @Entity
 @Table(name = "procedure_occurrence")
@@ -259,8 +260,7 @@ public class ProcedureOccurrence extends BaseResourceEntity {
 
         {
             final CodeableConceptDt procedureCodeConcept = new CodeableConceptDt();
-            final CodingDt coding = new CodingDt(
-                    ConceptDAO.getInstance().getSystemUri(procedureConcept.getVocabulary().getName()), procedureConcept.getConceptCode());
+            final CodingDt coding = new CodingDt(procedureConcept.getVocabularyReference(), procedureConcept.getConceptCode());
             coding.setDisplay(procedureConcept.getName());
             procedureCodeConcept.addCoding(coding);
             procedure.setCode(procedureCodeConcept);
@@ -268,15 +268,13 @@ public class ProcedureOccurrence extends BaseResourceEntity {
             // FHIR does not require the coding. If our System URI is not mappable
             // from OMOP database, then coding would be empty. Set Text here. Even text
             // is not required in FHIR. But, then no reason to have this condition, I think...
-            String theText = procedureConcept.getName() + ", " + procedureConcept.getVocabulary().getName() + ", "
-                    + procedureConcept.getConceptCode();
+            final String theText = format( "%s, %s, %s", procedureConcept.getName(), procedureConcept.getVocabularyReference(), procedureConcept.getConceptCode());
             procedureCodeConcept.setText(theText);
         }
 
         if (procedureTypeConcept != null) {
             final CodeableConceptDt type = new CodeableConceptDt();
-            final CodingDt coding = new CodingDt(
-                    ConceptDAO.getInstance().getSystemUri(procedureTypeConcept.getVocabulary().getName()), procedureTypeConcept.getConceptCode());
+            final CodingDt coding = new CodingDt(procedureTypeConcept.getVocabularyReference(), procedureTypeConcept.getConceptCode());
             coding.setDisplay(procedureTypeConcept.getName());
             type.addCoding(coding);
             procedure.setCategory(type);

@@ -4,7 +4,6 @@ import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
 import ca.uhn.fhir.model.dstu2.composite.*;
-import ca.uhn.fhir.model.dstu2.resource.Observation.Component;
 import ca.uhn.fhir.model.dstu2.valueset.ObservationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
@@ -13,23 +12,18 @@ import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.dao.ConceptDAO;
-import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
+import edu.gatech.i3l.omop.dao.DAO;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Table(name = "observation")
 public class Observation extends BaseResourceEntity {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Observation.class);
 
-    public static final Long DIASTOLIC_CONCEPT_ID = 3012888L;
     private static final String RES_TYPE = "Observation";
     private static final ObservationStatusEnum STATUS = ObservationStatusEnum.FINAL;
 
@@ -215,12 +209,11 @@ public class Observation extends BaseResourceEntity {
     @Override
     public IResourceEntity constructEntityFromResource(IResource resource) {
         ca.uhn.fhir.model.dstu2.resource.Observation observation = (ca.uhn.fhir.model.dstu2.resource.Observation) resource;
-        OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 
         if (observation.getId() != null && observation.getId().getIdPartAsLong() != null && observation.getId().getIdPart() != null) {
             // See if we already have this in the source field. If so,
             // then we want update not create
-            Observation origObservation = (Observation) ocm.loadEntityBySource(Observation.class, "Observation", "sourceValue", observation.getId().getIdPart());
+            final Observation origObservation = DAO.getInstance().loadEntityBySource(Observation.class, "Observation", "sourceValue", observation.getId().getIdPart());
             if (origObservation == null)
                 this.setSourceValue(observation.getId().getIdPart());
             else
@@ -245,12 +238,12 @@ public class Observation extends BaseResourceEntity {
             return null;
         }
 
-        String code = observation.getCode().getCodingFirstRep().getCode();
-        Long obsConceptRef = ocm.get(code);
-        if (obsConceptRef != null) {
-            setObservationConcept(new Concept(obsConceptRef));
+        final CodingDt codeDt = observation.getCode().getCodingFirstRep();
+        final Long id = ConceptDAO.getInstance().getConcept(codeDt);
+        if (id != null) {
+            observationConcept = new Concept(id);
         } else {
-            logger.warn("Observation code not recognized.  Code: {}; System: {}", code, observation.getCode().getCodingFirstRep().getSystem());
+            logger.warn("Observation code not recognized.  Code: {}; System: {}", codeDt.getCode(), codeDt.getSystem());
         }
 
         if (observation.getEffective() != null)
@@ -272,36 +265,22 @@ public class Observation extends BaseResourceEntity {
             this.visitOccurrence.setId(visitOccurrenceId);
         }
 
-        Long observationConceptId = ocm.get(observation.getCode().getCodingFirstRep().getCode(),
-                OmopConceptMapping.LOINC_CODE);
-        if (observationConceptId != null) {
-            this.observationConcept = new Concept();
-            this.observationConcept.setId(observationConceptId);
-        }
-
 		/* Set the type of the observation */
-        this.type = new Concept();
-        if (observation.getMethod().getCodingFirstRep() != null) {
-            this.type.setId(Omop4ConceptsFixedIds.OBSERVATION_FROM_LAB_NUMERIC_RESULT.getConceptId()); // assuming
-            // all results on this table are quantitative:
-            // http://hl7.org/fhir/2015May/valueset-observation-methods.html
-        } else {
-            this.type.setId(Omop4ConceptsFixedIds.OBSERVATION_FROM_EHR.getConceptId());
+        if (observation.getMethod() != null) {
+            final CodingDt method = observation.getMethod().getCodingFirstRep();
+            final Long mid = ConceptDAO.getInstance().getConcept(method);
+            if (mid != null) type = new Concept(mid);
         }
 
 		/* Set the value of the observation */
         IDatatype value = observation.getValue();
         if (value instanceof QuantityDt) {
-            String unitCode = ((QuantityDt) value).getCode();
-            if (unitCode == null) {
-                unitCode = ((QuantityDt) value).getUnit();
-            }
-            Long unitId = ocm.get(unitCode);
-            this.valueAsNumber = ((QuantityDt) value).getValue().doubleValue();
-            if (unitId != null) {
-                this.unit = new Concept();
-                this.unit.setId(unitId);
-            }
+            final QuantityDt qdt = (QuantityDt) value;
+            String unitCode = qdt.getCode();
+            if (unitCode == null) unitCode = qdt.getUnit();
+            Long unitId = ConceptDAO.getInstance().getConcept(unitCode, qdt.getSystem());
+            this.valueAsNumber = qdt.getValue().doubleValue();
+            if (unitId != null) unit = new Concept(unitId);
         } else if (value instanceof CodeableConceptDt) {
             final CodeableConceptDt ccd = (CodeableConceptDt) value;
             final Long valueAsConceptId = ConceptDAO.getInstance().getConcept(ccd.getCodingFirstRep().getCode(), ccd.getCodingFirstRep().getSystem());
@@ -342,7 +321,7 @@ public class Observation extends BaseResourceEntity {
         String displayString = null;
 
         if (observationConcept != null) {
-            systemUriString = this.observationConcept.getVocabulary().getSystemUri();
+            systemUriString = this.observationConcept.getVocabularyReference();
             codeString = this.observationConcept.getConceptCode();
             displayString = (observationConcept.getId() == 0L) ? getSourceValue() : observationConcept.getName();
         }
@@ -355,14 +334,14 @@ public class Observation extends BaseResourceEntity {
                     // Unit is defined as a concept code in omop v4, then unit and code are the same in this case
                     quantity.setUnit(this.unit.getConceptCode());
                     quantity.setCode(this.unit.getConceptCode());
-                    quantity.setSystem(this.unit.getVocabulary().getSystemUri());
+                    quantity.setSystem(this.unit.getVocabularyReference());
                 }
                 value = quantity;
             } else if (this.valueAsString != null) {
                 value = new StringDt(this.valueAsString);
             } else if (this.valueAsConcept != null && this.valueAsConcept.getId() != 0L) {
                 // vocabulary is a required attribute for concept, then it's expected to not be null
-                CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabulary().getSystemUri(),
+                CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabularyReference(),
                         this.valueAsConcept.getConceptCode());
                 value = valueAsConcept;
             } else {

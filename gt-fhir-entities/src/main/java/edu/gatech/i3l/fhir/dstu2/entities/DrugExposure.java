@@ -9,15 +9,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "drug_exposure")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorFormula("case drug_type_concept_id\n" +
-        "  when 38000178 then 'DrugStatement'\n" +
-        "  when 38000177 then 'PrescriptionWritten'\n" +
-        "  when 38000176 then 'PrescriptionDispensed'\n" +
-        "  when 38000175 then 'PrescriptionDispensed'\n" +
-        "  when 38000179 then 'DrugAdministration'\n" +
-        "  when 43542356 then 'DrugAdministration'\n" +
-        "  when 43542357 then 'DrugAdministration'\n" +
-        "  when 43542358 then 'DrugAdministration' END")
+@DiscriminatorFormula("case when drug_type_concept_id > 0 then 'DrugStatement' end")
 public abstract class DrugExposure extends BaseResourceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +21,7 @@ public abstract class DrugExposure extends BaseResourceEntity {
     private Double effectiveDrugDose;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "dose_unit_concept_id")
+    @JoinColumn(name = "dose_unit_concept_id", foreignKey = @ForeignKey(name = "fpk_drug_dose_unit_concept"))
     private Concept doseUnitConcept;
 
     @Column(name = "drug_source_value")
@@ -37,10 +29,6 @@ public abstract class DrugExposure extends BaseResourceEntity {
 
     @Column(name = "dose_unit_source_value")
     private String doseUnitSourceValue;
-
-//	@OneToOne(mappedBy="prescription", 
-//			cascade={CascadeType.ALL}, fetch=FetchType.LAZY)
-//	private DrugExposureComplement complement;
 
     @Override
     public Long getId() {
@@ -82,12 +70,4 @@ public abstract class DrugExposure extends BaseResourceEntity {
     public void setDoseUnitSourceValue(String doseUnitSourceValue) {
         this.doseUnitSourceValue = doseUnitSourceValue;
     }
-
-//	public DrugExposureComplement getComplement() {
-//		return complement;
-//	}
-//
-//	public void setComplement(DrugExposureComplement complement) {
-//		this.complement = complement;
-//	}
 }

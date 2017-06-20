@@ -11,6 +11,7 @@ import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
@@ -136,7 +137,7 @@ public final class DrugExposureDispensed extends DrugExposure {
         // we return medication with contained codeable concept instead of reference.
 
         // Adding medication to Contained.
-        CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
+        CodingDt medCoding = new CodingDt(this.getMedication().getVocabularyReference(), this.getMedication().getConceptCode());
         medCoding.setDisplay(this.getMedication().getName());
 
         List<CodingDt> codingList = new ArrayList<CodingDt>();
@@ -172,7 +173,6 @@ public final class DrugExposureDispensed extends DrugExposure {
     @Override
     public IResourceEntity constructEntityFromResource(IResource resource) {
         ca.uhn.fhir.model.dstu2.resource.MedicationDispense medicationDispense = (ca.uhn.fhir.model.dstu2.resource.MedicationDispense) resource;
-        OmopConceptMapping ocm = OmopConceptMapping.getInstance();
 
 		/* Set drup exposure type */
         this.drugExposureType = new Concept();
@@ -184,19 +184,16 @@ public final class DrugExposureDispensed extends DrugExposure {
         }
 		/* Set drug concept(medication) */
         if (medicationDispense.getMedication() instanceof CodeableConceptDt) {
-            Long valueAsConceptId = ocm.get(((CodeableConceptDt)
-                            medicationDispense.getMedication()).getCodingFirstRep().getCode(),
-                    OmopConceptMapping.CLINICAL_FINDING);
-            if (valueAsConceptId != null) {
-                this.medication = new Concept();
-                this.medication.setConceptCode(valueAsConceptId.toString());
+            final CodingDt med = ((CodeableConceptDt) medicationDispense.getMedication()).getCodingFirstRep();
+            final Long id = ConceptDAO.getInstance().getConcept(med.getCode(), med.getSystem());
+            if (id != null) {
+                this.medication = new Concept(id);
             }
         } else if (medicationDispense.getMedication() instanceof ResourceReferenceDt) {
             ResourceReferenceDt medicationRef = (ResourceReferenceDt) medicationDispense.getMedication();
             Long medicationRefId = medicationRef.getReference().getIdPartAsLong();
             if (medicationRef != null) {
-                this.medication = new Concept();
-                this.medication.setId(medicationRefId);
+                this.medication = new Concept(medicationRefId);
             }
         }
 		

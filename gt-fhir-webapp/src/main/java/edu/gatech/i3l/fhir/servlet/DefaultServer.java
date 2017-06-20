@@ -20,7 +20,6 @@ import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 import edu.gatech.i3l.fhir.jpa.dao.IFhirSystemDao;
 import edu.gatech.i3l.fhir.jpa.provider.JpaSystemProviderDstu2;
 import edu.gatech.i3l.fhir.security.SMARTonFHIRConformanceStatement;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 public class DefaultServer extends RestfulServer {
 
@@ -32,12 +31,6 @@ public class DefaultServer extends RestfulServer {
 	@Override
 	protected void initialize() throws ServletException {
 		super.initialize();
-
-		/*
-		 * This is gonna load the concepts values present in an Omop based
-		 * database
-		 */
-		new Thread(OmopConceptMapping.getInstance()).run();
 
 		setFhirContext(new FhirContext(FhirVersionEnum.DSTU2));
 

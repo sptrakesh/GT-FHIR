@@ -13,8 +13,8 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.dao.CareSiteDAO;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
 import edu.gatech.i3l.omop.dao.DAO;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 import javax.persistence.*;
 import java.util.List;
@@ -72,22 +72,16 @@ public class CareSite extends BaseResourceEntity {
 
         // See if this exists.
         CareSite careSite = DAO.getInstance().loadEntityById(CareSite.class, resourceRef.getReference().getIdPartAsLong());
-        if (careSite != null) {
-            return careSite;
-        } else {
-            // Check source column to see if we have received this before.
-            careSite = (CareSite) OmopConceptMapping.getInstance()
-                    .loadEntityBySource(CareSite.class, "CareSite", "careSiteSourceValue", resourceRef.getReference().getIdPart());
-            if (careSite != null) {
-                return careSite;
-            } else {
-                careSite = new CareSite();
-                careSite.setCareSiteSourceValue(resourceRef.getReference().getIdPart());
-                if (careSite.getCareSiteName() != null)
-                    careSite.setCareSiteName(resourceRef.getDisplay().toString());
-                return careSite;
-            }
-        }
+        if (careSite != null) return careSite;
+
+        // Check source column to see if we have received this before.
+        careSite = DAO.getInstance().loadEntityBySource(CareSite.class, "CareSite", "careSiteSourceValue", resourceRef.getReference().getIdPart());
+        if (careSite != null) return careSite;
+
+        careSite = new CareSite();
+        careSite.setCareSiteSourceValue(resourceRef.getReference().getIdPart());
+        if (careSite.getCareSiteName() != null) careSite.setCareSiteName(resourceRef.getDisplay().toString());
+        return careSite;
     }
 
     public Long getId() {
@@ -171,7 +165,7 @@ public class CareSite extends BaseResourceEntity {
 
         if (this.placeOfServiceConcept != null) {
             String codeString = this.placeOfServiceConcept.getConceptCode();
-            String systemUriString = this.placeOfServiceConcept.getVocabulary().getReference();
+            String systemUriString = this.placeOfServiceConcept.getVocabularyReference();
             String displayString = this.placeOfServiceConcept.getName();
 
             CodeableConceptDt typeCodeableConcept = new CodeableConceptDt(systemUriString, codeString);
@@ -203,7 +197,7 @@ public class CareSite extends BaseResourceEntity {
             if (myID != null && myID.getIdPartAsLong() != null && myID.getIdPart() != null) {
                 // See if we already have this in the source field. If so,
                 // then we want update not create
-                ConditionOccurrence origCareSite = (ConditionOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(CareSite.class, "CareSite", "careSiteSourceValue", orgResource.getId().getIdPart());
+                final CareSite origCareSite = DAO.getInstance().loadEntityBySource(CareSite.class, "CareSite", "careSiteSourceValue", orgResource.getId().getIdPart());
                 if (origCareSite == null)
                     this.careSiteSourceValue = orgResource.getId().getIdPart();
                 else
@@ -224,17 +218,13 @@ public class CareSite extends BaseResourceEntity {
             // Organization.name to CareSiteName
             this.setCareSiteName(orgResource.getName());
 
-            // Organzation.type to Place of Service Concept
+            // Organization.type to Place of Service Concept
             CodeableConceptDt orgType = orgResource.getType();
             if (orgType != null) {
-                List<CodingDt> typeCodings = orgType.getCoding();
-                if (typeCodings.size() > 0) {
-                    String typeCode = typeCodings.get(0).getCode();
-                    Long placeOfServiceId = OmopConceptMapping.getInstance().get(typeCode, OmopConceptMapping.PLACE_OF_SERVICE);
-                    if (placeOfServiceId != null) {
-                        this.placeOfServiceConcept = new Concept();
-                        this.placeOfServiceConcept.setId(placeOfServiceId);
-                    }
+                final CodingDt cdt = orgType.getCodingFirstRep();
+                final Long id = ConceptDAO.getInstance().getConcept(cdt.getCode(), cdt.getSystem());
+                if (id != null) {
+                    placeOfServiceConcept = new Concept(id);
                 }
             }
 

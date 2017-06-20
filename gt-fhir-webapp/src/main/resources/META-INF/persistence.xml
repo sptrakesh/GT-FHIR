@@ -18,7 +18,7 @@
         <class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposure</class>
         <class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureDispensed</class>
         <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureOrder</class> -->
-        <class>edu.gatech.i3l.fhir.dstu2.entities.Domain</class>
+        <!-- <class>edu.gatech.i3l.fhir.dstu2.entities.Domain</class> -->
         <class>edu.gatech.i3l.fhir.dstu2.entities.MedicationOrderView</class>
         <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.DrugExposureComplement</class> -->
         <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.EpisodeOfCare</class> -->
@@ -36,7 +36,7 @@
         <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.ProviderComplement</class> -->
         <class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrence</class>
         <!-- 		<class>edu.gatech.i3l.fhir.dstu2.entities.VisitOccurrenceComplement</class> -->
-        <class>edu.gatech.i3l.fhir.dstu2.entities.Vocabulary</class>
+        <!-- <class>edu.gatech.i3l.fhir.dstu2.entities.Vocabulary</class> -->
 
         <!-- The following classes are for SMART on FHIR Launch Context -->
         <class>edu.gatech.i3l.fhir.smart.servlet.SmartLaunchContext</class>

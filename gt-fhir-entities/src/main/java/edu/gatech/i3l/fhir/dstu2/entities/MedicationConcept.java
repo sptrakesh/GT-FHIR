@@ -9,6 +9,7 @@ import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -30,13 +31,11 @@ public final class MedicationConcept extends BaseResourceEntity {
     @Column(name = "concept_name", updatable = false)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "domain_id", referencedColumnName = "domain_id")
-    private Domain domain;
+    @Column(name = "domain_id", updatable = false)
+    private String domain;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "vocabulary_id", insertable = false, updatable = false)
-    private Vocabulary vocabulary;
+    @Column(name = "vocabulary_id", updatable = false)
+    private String vocabulary;
 
     @Column(name = "concept_class_id", updatable = false)
     private String conceptClassId;
@@ -72,11 +71,11 @@ public final class MedicationConcept extends BaseResourceEntity {
         this.name = name;
     }
 
-    public Domain getDomain() {
+    public String getDomain() {
         return domain;
     }
 
-    public void setDomain(Domain domain) {
+    public void setDomain(String domain) {
         this.domain = domain;
     }
 
@@ -88,11 +87,11 @@ public final class MedicationConcept extends BaseResourceEntity {
         this.conceptClassId = conceptClassId;
     }
 
-    public Vocabulary getVocabulary() {
+    public String getVocabulary() {
         return vocabulary;
     }
 
-    public void setVocabulary(Vocabulary vocabulary) {
+    public void setVocabulary(String vocabulary) {
         this.vocabulary = vocabulary;
     }
 
@@ -144,7 +143,7 @@ public final class MedicationConcept extends BaseResourceEntity {
                 + this.getDomain() + ", "
                 + this.getConceptClassId() + ", "
                 + this.getStandardConcept() + ", "
-                + this.getVocabulary().getId() + ", "
+                + this.getVocabulary() + ", "
                 + this.getConceptCode() + ", "
                 + this.getValidStartDate() + ", "
                 + this.getValidEndDate();
@@ -181,7 +180,7 @@ public final class MedicationConcept extends BaseResourceEntity {
     public IResource getRelatedResource() {
         Medication resource = new Medication();
         resource.setId(new IdDt(this.getId()));
-        CodeableConceptDt code = new CodeableConceptDt(this.getVocabulary().getSystemUri(), this.getConceptCode());
+        CodeableConceptDt code = new CodeableConceptDt(ConceptDAO.getInstance().getSystemUri(this.getVocabulary()), this.getConceptCode());
         code.getCodingFirstRep().setDisplay(this.getName());
         resource.setCode(code);
         NarrativeDt narrative = new NarrativeDt();

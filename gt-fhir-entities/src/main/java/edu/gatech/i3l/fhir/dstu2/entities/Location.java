@@ -7,7 +7,7 @@ import ca.uhn.fhir.model.primitive.InstantDt;
 import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
+import edu.gatech.i3l.omop.dao.DAO;
 
 import javax.persistence.*;
 import java.util.List;
@@ -61,24 +61,17 @@ public class Location extends BaseResourceEntity {
     }
 
     public static Location searchByAddressDt(AddressDt address) {
-        List<StringDt> addressLines = address.getLine();
-        if (addressLines.size() > 0) {
-            String line1 = addressLines.get(0).getValue();
-            String line2 = null;
-            if (address.getLine().size() > 1)
-                line2 = address.getLine().get(1).getValue();
-            String zipCode = address.getPostalCode();
-            String city = address.getCity();
-            String state = address.getState();
+        final List<StringDt> addressLines = address.getLine();
+        if (addressLines.isEmpty()) return null;
 
-            Location existingLocation = (Location) OmopConceptMapping.getInstance()
-                    .loadEntityByLocation(Location.class, line1, line2, city, state, zipCode);
+        final String line1 = addressLines.get(0).getValue();
+        final String line2 = (address.getLine().size() > 1) ? address.getLine().get(1).getValue() : null;
+        final String zipCode = address.getPostalCode();
+        final String city = address.getCity();
+        final String state = address.getState();
 
-            return existingLocation;
-        }
-
-        return null;
-    }
+        return DAO.getInstance().loadEntityByLocation(Location.class, line1, line2, city, state, zipCode);
+}
 
     public static Location searchAndUpdate(AddressDt address, Location location) {
         if (address == null) return null;
@@ -94,23 +87,19 @@ public class Location extends BaseResourceEntity {
             String city = address.getCity();
             String state = address.getState();
 
-            Location existingLocation = (Location) OmopConceptMapping.getInstance()
-                    .loadEntityByLocation(Location.class, line1, line2, city, state, zipCode);
-            if (existingLocation != null) {
-                return existingLocation;
+            final Location existingLocation = DAO.getInstance().loadEntityByLocation(Location.class, line1, line2, city, state, zipCode);
+            if (existingLocation != null) return existingLocation;
+
+            // We will return new Location. But, if Location is provided,
+            // then we set the parameters here.
+            if (location != null) {
+                location.setAddress1(line1);
+                if (line2 != null) location.setAddress2(line2);
+                location.setZipCode(zipCode);
+                location.setCity(city);
+                location.setState(state);
             } else {
-                // We will return new Location. But, if Location is provided,
-                // then we set the parameters here.
-                if (location != null) {
-                    location.setAddress1(line1);
-                    if (line2 != null)
-                        location.setAddress2(line2);
-                    location.setZipCode(zipCode);
-                    location.setCity(city);
-                    location.setState(state);
-                } else {
-                    return new Location(line1, line2, city, state, zipCode);
-                }
+                return new Location(line1, line2, city, state, zipCode);
             }
 
 //			location.setEndDate(address.getPeriod().getEnd());

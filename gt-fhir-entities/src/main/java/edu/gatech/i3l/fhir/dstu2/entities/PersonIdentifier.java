@@ -12,7 +12,7 @@ import java.io.Serializable;
  */
 @Entity
 @IdClass(PersonIdentifierPK.class)
-@Table(name = "fhir_person_identifer")
+@Table(name = "fhir_person_identifier")
 public class PersonIdentifier implements Serializable {
 
     @Id

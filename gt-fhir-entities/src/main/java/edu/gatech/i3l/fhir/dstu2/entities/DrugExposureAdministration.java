@@ -153,7 +153,7 @@ public final class DrugExposureAdministration extends DrugExposure {
         resource.setPatient(new ResourceReferenceDt(new IdDt(Person.RES_TYPE, this.person.getId())));
 
         // Adding medication to Contained.
-        CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(), this.getMedication().getConceptCode());
+        CodingDt medCoding = new CodingDt(this.getMedication().getVocabularyReference(), this.getMedication().getConceptCode());
         medCoding.setDisplay(this.getMedication().getName());
 
         List<CodingDt> codingList = new ArrayList<CodingDt>();

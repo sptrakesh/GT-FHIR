@@ -13,7 +13,7 @@
 
     <!-- Add an entry to /etc/hosts (or equivalent) that points fhir.database.server to appropriate IP -->
     <bean id="myPersistenceDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="url" value="jdbc:mysql://fhir.database.server:3306/fhir" />
+        <property name="url" value="jdbc:mysql://fhir.database.server:3306/fhir_omop" />
         <property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
         <property name="username" value="fhir"/>
         <property name="password" value="fhir"/>

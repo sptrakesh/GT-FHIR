@@ -6,6 +6,7 @@ import ca.uhn.fhir.model.dstu2.resource.ValueSet;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -31,9 +32,8 @@ public class Concept extends BaseResourceEntity {
     @Column(name = "concept_name", updatable = false, nullable = false)
     private String name;
 
-    @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "domain_id", referencedColumnName = "domain_id", insertable = false, updatable = false)
-    private Domain domain;
+    @Column(name = "domain_id", updatable = false, nullable = false)
+    private String domain;
 
     @Column(name = "concept_class_id", updatable = false)
     private String conceptClassId;
@@ -41,9 +41,8 @@ public class Concept extends BaseResourceEntity {
     @Column(name = "standard_concept", updatable = false)
     private Character standardConcept;
 
-    @ManyToOne(cascade = {CascadeType.MERGE})
-    @JoinColumn(name = "vocabulary_id", referencedColumnName = "vocabulary_id", insertable = false, updatable = false)
-    private Vocabulary vocabulary;
+    @Column(name = "vocabulary_id", updatable = false)
+    private String vocabulary;
 
     @Column(name = "concept_code", updatable = false)
     private String conceptCode;
@@ -69,8 +68,8 @@ public class Concept extends BaseResourceEntity {
         this.name = name;
     }
 
-    public Concept(Long id, String name, Domain domain, String conceptClassId, Character standardConcept,
-                   Vocabulary vocabulary, String conceptCode, Date validStartDate,
+    public Concept(Long id, String name, String domain, String conceptClassId, Character standardConcept,
+                   String vocabulary, String conceptCode, Date validStartDate,
                    Date validEndDate, String invalidReason) {
         this.id = id;
         this.name = name;
@@ -131,11 +130,11 @@ public class Concept extends BaseResourceEntity {
         this.name = name;
     }
 
-    public Domain getDomainId() {
+    public String getDomainId() {
         return domain;
     }
 
-    public void setDomainId(Domain domain) {
+    public void setDomainId(String domain) {
         this.domain = domain;
     }
 
@@ -155,12 +154,16 @@ public class Concept extends BaseResourceEntity {
         this.standardConcept = standardConcept;
     }
 
-    public Vocabulary getVocabulary() {
+    public String getVocabulary() {
         return vocabulary;
     }
 
-    public void setVocabulary(Vocabulary vocabulary) {
+    public void setVocabulary(String vocabulary) {
         this.vocabulary = vocabulary;
+    }
+
+    public String getVocabularyReference() {
+        return ConceptDAO.getInstance().getSystemUri(vocabulary);
     }
 
     public String getConceptCode() {

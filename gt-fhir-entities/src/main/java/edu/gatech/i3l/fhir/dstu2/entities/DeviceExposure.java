@@ -8,6 +8,7 @@ import ca.uhn.fhir.model.dstu2.resource.Device;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -184,7 +185,7 @@ public class DeviceExposure extends BaseResourceEntity {
         }
 
         if (this.deviceConcept != null) {
-            String systemUriStr = this.deviceConcept.getVocabulary().getReference();
+            String systemUriStr = this.deviceConcept.getVocabularyReference();
             String codeStr = this.deviceConcept.getConceptCode();
             String displayStr = this.deviceConcept.getName();
 

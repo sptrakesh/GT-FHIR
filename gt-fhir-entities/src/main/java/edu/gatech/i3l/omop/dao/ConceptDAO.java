@@ -1,5 +1,12 @@
 package edu.gatech.i3l.omop.dao;
 
+import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
+import ca.uhn.fhir.model.dstu2.composite.CodingDt;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigObject;
+import edu.gatech.i3l.fhir.dstu2.entities.Concept;
+
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Map;
@@ -13,15 +20,20 @@ import static java.lang.String.format;
 public class ConceptDAO {
     public static final String SNOMED = "SNOMED";
     public static final String SNOMED_URL = "http://snomed.info/sct";
+    public final Config config = ConfigFactory.load();
 
     public static ConceptDAO getInstance() {return singleton;}
+
+    public Long getConcept(final CodingDt concept) {
+        return (concept != null) ? getConcept(concept.getCode(), concept.getSystem()) : null;
+    }
 
     public Long getConcept(final String conceptCode, final String vocabularyOrUrl) {
         final String vocabulary = getVocabularyName(vocabularyOrUrl);
         final String key = hash(conceptCode, vocabulary);
         if (cache.containsKey(key)) return cache.get(key);
 
-        final String sql = "select c.id from Concept c where c.vocabulary.id = :vocabulary and c.conceptCode = :conceptCode";
+        final String sql = "select c.id from Concept c where c.vocabulary = :vocabulary and c.conceptCode = :conceptCode";
         TypedQuery<Long> query = DAO.getInstance().getEntityManager().createQuery(sql, Long.class);
         query.setParameter("vocabulary", vocabulary);
         query.setParameter("conceptCode", conceptCode);
@@ -32,42 +44,46 @@ public class ConceptDAO {
         return results.get(0);
     }
 
+    public Concept getGenderConcept(final String gender) {
+        Config conf = null;
+
+        if (gender != null)
+        {
+            switch (gender) {
+                case "male":
+                    conf = config.getConfig("concept.gender.male");
+                    break;
+                case "female":
+                    conf = config.getConfig("concept.gender.female");
+                    break;
+            }
+        }
+
+        if (conf == null) return null;
+        final Long id = getConcept(conf.getString("code"), conf.getString("url"));
+        return (id != null) ? new Concept(id) : null;
+    }
+
     public String getVocabularyName(final String systemUrl) {
         if (systemUrl == null) return null;
-        switch (systemUrl) {
-            case SNOMED_URL : return SNOMED;
-            case "http://hl7.org/fhir/sname/icd-9-cm": return "ICD9CM";
-            case "http://hl7.org/fhir/sname/icd-9-cm/procedure": return "ICD9Proc";
-            case "http://www.ama-assn.org/go/cpt": return "CPT4";
-            case "http://purl.bioontology.org/ontology/HCPCS": return "HCPCS";
-            case "http://loinc.org": return "LOINC";
-            case "http://www.nlm.nih.gov/research/umls/rxnorm": return "RxNorm";
-            case "http://unitsofmeasure.org": return "UCUM";
-            case "http://hl7.org/fhir/sname/ndc": return "NDC";
-            case "urn:oid:2.16.840.1.113883.3.26.1.1": return "NCI";
-            default: return systemUrl;
-        }
+        final String url = (systemUrl.indexOf(':') != -1) ? format("\"%s\"", systemUrl) : systemUrl;
+        final Config conf = config.getConfig("concept.urlToVocabulary");
+        return (conf.hasPath(url)) ? conf.getString(url) : systemUrl;
     }
 
     public String getSystemUri(final String vocabulary) {
         if (vocabulary == null) return null;
-        switch (vocabulary) {
-            case SNOMED: return SNOMED_URL;
-            case "ICD9CM": return "http://hl7.org/fhir/sid/icd-9-cm";
-            case "ICD9Proc": return "http://hl7.org/fhir/sid/icd-9-cm/procedure";
-            case "CPT4": return "http://www.ama-assn.org/go/cpt";
-            case "HCPCS": return "http://purl.bioontology.org/ontology/HCPCS";
-            case "LOINC": return "http://loinc.org";
-            case "RxNorm": return "http://www.nlm.nih.gov/research/umls/rxnorm";
-            case "UCUM": return "http://unitsofmeasure.org";
-            case "NDC": return "http://hl7.org/fhir/sid/ndc";
-            case "NCI": return "urn:oid:2.16.840.1.113883.3.26.1.1";
-            default: return vocabulary;
-        }
+        final Config conf = config.getConfig("concept.vocabularyToUrl");
+        return (conf.hasPath(vocabulary)) ? conf.getString(vocabulary) : vocabulary;
     }
 
     public Long getDefaultRace() {
-        return getConcept("415226007", SNOMED);
+        final Config conf = config.getConfig("concept.race.default");
+        return getConcept(conf.getString("code"), conf.getString("url"));
+    }
+
+    public CodingDt getCodingDt(final String system, final String code) {
+        return new CodingDt(system, code);
     }
 
     private String hash(final String conceptCode, final String vocabulary) {

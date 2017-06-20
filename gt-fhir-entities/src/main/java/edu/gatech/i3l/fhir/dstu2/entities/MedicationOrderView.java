@@ -9,6 +9,8 @@ import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
+import edu.gatech.i3l.omop.dao.DAO;
 import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
 import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 import edu.gatech.i3l.omop.mapping.StaticVariables;
@@ -255,7 +257,7 @@ public final class MedicationOrderView extends DrugExposure {
         // IdDt("Medication", this.medication.getId()));
 
         // Adding medication to Contained.
-        CodingDt medCoding = new CodingDt(this.getMedication().getVocabulary().getSystemUri(),
+        CodingDt medCoding = new CodingDt(this.getMedication().getVocabularyReference(),
                 this.getMedication().getConceptCode());
         medCoding.setDisplay(this.getMedication().getName());
 
@@ -378,7 +380,7 @@ public final class MedicationOrderView extends DrugExposure {
         if (medicationOrder.getId() != null) {
             // See if we already have this in the source field. If so,
             // then we want update not create
-            MedicationOrderView origMed = (MedicationOrderView) OmopConceptMapping.getInstance().loadEntityBySource(MedicationOrderView.class, "MedicationOrderView", "drugSourceValue", medicationOrder.getId().getIdPart());
+            MedicationOrderView origMed = DAO.getInstance().loadEntityBySource(MedicationOrderView.class, "MedicationOrderView", "drugSourceValue", medicationOrder.getId().getIdPart());
             if (origMed == null)
                 this.setDrugSourceValue(medicationOrder.getId().getIdPart());
             else
@@ -457,8 +459,7 @@ public final class MedicationOrderView extends DrugExposure {
             if (medCoding != null) {
 //				this.medication = new Concept();
 //				String systemUri = medCoding.getSystem();
-                String code = medCoding.getCode();
-                medication.setId(OmopConceptMapping.getInstance().get(code));
+                medication.setId(ConceptDAO.getInstance().getConcept(medCoding));
             }
         } else if (medicationOrder.getMedication() instanceof ResourceReferenceDt) {
             Reference medicationRef = (Reference) medicationOrder.getMedication();
@@ -491,7 +492,7 @@ public final class MedicationOrderView extends DrugExposure {
             }
 
             if (doseUnitCode != null && !doseUnitCode.isEmpty()) {
-                Long unitConceptId = OmopConceptMapping.getInstance().get(doseUnitCode);
+                Long unitConceptId = ConceptDAO.getInstance().getConcept(doseUnitCode, doseQty.getSystem());
                 Concept myUnitConcept;
                 if (unitConceptId > 0) {
                     myUnitConcept = new Concept(unitConceptId);

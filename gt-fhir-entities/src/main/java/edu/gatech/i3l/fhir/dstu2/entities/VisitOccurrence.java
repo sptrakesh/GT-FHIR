@@ -13,13 +13,13 @@ import ca.uhn.fhir.model.dstu2.valueset.EncounterClassEnum;
 import ca.uhn.fhir.model.dstu2.valueset.EncounterStateEnum;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import com.typesafe.config.Config;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
 import edu.gatech.i3l.omop.dao.DAO;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -50,15 +50,13 @@ public class VisitOccurrence extends BaseResourceEntity {
     @JoinColumn(name = "person_id", nullable = false, foreignKey = @ForeignKey(name = "fpk_visit_person"))
     private PersonComplement person;
 
-    @Column(name = "visit_start_date", nullable = false)
-    @NotNull
+    @Column(name = "visit_start_date")
     private Date startDate;
 
     @Column(name = "visit_start_time")
     private String startTime;
 
-    @Column(name = "visit_end_date", nullable = false)
-    @NotNull
+    @Column(name = "visit_end_date")
     private Date endDate;
 
     @Column(name = "visit_end_time")
@@ -91,9 +89,7 @@ public class VisitOccurrence extends BaseResourceEntity {
     @JoinColumn(name = "visit_source_concept_id", foreignKey = @ForeignKey(name = "fpk_visit_concept_s"))
     private Concept visitSourceConcept;
 
-    public VisitOccurrence() {
-        visitConcept = new Concept(4067448L);
-    }
+    public VisitOccurrence() {}
 
     public VisitOccurrence(Long id, PersonComplement person, Concept placeOfServiceConcept, Date startDate,
                            String startTime, Date endDate, String endTime, Concept visitTypeConcept,
@@ -105,7 +101,6 @@ public class VisitOccurrence extends BaseResourceEntity {
         this.startTime = startTime;
         this.endDate = endDate;
         this.endTime = endTime;
-        visitConcept = new Concept(4067448L);
         this.visitTypeConcept = visitTypeConcept;
         this.provider = provider;
         this.careSite = careSite;
@@ -122,7 +117,7 @@ public class VisitOccurrence extends BaseResourceEntity {
             return visitOccurrence;
         } else {
             // Check source column to see if we have received this before.
-            visitOccurrence = (VisitOccurrence) OmopConceptMapping.getInstance()
+            visitOccurrence = DAO.getInstance()
                     .loadEntityBySource(VisitOccurrence.class, "VisitOccurrence", "visitSourceValue", encounterRef.toString());
             if (visitOccurrence != null) {
                 return visitOccurrence;
@@ -268,7 +263,7 @@ public class VisitOccurrence extends BaseResourceEntity {
         if (encounter.getId() != null) {
             // See if we already have this in the source field. If so,
             // then we want update not create
-            VisitOccurrence origVisit = (VisitOccurrence) OmopConceptMapping.getInstance().loadEntityBySource(VisitOccurrence.class, "VisitOccurrence", "visitSourceValue", encounter.getId().getIdPart());
+            VisitOccurrence origVisit = DAO.getInstance().loadEntityBySource(VisitOccurrence.class, "VisitOccurrence", "visitSourceValue", encounter.getId().getIdPart());
             if (origVisit == null)
                 this.setVisitSourceValue(encounter.getId().getIdPart());
             else
@@ -283,16 +278,12 @@ public class VisitOccurrence extends BaseResourceEntity {
             if (tempDate != null) {
                 this.startDate = tempDate;
                 this.startTime = fmt.format(this.startDate);
-            } else {
-                this.startDate = new Date(0);
             }
 
             tempDate = tempPeriod.getEnd();
             if (tempDate != null) {
                 this.endDate = tempDate;
                 this.endTime = fmt.format(this.endDate);
-            } else {
-                this.endDate = new Date(0);
             }
         }
 
@@ -302,27 +293,14 @@ public class VisitOccurrence extends BaseResourceEntity {
 		 * - ER: Emergency Room Visit
 		 * - LTCP: Long Term Care Visit
 		 * - */
-        String classElement = encounter.getClassElement();
-        String classType2Use = null;
-        if (classElement != null && !classElement.isEmpty()) {
-            String classLowerString = classElement.toLowerCase();
-            if (classLowerString.contains("inpatient")) {
-                classType2Use = "ip";
-            } else if (classLowerString.contains("outpatient")) {
-                classType2Use = "op";
-            } else if (classLowerString.contains("emergency")) {
-                classType2Use = "er";
+        if (encounter.getClassElement() != null) {
+            final ConceptDAO dao = ConceptDAO.getInstance();
+            final Config config = dao.config.getConfig("encounter.class");
+            if (config.hasPath(encounter.getClassElement())) {
+                final Config cls = config.getConfig(encounter.getClassElement());
+                placeOfServiceConcept = new Concept(dao.getConcept(cls.getString("code"), cls.getString("url")));
             }
         }
-
-        if (classType2Use != null && !classType2Use.isEmpty()) {
-            Long id = OmopConceptMapping.getInstance().get(classType2Use.toLowerCase(), OmopConceptMapping.VISIT);
-            this.setPlaceOfServiceConcept(new Concept(id));
-        }
-
-		/* Set Visit Type - we hardcode this */
-        visitConcept = new Concept(4067448L);
-        visitTypeConcept = new Concept(44818518L);
 
 		/* Set care site */
         Participant participant = encounter.getParticipantFirstRep();
@@ -366,29 +344,7 @@ public class VisitOccurrence extends BaseResourceEntity {
         encounter.setId(this.getIdDt());
 
         if (this.placeOfServiceConcept != null) {
-            String visitString = this.placeOfServiceConcept.getName().toLowerCase();
-            if (visitString.contains("inpatient")) {
-                encounter.setClassElement(EncounterClassEnum.INPATIENT);
-            } else if (visitString.toLowerCase().contains("outpatient")) {
-                encounter.setClassElement(EncounterClassEnum.OUTPATIENT);
-            } else if (visitString.toLowerCase().contains("ambulatory")
-                    || visitString.toLowerCase().contains("office")) {
-                encounter.setClassElement(EncounterClassEnum.AMBULATORY);
-            } else if (visitString.toLowerCase().contains("home")) {
-                encounter.setClassElement(EncounterClassEnum.HOME);
-            } else if (visitString.toLowerCase().contains("emergency")) {
-                encounter.setClassElement(EncounterClassEnum.EMERGENCY);
-            } else if (visitString.toLowerCase().contains("field")) {
-                encounter.setClassElement(EncounterClassEnum.FIELD);
-            } else if (visitString.toLowerCase().contains("daytime")) {
-                encounter.setClassElement(EncounterClassEnum.DAYTIME);
-            } else if (visitString.toLowerCase().contains("virtual")) {
-                encounter.setClassElement(EncounterClassEnum.VIRTUAL);
-            } else {
-                encounter.setClassElement(EncounterClassEnum.OTHER);
-            }
-        } else {
-            encounter.setClassElement(EncounterClassEnum.OTHER);
+            encounter.setClassElement(EncounterClassEnum.AMBULATORY);
         }
 
         encounter.setStatus(EncounterStateEnum.FINISHED);

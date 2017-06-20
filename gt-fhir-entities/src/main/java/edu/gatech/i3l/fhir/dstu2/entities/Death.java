@@ -19,18 +19,18 @@ public class Death implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date deathDate;
 
-    @OneToOne(cascade = {CascadeType.MERGE})
+    @OneToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinColumn(name = "death_type_concept_id", referencedColumnName = "concept_id", foreignKey = @ForeignKey(name = "fpk_death_type_concept"))
     private Concept deathType;
 
-    @OneToOne(cascade = {CascadeType.MERGE})
+    @OneToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinColumn(name = "cause_concept_id", referencedColumnName = "concept_id", foreignKey = @ForeignKey(name = "fpk_death_cause_concept"))
     private Concept causeOfDeath;
 
     @Column(name = "cause_source_value")
     private String causeSourceValue;
 
-    @OneToOne(cascade = {CascadeType.MERGE})
+    @OneToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinColumn(name = "cause_source_concept_id", referencedColumnName = "concept_id", foreignKey = @ForeignKey(name = "fpk_death_cause_concept_s"))
     private Concept causeSourceConcept;
 

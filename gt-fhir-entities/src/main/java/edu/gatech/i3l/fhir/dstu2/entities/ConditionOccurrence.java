@@ -6,25 +6,24 @@ package edu.gatech.i3l.fhir.dstu2.entities;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.model.api.IDatatype;
 import ca.uhn.fhir.model.api.IResource;
-import ca.uhn.fhir.model.dstu2.composite.CodeableConceptDt;
-import ca.uhn.fhir.model.dstu2.composite.CodingDt;
-import ca.uhn.fhir.model.dstu2.composite.PeriodDt;
-import ca.uhn.fhir.model.dstu2.composite.ResourceReferenceDt;
+import ca.uhn.fhir.model.dstu2.composite.*;
 import ca.uhn.fhir.model.dstu2.resource.Condition;
 import ca.uhn.fhir.model.dstu2.valueset.ConditionCategoryCodesEnum;
 import ca.uhn.fhir.model.dstu2.valueset.ConditionVerificationStatusEnum;
 import ca.uhn.fhir.model.primitive.DateTimeDt;
 import ca.uhn.fhir.model.primitive.IdDt;
 import ca.uhn.fhir.model.primitive.InstantDt;
+import com.typesafe.config.Config;
 import edu.gatech.i3l.fhir.jpa.entity.BaseResourceEntity;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
+import edu.gatech.i3l.omop.dao.ConceptDAO;
 import edu.gatech.i3l.omop.dao.DAO;
-import edu.gatech.i3l.omop.enums.Omop4ConceptsFixedIds;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+
+import static java.lang.String.format;
 
 /**
  * @author Myung Choi
@@ -51,11 +50,12 @@ public class ConditionOccurrence extends BaseResourceEntity {
     @NotNull
     private Concept conditionConcept;
 
-    @Column(name = "condition_start_date", nullable = false)
-    @NotNull
+    @Column(name = "condition_start_date")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date startDate;
 
-    @Column(name = "condition_end_date", nullable = false)
+    @Column(name = "condition_end_date")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
     @ManyToOne(cascade = {CascadeType.MERGE})
@@ -220,24 +220,20 @@ public class ConditionOccurrence extends BaseResourceEntity {
 
 
             // We are writing to the database. Keep the source so we know where it is coming from
-            OmopConceptMapping ocm = OmopConceptMapping.getInstance();
             if (condition.getId() != null) {
                 // See if we already have this in the source field. If so,
                 // then we want update not create
-                ConditionOccurrence origCondition = (ConditionOccurrence) ocm.loadEntityBySource(ConditionOccurrence.class, "ConditionOccurrence", "sourceValue", condition.getId().getIdPart());
+                final ConditionOccurrence origCondition = DAO.getInstance().loadEntityBySource(ConditionOccurrence.class, "ConditionOccurrence", "sourceValue", condition.getId().getIdPart());
                 if (origCondition == null)
                     this.sourceValue = condition.getId().getIdPart();
                 else
                     this.setId(origCondition.getId());
             }
 
-            Long conditionConceptRef = ocm.get(condition.getCode().getCodingFirstRep().getCode());
-            this.conditionConcept = new Concept();
-            if (conditionConceptRef != null) {
-                this.conditionConcept.setId(conditionConceptRef);
-            } else {
-                this.conditionConcept.setId(0L);
-                System.out.println("Condition code not recognized: " + condition.getCode().getCodingFirstRep().getCode() + ". System: " + condition.getCode().getCodingFirstRep().getSystem());
+            if (condition.getCode() != null) {
+                final CodingDt cdt = condition.getCode().getCodingFirstRep();
+                final Long cid = ConceptDAO.getInstance().getConcept(cdt);
+                if (cid != null) conditionConcept = new Concept(cid);
             }
 
             IDatatype onSetDate = condition.getOnset();
@@ -262,17 +258,25 @@ public class ConditionOccurrence extends BaseResourceEntity {
                 }
             }
 
-            this.conditionTypeConcept = new Concept();
-            ca.uhn.fhir.model.dstu2.composite.BoundCodeableConceptDt<ConditionCategoryCodesEnum> condCategory = condition.getCategory();
-            CodingDt condCatCoding = condCategory.getCodingFirstRep();
-            if (condCatCoding != null) {
-                if (condCatCoding.getCode().equalsIgnoreCase(ConditionCategoryCodesEnum.COMPLAINT.getCode())) {
-                    this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PATIENT_SELF_REPORT.getConceptId());
+            if (condition.getCategory() != null) {
+                final BoundCodeableConceptDt<ConditionCategoryCodesEnum> condCategory = condition.getCategory();
+                final CodingDt condCatCoding = condCategory.getCodingFirstRep();
+                final Config config = ConceptDAO.getInstance().config.getConfig("concept.condition.category");
+
+                if (condCatCoding != null) {
+                    if (config.hasPath(condCatCoding.getCode())) {
+                        final Config conf = config.getConfig(condCatCoding.getCode());
+                        final Long id = ConceptDAO.getInstance().getConcept(conf.getString("code"), conf.getString("url"));
+                        if (id != null) conditionTypeConcept = new Concept(id);
+                    } else {
+                        final Long id = ConceptDAO.getInstance().getConcept(condCatCoding);
+                        if (id != null) conditionTypeConcept = new Concept(id);
+                    }
                 } else {
-                    this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.EHR_PROBLEM_ENTRY.getConceptId());
+                    final Config conf = config.getConfig("complaint");
+                    final Long id = ConceptDAO.getInstance().getConcept(conf.getString("code"), conf.getString("url"));
+                    if (id != null) conditionTypeConcept = new Concept(id);
                 }
-            } else {
-                this.conditionTypeConcept.setId(Omop4ConceptsFixedIds.PRIMARY_CONDITION.getConceptId());
             }
 
             // this.stopReason = stopReason; NOTE: no FHIR parameter for
@@ -289,7 +293,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
                         this.setProvider(provider);
                     } else {
                         // See if we have received this earlier.
-                        provider = (Provider) OmopConceptMapping.getInstance().loadEntityBySource(Provider.class, "Provider", "providerSourceValue", providerId.toString());
+                        provider = DAO.getInstance().loadEntityBySource(Provider.class, "Provider", "providerSourceValue", providerId.toString());
                         if (provider == null) {
                             this.provider = new Provider();
                             this.provider.setProviderName(asserterResRef.getDisplay().getValueAsString());
@@ -356,7 +360,7 @@ public class ConditionOccurrence extends BaseResourceEntity {
 //			theSystem = "http://hl7.org/fhir/sid/icd-9-cm";
 //			theCode = this.sourceValue.substring(9);
 //		} else {
-        theSystem = conditionConcept.getVocabulary().getSystemUri();
+        theSystem = conditionConcept.getVocabularyReference();
         theCode = conditionConcept.getConceptCode();
         theDisplay = conditionConcept.getName();
 //		}
@@ -378,44 +382,32 @@ public class ConditionOccurrence extends BaseResourceEntity {
         // is not
         // required in FHIR. But, then no reason to have this condition, I
         // think...
-        String theText = conditionConcept.getName() + ", " + conditionConcept.getVocabulary().getName() + ", "
-                + conditionConcept.getConceptCode();
+        final String theText = format( "%s, %s, %s", conditionConcept.getName(),
+                conditionConcept.getVocabularyReference(), conditionConcept.getConceptCode());
 
         conditionCodeConcept.setText(theText);
         condition.setCode(conditionCodeConcept);
-
-        // Set clinicalStatus
-        // We have clinicalStatus information in the FHIR extended table. This
-        // will
-        // be set in the extended class.
-
-        // Set severity
-        // We have this as well in the FHIR exteded table.
 
         // Set onset[x]
         // We may have only one date if this condition did not end. If ended, we
         // have
         // a period. First, check if endDate is available.
-        DateTimeDt startDateDt = new DateTimeDt(startDate);
-        if (endDate == null) {
-            // Date
-            condition.setOnset(startDateDt);
-        } else {
-            // Period
-            DateTimeDt endDateDt = new DateTimeDt(endDate);
-            PeriodDt periodDt = new PeriodDt();
-            periodDt.setStart(startDateDt);
-            periodDt.setEnd(endDateDt);
-            condition.setOnset(periodDt);
+        if (startDate != null) {
+            DateTimeDt startDateDt = new DateTimeDt(startDate);
+            if (endDate == null) {
+                // Date
+                condition.setOnset(startDateDt);
+            } else {
+                // Period
+                DateTimeDt endDateDt = new DateTimeDt(endDate);
+                PeriodDt periodDt = new PeriodDt();
+                periodDt.setStart(startDateDt);
+                periodDt.setEnd(endDateDt);
+                condition.setOnset(periodDt);
+            }
         }
 
-        // Category
-        Concept myCat = this.getConditionConcept();
-        if (myCat.getId() == Omop4ConceptsFixedIds.PATIENT_SELF_REPORT.getConceptId()) {
-            condition.setCategory(ConditionCategoryCodesEnum.COMPLAINT);
-        } else {
-            condition.setCategory(ConditionCategoryCodesEnum.FINDING);
-        }
+        addCategory(condition);
 
         // VerficationStutus
         condition.setVerificationStatus(ConditionVerificationStatusEnum.CONFIRMED);
@@ -452,5 +444,37 @@ public class ConditionOccurrence extends BaseResourceEntity {
                 break;
         }
         return link;
+    }
+
+    private void addCategory(final Condition condition) {
+        if (conditionConcept == null) return;
+
+        final ConceptDAO dao = ConceptDAO.getInstance();
+        final String url = dao.getSystemUri(conditionConcept.getVocabulary());
+        final Config conf = dao.config.getConfig("concept.condition.category");
+
+        Config item = conf.getConfig("complaint");
+        if (url.equals(item.getString("url")) && conditionConcept.getConceptCode().equals(item.getString("code"))) {
+            condition.setCategory(ConditionCategoryCodesEnum.COMPLAINT);
+            return;
+        }
+
+        item = conf.getConfig("symptom");
+        if (url.equals(item.getString("url")) && conditionConcept.getConceptCode().equals(item.getString("code"))) {
+            condition.setCategory(ConditionCategoryCodesEnum.SYMPTOM);
+            return;
+        }
+
+        item = conf.getConfig("finding");
+        if (url.equals(item.getString("url")) && conditionConcept.getConceptCode().equals(item.getString("code"))) {
+            condition.setCategory(ConditionCategoryCodesEnum.FINDING);
+            return;
+        }
+
+        item = conf.getConfig("diagnosis");
+        if (url.equals(item.getString("url")) && conditionConcept.getConceptCode().equals(item.getString("code"))) {
+            condition.setCategory(ConditionCategoryCodesEnum.DIAGNOSIS);
+            return;
+        }
     }
 }

@@ -12,13 +12,9 @@ import ca.uhn.fhir.model.primitive.StringDt;
 import edu.gatech.i3l.fhir.jpa.entity.IResourceEntity;
 import edu.gatech.i3l.omop.dao.DAO;
 import edu.gatech.i3l.omop.dao.PersonComplementDAO;
-import edu.gatech.i3l.omop.mapping.OmopConceptMapping;
 
 import javax.persistence.*;
 import java.util.*;
-
-import static edu.gatech.i3l.omop.dao.ConceptDAO.SNOMED;
-import static edu.gatech.i3l.omop.dao.ConceptDAO.SNOMED_URL;
 
 /**
  * This class adds some properties to the Omop data model Person, in order to provide
@@ -74,7 +70,7 @@ public class PersonComplement extends Person {
             return person;
         } else {
             // See if we have already received this.
-            person = (PersonComplement) OmopConceptMapping.getInstance()
+            person = DAO.getInstance()
                     .loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", patientRef.toString());
             if (person != null) {
                 return person;
@@ -259,7 +255,6 @@ public class PersonComplement extends Person {
      */
     @Override
     public IResourceEntity constructEntityFromResource(IResource resource) {
-        super.constructEntityFromResource(resource);
 
         if (resource instanceof Patient) {
             Patient patient = (Patient) resource;
@@ -295,7 +290,7 @@ public class PersonComplement extends Person {
                 if (person != null) {
                     this.setId(myID.getIdPartAsLong());
                 } else {
-                    person = (PersonComplement) OmopConceptMapping.getInstance().loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", myID.getIdPart());
+                    person = DAO.getInstance().loadEntityBySource(PersonComplement.class, "PersonComplement", "personSourceValue", myID.getIdPart());
                     if (person != null) {
                         this.setId(person.getId());
                     }
@@ -313,6 +308,8 @@ public class PersonComplement extends Person {
                     this.setId(existingID);
                 }
             }
+
+            super.constructEntityFromResource(resource);
 
             Boolean active = patient.getActive();
             if (active != null && active.booleanValue()) this.setActive((short) 1);
