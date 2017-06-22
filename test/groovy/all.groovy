@@ -17,4 +17,8 @@ println 'Testing MedicationStatement entity'
 evaluate new File( 'medicationStatement.groovy' )
 println 'Testing Procedure entity'
 evaluate new File( 'procedure.groovy' )
+println 'Testing TherapyGroup entity'
+evaluate new File( 'therapyGroup.groovy' )
+println 'Testing TherapyGroupComponent entity'
+evaluate new File( 'therapyGroupComponent.groovy' )
 println 'All tests completed'

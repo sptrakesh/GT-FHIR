@@ -73,8 +73,6 @@ public class Observation extends BaseResourceEntity {
     @Column(name = "observation_source_value")
     private String sourceValue;
 
-    private String valueSourceValue;
-
     @ManyToOne(cascade = {CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_concept_id", foreignKey = @ForeignKey(name = "fpk_observation_unit_concept"))
     private Concept unit;
@@ -196,14 +194,6 @@ public class Observation extends BaseResourceEntity {
 
     public void setUnitSourceValue(String unitSourceValue) {
         this.unitSourceValue = unitSourceValue;
-    }
-
-    public String getValueSourceValue() {
-        return valueSourceValue;
-    }
-
-    public void setValueSourceValue(String valueSourceValue) {
-        this.valueSourceValue = valueSourceValue;
     }
 
     @Override
@@ -344,8 +334,6 @@ public class Observation extends BaseResourceEntity {
                 CodeableConceptDt valueAsConcept = new CodeableConceptDt(this.valueAsConcept.getVocabularyReference(),
                         this.valueAsConcept.getConceptCode());
                 value = valueAsConcept;
-            } else {
-                value = new StringDt(this.getValueSourceValue());
             }
             observation.setValue(value);
         }

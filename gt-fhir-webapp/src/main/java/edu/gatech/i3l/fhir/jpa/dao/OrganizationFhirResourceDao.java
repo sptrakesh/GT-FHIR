@@ -21,7 +21,7 @@ public class OrganizationFhirResourceDao extends BaseFhirResourceDao<Organizatio
 		setResourceEntity(CareSite.class);
 		setValidateBean(true);
 	}
-	
+
 	@Override
 	public PredicateBuilder getPredicateBuilder() {
 		return new AbstractPredicateBuilder() {

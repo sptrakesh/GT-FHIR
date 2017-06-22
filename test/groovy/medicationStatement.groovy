@@ -15,7 +15,7 @@ def patient( object, shell )
   url
 }
 
-def encounter( object, shell, patientId )
+def encounter( object, patientId )
 {
   def url = object.create object.getEncounter( patientId )
   url = object.fixProtocol url
@@ -59,7 +59,7 @@ def shell = new GroovyShell()
 def patientUrl = patient object, shell
 def patientId = object.getEntityId patientUrl
 
-def encounterUrl = encounter object, shell, patientId
+def encounterUrl = encounter object, patientId
 def encounterId = object.getEntityId encounterUrl
 
 try

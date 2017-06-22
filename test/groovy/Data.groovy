@@ -541,7 +541,8 @@ class Data
 }"""
   }
 
-  String getProcedure( patientId, encounterId ) {
+  String getProcedure( patientId, encounterId )
+  {
 """{
   "resourceType": "Procedure",
   "status": "completed",
@@ -560,6 +561,151 @@ class Data
     "reference": "Encounter/$encounterId"
   },
   "performedDateTime": "2016-06-28T15:50:29+00:00"
+}
+"""
+  }
+
+  String getTherapyGroup( patientId )
+  {
+"""{ 
+   "resourceType": "Basic",
+   "subject": { 
+      "reference": "Patient/$patientId"
+   },
+   "code": { 
+      "coding": [
+        { 
+          "system": "NCI",
+          "code": "C54576"
+        }
+      ]
+   },
+   "extension": [ 
+      { 
+         "url": "tempus.therapygroup",
+         "extension": [
+             {
+               "url": "name",
+               "valueString": "Some therapy group"
+             },
+             {
+               "url": "sequence",
+               "valueInteger": 1
+             }
+         ]
+      }
+   ]
+}
+"""
+  }
+
+  String getTherapyGroupComponent( therapyGroupId, medicationStatementId )
+  {
+"""{ 
+   "resourceType": "Basic",
+   "subject": { 
+      "reference": "Basic/$therapyGroupId"
+   },
+   "code": { 
+      "coding": [
+        { 
+          "system": "NCI",
+          "code": "C15697"
+        }
+      ]
+   },
+   "extension": [ 
+      {
+         "url": "tempus.therapygroup.component.sequence",
+         "valueInteger": 1
+      },
+      { 
+         "url": "tempus.therapygroup.component.drug",
+         "valueReference": {
+           "reference": "MedicationStatement/$medicationStatementId"
+         }
+      }
+   ]
+}
+"""
+  }
+
+  String getTherapyGroupComponent( therapyGroupId, medicationStatementId, procedureId )
+  {
+    """{ 
+   "resourceType": "Basic",
+   "subject": { 
+      "reference": "Basic/$therapyGroupId"
+   },
+   "code": { 
+      "coding": [
+        { 
+          "system": "NCI",
+          "code": "C15697"
+        }
+      ]
+   },
+   "extension": [ 
+      {
+         "url": "tempus.therapygroup.component.sequence",
+         "valueInteger": 1
+      },
+      { 
+         "url": "tempus.therapygroup.component.drug",
+         "valueReference": {
+           "reference": "MedicationStatement/$medicationStatementId"
+         }
+      },
+      { 
+         "url": "tempus.therapygroup.component.procedure",
+         "valueReference": {
+           "reference": "Procedure/$procedureId"
+         }
+      }
+   ]
+}
+"""
+  }
+
+  String getTherapyGroupComponent( therapyGroupId, medicationStatementId, procedureId, observationId )
+  {
+    """{ 
+   "resourceType": "Basic",
+   "subject": { 
+      "reference": "Basic/$therapyGroupId"
+   },
+   "code": { 
+      "coding": [
+        { 
+          "system": "NCI",
+          "code": "C15697"
+        }
+      ]
+   },
+   "extension": [ 
+      {
+         "url": "tempus.therapygroup.component.sequence",
+         "valueInteger": 1
+      },
+      { 
+         "url": "tempus.therapygroup.component.drug",
+         "valueReference": {
+           "reference": "MedicationStatement/$medicationStatementId"
+         }
+      },
+      { 
+         "url": "tempus.therapygroup.component.procedure",
+         "valueReference": {
+           "reference": "Procedure/$procedureId"
+         }
+      },
+      { 
+         "url": "tempus.therapygroup.component.observation",
+         "valueReference": {
+           "reference": "Observation/$observationId"
+         }
+      }
+   ]
 }
 """
   }
